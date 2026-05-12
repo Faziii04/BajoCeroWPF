@@ -1,0 +1,383 @@
+﻿<Window x:Class="ProyectoIntegradorNet10.Windows.Dashboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProyectoIntegradorNet10.Windows"
+        mc:Ignorable="d"
+        Title="Dashboard" Height="750" Width="1100" Background="Transparent" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <!-- MODO CLARO -->
+        <Color x:Key="FondoClaro">#F0F4F8</Color>
+        <Color x:Key="PanelClaro">#FFFFFF</Color>
+        <Color x:Key="LetraClaro">#1F4E6B</Color>
+        <Color x:Key="BarraClaro">#2DAAE1</Color>
+        <Color x:Key="AcentoClaro">#1A4A7A</Color>
+        <Color x:Key="NavClaro">#FFFFFF</Color>
+
+        <!-- MODO OSCURO -->
+        <Color x:Key="FondoOscuro1">#1C2B36</Color>
+        <Color x:Key="PanelOscuro1">#30302E</Color>
+        <Color x:Key="LetraOscuro1">#FFFFFF</Color>
+        <Color x:Key="BarraOscuro1">#1C2B36</Color>
+        <Color x:Key="AcentoOscuro1">#30302E</Color>
+        <Color x:Key="NavOscuro1">#F39C12</Color>
+
+        <!-- COLORES ACTIVOS -->
+        <Color x:Key="FondoOscuro">#1C2B36</Color>
+        <Color x:Key="PanelOscuro">#30302E</Color>
+        <Color x:Key="LetraOscuro">#FFFFFF</Color>
+        <Color x:Key="BarraColor">#1C2B36</Color>
+        <Color x:Key="AcentoColor">#30302E</Color>
+        <Color x:Key="NavColor">#F39C12</Color>
+
+        <!-- Brushes dinámicos -->
+        <SolidColorBrush x:Key="FOscuro1"   Color="{DynamicResource FondoOscuro}"/>
+        <SolidColorBrush x:Key="POscuro2"   Color="{DynamicResource PanelOscuro}"/>
+        <SolidColorBrush x:Key="LOscuro2"   Color="{DynamicResource LetraOscuro}"/>
+        <SolidColorBrush x:Key="BarraBrush" Color="{DynamicResource BarraColor}"/>
+        <SolidColorBrush x:Key="AcentoBrush" Color="{DynamicResource AcentoColor}"/>
+        <SolidColorBrush x:Key="NavTextColor" Color="{DynamicResource NavColor}"/>
+        <SolidColorBrush x:Key="SectionLabelColor" Color="#7AAAC8"/>
+        <SolidColorBrush x:Key="SeparatorColor"    Color="#2A5A8A"/>
+
+        <Style x:Key="NavItemStyle" TargetType="Button">
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"       Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding"      Value="20,12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="12"
+                            Margin="10,3">
+                            <ContentPresenter HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2A5A8A"/>
+                                <Setter TargetName="Bd" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" Opacity="0.3" BlurRadius="8"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3DAAD4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground"  Value="{StaticResource SectionLabelColor}"/>
+            <Setter Property="FontSize"    Value="11"/>
+            <Setter Property="FontWeight"  Value="SemiBold"/>
+            <Setter Property="Margin"      Value="30,20,0,8"/>
+
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="20" Margin="12">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="0" Opacity="0.15" BlurRadius="20"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+
+            <Border Grid.Column="0" Grid.RowSpan="2"
+            CornerRadius="20,30,30,20"
+            Background="Transparent"
+            Panel.ZIndex="1">
+
+                <Grid>
+                    <!-- Imagen día (modo claro) -->
+                    <Image x:Name="imgFondoDia"
+                       Source="/Images/diaFondoLogin.png"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Left"
+                       Visibility="Collapsed"/>
+                    <!-- Imagen noche (modo oscuro) -->
+                    <Image x:Name="imgFondoNoche"
+                       Source="/Images/nocheFondoLogin.png"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Left"
+                       Visibility="Visible"/>
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+
+                        <Canvas Grid.Row="0" Grid.RowSpan="2" IsHitTestVisible="False">
+                            <Rectangle Width="260" Height="920" Fill="#0F5C8C" Opacity="0.3"/>
+                            <Ellipse Canvas.Left="-80" Canvas.Top="-80" Width="250" Height="250" Fill="#FFFFFF" Opacity="0.08"/>
+                            <Polygon Canvas.Right="-40" Canvas.Bottom="-40" Points="0,0 60,0 30,50" Fill="#FFFFFF" Opacity="0.05"/>
+                        </Canvas>
+
+                        <DockPanel Panel.ZIndex="1">
+
+
+                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal"
+                        Margin="20,24,20,20">
+
+                                <Border Width="48" Height="48" CornerRadius="24"
+                        Background="#FFFFFF" BorderBrush="#DDDDDD" BorderThickness="1">
+                                    <TextBlock Text="BC" FontSize="14" FontWeight="Bold"
+                               Foreground="#1A4A7A"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="BajoCero" FontSize="20" FontWeight="Bold"
+                               Foreground="White"/>
+                                    <TextBlock Text="Panel de control" FontSize="12"
+                               Foreground="{StaticResource SectionLabelColor}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+
+                            <Border DockPanel.Dock="Top" Height="1" Margin="0,0,0,12" CornerRadius="0.5" Background="{StaticResource SeparatorColor}"/>
+
+
+                            <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+
+
+                                    <TextBlock Text="PRINCIPAL" Style="{StaticResource SectionLabelStyle}"/>
+                                    <Button Style="{StaticResource NavItemStyle}" Click="Button_Click">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Rectangle Canvas.Left="0"  Canvas.Top="0"  Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="10" Canvas.Top="0"  Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="0"  Canvas.Top="10" Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="10" Canvas.Top="10" Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                            </Canvas>
+                                            <TextBlock Text="Dashboard" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <TextBlock Text="OPERACIONES" Style="{StaticResource SectionLabelStyle}"/>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+
+                                                <Polygon Points="10,1 19,9 19,19 1,19 1,9"
+                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+                                                <Rectangle Canvas.Left="7" Canvas.Top="12" Width="6" Height="7"
+                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                            </Canvas>
+                                            <TextBlock Text="Producción" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+
+                                            </Canvas>
+                                            <TextBlock Text="Insumos" Foreground="{StaticResource NavTextColor}"
+                                               FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Rectangle Canvas.Left="1" Canvas.Top="1" Width="18" Height="18"
+                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+                                           StrokeThickness="1.5" RadiusX="2" RadiusY="2"/>
+                                                <Rectangle Canvas.Left="5" Canvas.Top="7" Width="10" Height="2"
+                                           Fill="{StaticResource NavTextColor}"/>
+                                                <Ellipse Canvas.Left="3" Canvas.Top="6" Width="4" Height="4"
+                                         Fill="{StaticResource NavTextColor}"/>
+                                                <Rectangle Canvas.Left="5" Canvas.Top="12" Width="10" Height="2"
+                                           Fill="{StaticResource NavTextColor}"/>
+                                                <Ellipse Canvas.Left="3" Canvas.Top="11" Width="4" Height="4"
+                                         Fill="{StaticResource NavTextColor}"/>
+                                            </Canvas>
+                                            <TextBlock Text="Inventario" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+
+                                                <Rectangle Canvas.Left="1" Canvas.Top="5" Width="12" Height="10"
+                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+                                           StrokeThickness="1.5" RadiusX="1" RadiusY="1"/>
+                                                <Polygon Points="13,8 19,8 19,15 13,15"
+                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+                                                <Ellipse Canvas.Left="3"  Canvas.Top="14" Width="4" Height="4"
+                                         Fill="{StaticResource NavTextColor}"/>
+                                                <Ellipse Canvas.Left="14" Canvas.Top="14" Width="4" Height="4"
+                                         Fill="{StaticResource NavTextColor}"/>
+                                            </Canvas>
+                                            <TextBlock Text="Distribución" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Ellipse Canvas.Left="6" Canvas.Top="1" Width="8" Height="8"
+                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+                                                <Path Data="M 1,19 Q 2,13 10,13 Q 18,13 19,19"
+                                      Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+                                                <Ellipse Canvas.Left="1" Canvas.Top="3" Width="6" Height="6"
+                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.2"/>
+                                            </Canvas>
+                                            <TextBlock Text="Clientes" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Rectangle Canvas.Left="1" Canvas.Top="4" Width="18" Height="13"
+                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+                                           StrokeThickness="1.5" RadiusX="2" RadiusY="2"/>
+                                                <Rectangle Canvas.Left="1" Canvas.Top="7" Width="18" Height="3"
+                                           Fill="{StaticResource NavTextColor}"/>
+                                            </Canvas>
+                                            <TextBlock Text="Ventas y pagos" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+
+                                    <TextBlock Text="ANALISIS" Style="{StaticResource SectionLabelStyle}"/>
+
+
+                                    <Button Style="{StaticResource NavItemStyle}">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Rectangle Canvas.Left="1"  Canvas.Top="12" Width="4" Height="7"
+                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="7"  Canvas.Top="8"  Width="4" Height="11"
+                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="13" Canvas.Top="4"  Width="4" Height="15"
+                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                            </Canvas>
+                                            <TextBlock Text="Reportes" Foreground="{StaticResource NavTextColor}"
+                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                </StackPanel>
+                            </ScrollViewer>
+
+                        </DockPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+
+            <Border Grid.Column="1" Grid.Row="0"
+            Background="{DynamicResource BarraBrush}"
+            Height="62"
+            CornerRadius="0,20,0,0"
+            Panel.ZIndex="1">
+                <Grid>
+
+                    <StackPanel Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center">
+                        <TextBlock Name="txtHora" Foreground="{DynamicResource NavTextColor}" FontSize="14" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0">
+
+                        <Border Width="36" Height="36" CornerRadius="18"
+                        Background="{DynamicResource AcentoBrush}"
+                        Margin="0,0,10,0">
+                            <TextBlock Name="txtInicialUsuario"
+                               Text="A"
+                               Foreground="{DynamicResource NavTextColor}"
+                               FontSize="15" FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Name="txtNombreUsuario"
+                               Text="usuario"
+                               Foreground="{DynamicResource NavTextColor}"
+                               FontSize="13" FontWeight="Bold"/>
+                            <Border CornerRadius="6" Padding="6,1" HorizontalAlignment="Left"
+                            Background="{DynamicResource NavTextColor}" Opacity="0.2">
+                                <TextBlock Name="txtRolUsuario"
+                                   Text="Administrador"
+                                   Foreground="{DynamicResource NavTextColor}"
+                                   FontSize="10" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,0" VerticalAlignment="Center">
+                        <Border CornerRadius="10" Background="{DynamicResource AcentoBrush}" Padding="10,5">
+                            <Button Name="btnModo"
+                            Content="☀ Modo"
+                            Background="Transparent"
+                            Foreground="{DynamicResource NavTextColor}"
+                            BorderThickness="0"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Click="btnModo_Click"/>
+                        </Border>
+                    </StackPanel>
+
+                    <Canvas IsHitTestVisible="False">
+                        <Ellipse Canvas.Right="-30" Canvas.Top="-30" Width="150" Height="150" Fill="#FFFFFF" Opacity="0.1"/>
+                    </Canvas>
+                </Grid>
+            </Border>
+
+
+            <Border Grid.Column="1" Grid.Row="1"
+            Background="{DynamicResource FOscuro1}"
+            CornerRadius="0,0,20,0">
+                <Grid>
+                    <Canvas IsHitTestVisible="False">
+                        <Rectangle Canvas.Right="-50" Canvas.Top="20" Width="300" Height="300" Fill="#3DAAD4" Opacity="0.06" RadiusX="30" RadiusY="30"/>
+                        <Polygon Canvas.Left="40" Canvas.Bottom="60" Points="0,0 40,0 20,35" Fill="#1A4A7A" Opacity="0.04"/>
+                    </Canvas>
+                </Grid>
+            </Border>
+            <Border CornerRadius="0,10,10,0" Grid.Column="1" Grid.Row="1" Background="Transparent">
+                <ContentControl x:Name="Contenido" Margin="0"></ContentControl>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
