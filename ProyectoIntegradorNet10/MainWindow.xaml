@@ -6,27 +6,7 @@
         xmlns:local="clr-namespace:ProyectoIntegradorNet10"
         mc:Ignorable="d"
         Title="Inicio de sesión" Height="560" Width="900" Background="Transparent" WindowStartupLocation="CenterScreen">
-    <Window.Resources>
-        <!-- MODO CLARO -->
-        <Color x:Key="FondoClaro">#F0F4F8</Color>
-        <Color x:Key="PanelClaro">#FFFFFF</Color>
-        <Color x:Key="LetraClaro">#1F4E6B</Color>
-
-        <!-- MODO OSCURO -->
-        <Color x:Key="FondoOscuro1">#0D1B2A</Color>
-        <Color x:Key="PanelOscuro1">#1A2E42</Color>
-        <Color x:Key="LetraOscuro1">#FFFFFF</Color>
-
-        <!-- COLORES ACTIVOS -->
-        <Color x:Key="FondoOscuro">#0D1B2A</Color>
-        <Color x:Key="PanelOscuro">#1A2E42</Color>
-        <Color x:Key="LetraOscuro">#FFFFFF</Color>
-
-
-        <SolidColorBrush x:Key="FOscuro1" Color="{DynamicResource FondoOscuro}"/>
-        <SolidColorBrush x:Key="POscuro2" Color="{DynamicResource PanelOscuro}"/>
-        <SolidColorBrush x:Key="LOscuro2" Color="{DynamicResource LetraOscuro}"/>
-
+        <Window.Resources>
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
@@ -102,7 +82,7 @@
                        Visibility="Collapsed"/>
                     <!-- Imagen noche (modo oscuro) -->
                     <Image x:Name="imgFondoNoche"
-                       Source="/Images/diaFondoLogin.png"
+                                              Source="/Images/nocheFondoLogin.png"
                        Stretch="UniformToFill"
                        HorizontalAlignment="Left"
                        Visibility="Visible"/>

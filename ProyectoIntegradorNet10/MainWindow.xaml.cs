@@ -1,24 +1,17 @@
-﻿using System.Text;
+﻿using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using ProyectoIntegradorNet10.Services;
+using ProyectoIntegradorNet10.Windows;
 
 namespace ProyectoIntegradorNet10
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        SqlConnection conex = DatabaseConnection.GetConnection();
+        // TODO: Replace with PostgreSQL authentication later
+        // private NpgsqlConnection? conex = DatabaseConnection.GetConnection();
 
         int intentos = 3;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -27,19 +20,13 @@ namespace ProyectoIntegradorNet10
 
         private void AplicarModo()
         {
-            if (DatabaseConnection.Modo) // Oscuro
+            if (GlobalVars.ModoOscuro)
             {
-                Resources["FondoOscuro"] = (Color)FindResource("FondoOscuro1");
-                Resources["PanelOscuro"] = (Color)FindResource("PanelOscuro1");
-                Resources["LetraOscuro"] = (Color)FindResource("LetraOscuro1");
                 imgFondoNoche.Visibility = Visibility.Visible;
                 imgFondoDia.Visibility = Visibility.Collapsed;
             }
-            else // Claro
+            else
             {
-                Resources["FondoOscuro"] = (Color)FindResource("FondoClaro");
-                Resources["PanelOscuro"] = (Color)FindResource("PanelClaro");
-                Resources["LetraOscuro"] = (Color)FindResource("LetraClaro");
                 imgFondoDia.Visibility = Visibility.Visible;
                 imgFondoNoche.Visibility = Visibility.Collapsed;
             }
@@ -47,7 +34,7 @@ namespace ProyectoIntegradorNet10
 
         private void btnModo_Click(object sender, RoutedEventArgs e)
         {
-            DatabaseConnection.Modo = !DatabaseConnection.Modo;
+            GlobalVars.SwitchTheme();
             AplicarModo();
         }
 
@@ -56,83 +43,61 @@ namespace ProyectoIntegradorNet10
             string usuario = txtUsuario.Text;
             string pass = passContrasenia.Password;
 
-            if (usuario == "" || pass == "")
+            if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(pass))
             {
                 MessageBox.Show("Completa todos los campos");
                 return;
             }
 
-            try
+            // HARDCODED CREDENTIALS FOR DEVELOPMENT:
+            //   admin / admin   -> administrador
+            //   oper / oper     -> operario
+            if (usuario == "admin" && pass == "admin")
             {
-                conex.Close();
-                conex.Open();
+                MessageBox.Show("Bienvenido Administrador");
+                AbrirDashboard(usuario, "administrador");
+            }
+            else if (usuario == "oper" && pass == "oper")
+            {
+                MessageBox.Show("Bienvenido Operario");
+                AbrirDashboard(usuario, "operario");
+            }
+            else
+            {
+                intentos--;
+                MessageBox.Show("Usuario o contraseña incorrectos.\nIntentos restantes: " + intentos);
 
-                using (SqlCommand command = new SqlCommand(
-                    "SELECT rol FROM USUARIO WHERE usuario = @usuario AND contrasena = @pass AND estado = 'activo'", conex))
+                if (intentos == 0)
                 {
-                    command.Parameters.AddWithValue("@usuario", usuario);
-                    command.Parameters.AddWithValue("@pass", pass);
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string rol = reader["rol"].ToString();
-                            conex.Close();
-
-                            if (rol == "administrador")
-                            {
-                                MessageBox.Show("Bienvenido Administrador");
-
-                                Dashboard admin = new Dashboard();
-                                admin.UsuarioNombre = usuario;
-                                admin.UsuarioRol = rol;
-                                admin.Show();
-                                this.Close();
-                            }
-                            else if (rol == "operario")
-                            {
-                                MessageBox.Show("Bienvenido Operario");
-
-                                Dashboard op = new Dashboard();
-                                op.UsuarioNombre = usuario;
-                                op.UsuarioRol = rol;
-                                op.Show();
-                                this.Close();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Rol no reconocido");
-                            }
-                        }
-                        else
-                        {
-                            intentos--;
-
-                            MessageBox.Show("Usuario o contraseña incorrectos.\nIntentos restantes: " + intentos);
-
-                            if (intentos == 0)
-                            {
-                                MessageBox.Show("Intentos máximos alcanzados");
-                                Application.Current.Shutdown();
-                            }
-                        }
-                    }
+                    MessageBox.Show("Intentos máximos alcanzados");
+                    Application.Current.Shutdown();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
+
+            // ---------------------------------------------------------------
+            // ORIGINAL SQL SERVER CODE (commented out for PostgreSQL migration):
+            // try
+            // {
+            //     conex.Close();
+            //     conex.Open();
+            //     using (SqlCommand command = new SqlCommand(...))
+            //     { ... }
+            // }
+            // catch (Exception ex) { ... }
+        }
+
+        private void AbrirDashboard(string usuario, string rol)
+        {
+            Dashboard dashboard = new Dashboard();
+            dashboard.UsuarioNombre = usuario;
+            dashboard.UsuarioRol = rol;
+            dashboard.Show();
+            this.Close();
         }
 
         private void btnprueba_Click(object sender, RoutedEventArgs e)
         {
-            Dashboard admin = new Dashboard();
-            admin.UsuarioNombre = "Admin";
-            admin.UsuarioRol = "administrador";
-            admin.Show();
-            this.Close();
+            AbrirDashboard("Admin", "administrador");
         }
     }
 }

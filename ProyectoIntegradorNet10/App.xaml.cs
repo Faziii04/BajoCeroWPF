@@ -1,14 +1,14 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
-
+﻿using System.Windows;
+using ProyectoIntegradorNet10.Services;
 namespace ProyectoIntegradorNet10
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            GlobalVars.ApplyInitialTheme();
+        }
     }
-
 }
+

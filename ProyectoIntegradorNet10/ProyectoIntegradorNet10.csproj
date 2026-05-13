@@ -10,7 +10,10 @@
 
   <ItemGroup>
     <Folder Include="UserControls\" />
-    <Folder Include="Themes\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Images\*.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,3 +21,4 @@
   </ItemGroup>
 
 </Project>
+

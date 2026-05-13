@@ -5,43 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProyectoIntegradorNet10.Windows"
         mc:Ignorable="d"
-        Title="Dashboard" Height="750" Width="1100" Background="Transparent" WindowStartupLocation="CenterScreen">
-    <Window.Resources>
-        <!-- MODO CLARO -->
-        <Color x:Key="FondoClaro">#F0F4F8</Color>
-        <Color x:Key="PanelClaro">#FFFFFF</Color>
-        <Color x:Key="LetraClaro">#1F4E6B</Color>
-        <Color x:Key="BarraClaro">#2DAAE1</Color>
-        <Color x:Key="AcentoClaro">#1A4A7A</Color>
-        <Color x:Key="NavClaro">#FFFFFF</Color>
-
-        <!-- MODO OSCURO -->
-        <Color x:Key="FondoOscuro1">#1C2B36</Color>
-        <Color x:Key="PanelOscuro1">#30302E</Color>
-        <Color x:Key="LetraOscuro1">#FFFFFF</Color>
-        <Color x:Key="BarraOscuro1">#1C2B36</Color>
-        <Color x:Key="AcentoOscuro1">#30302E</Color>
-        <Color x:Key="NavOscuro1">#F39C12</Color>
-
-        <!-- COLORES ACTIVOS -->
-        <Color x:Key="FondoOscuro">#1C2B36</Color>
-        <Color x:Key="PanelOscuro">#30302E</Color>
-        <Color x:Key="LetraOscuro">#FFFFFF</Color>
-        <Color x:Key="BarraColor">#1C2B36</Color>
-        <Color x:Key="AcentoColor">#30302E</Color>
-        <Color x:Key="NavColor">#F39C12</Color>
-
-        <!-- Brushes dinámicos -->
-        <SolidColorBrush x:Key="FOscuro1"   Color="{DynamicResource FondoOscuro}"/>
-        <SolidColorBrush x:Key="POscuro2"   Color="{DynamicResource PanelOscuro}"/>
-        <SolidColorBrush x:Key="LOscuro2"   Color="{DynamicResource LetraOscuro}"/>
-        <SolidColorBrush x:Key="BarraBrush" Color="{DynamicResource BarraColor}"/>
-        <SolidColorBrush x:Key="AcentoBrush" Color="{DynamicResource AcentoColor}"/>
-        <SolidColorBrush x:Key="NavTextColor" Color="{DynamicResource NavColor}"/>
-        <SolidColorBrush x:Key="SectionLabelColor" Color="#7AAAC8"/>
-        <SolidColorBrush x:Key="SeparatorColor"    Color="#2A5A8A"/>
-
-        <Style x:Key="NavItemStyle" TargetType="Button">
+        Title="Dashboard" Height="800" Width="1280" Background="Transparent" WindowStartupLocation="CenterScreen">
+            <Window.Resources>
+                <Style x:Key="NavItemStyle" TargetType="Button">
             <Setter Property="Background"   Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor"       Value="Hand"/>
@@ -77,7 +43,7 @@
         </Style>
 
         <Style x:Key="SectionLabelStyle" TargetType="TextBlock">
-            <Setter Property="Foreground"  Value="{StaticResource SectionLabelColor}"/>
+            <Setter Property="Foreground"  Value="{DynamicResource SectionLabelColor}"/>
             <Setter Property="FontSize"    Value="11"/>
             <Setter Property="FontWeight"  Value="SemiBold"/>
             <Setter Property="Margin"      Value="30,20,0,8"/>
@@ -149,35 +115,40 @@
                                     <TextBlock Text="BajoCero" FontSize="20" FontWeight="Bold"
                                Foreground="White"/>
                                     <TextBlock Text="Panel de control" FontSize="12"
-                               Foreground="{StaticResource SectionLabelColor}"/>
+
+                               Foreground="{DynamicResource SectionLabelColor}"/>
                                 </StackPanel>
                             </StackPanel>
 
 
-                            <Border DockPanel.Dock="Top" Height="1" Margin="0,0,0,12" CornerRadius="0.5" Background="{StaticResource SeparatorColor}"/>
+                            <Border DockPanel.Dock="Top" Height="1" Margin="0,0,0,12" CornerRadius="0.5" Background="{DynamicResource SeparatorColor}"/>
 
 
                             <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
-                                <StackPanel>
-
+                                                                <StackPanel>
 
                                     <TextBlock Text="PRINCIPAL" Style="{StaticResource SectionLabelStyle}"/>
+
                                     <Button Style="{StaticResource NavItemStyle}" Click="Button_Click">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
-                                                <Rectangle Canvas.Left="0"  Canvas.Top="0"  Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="10" Canvas.Top="0"  Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="0"  Canvas.Top="10" Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="10" Canvas.Top="10" Width="8" Height="8" Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+
+
+
+
+                                                <Rectangle Canvas.Left="0"  Canvas.Top="0"  Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="10" Canvas.Top="0"  Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="0"  Canvas.Top="10" Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+                                                <Rectangle Canvas.Left="10" Canvas.Top="10" Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
                                             </Canvas>
-                                            <TextBlock Text="Dashboard" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Dashboard" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
 
 
-                                    <TextBlock Text="OPERACIONES" Style="{StaticResource SectionLabelStyle}"/>
 
 
                                     <Button Style="{StaticResource NavItemStyle}">
@@ -185,11 +156,14 @@
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
 
                                                 <Polygon Points="10,1 19,9 19,19 1,19 1,9"
-                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+
+                                         Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
                                                 <Rectangle Canvas.Left="7" Canvas.Top="12" Width="6" Height="7"
-                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+
+                                           Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
                                             </Canvas>
-                                            <TextBlock Text="Producción" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Producción" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -199,7 +173,8 @@
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
 
                                             </Canvas>
-                                            <TextBlock Text="Insumos" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Insumos" Foreground="{DynamicResource NavTextColor}"
                                                FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -209,18 +184,24 @@
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
                                                 <Rectangle Canvas.Left="1" Canvas.Top="1" Width="18" Height="18"
-                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+
+                                           Fill="Transparent" Stroke="{DynamicResource NavTextColor}"
                                            StrokeThickness="1.5" RadiusX="2" RadiusY="2"/>
                                                 <Rectangle Canvas.Left="5" Canvas.Top="7" Width="10" Height="2"
-                                           Fill="{StaticResource NavTextColor}"/>
+
+                                           Fill="{DynamicResource NavTextColor}"/>
                                                 <Ellipse Canvas.Left="3" Canvas.Top="6" Width="4" Height="4"
-                                         Fill="{StaticResource NavTextColor}"/>
+
+                                         Fill="{DynamicResource NavTextColor}"/>
                                                 <Rectangle Canvas.Left="5" Canvas.Top="12" Width="10" Height="2"
-                                           Fill="{StaticResource NavTextColor}"/>
+
+                                           Fill="{DynamicResource NavTextColor}"/>
                                                 <Ellipse Canvas.Left="3" Canvas.Top="11" Width="4" Height="4"
-                                         Fill="{StaticResource NavTextColor}"/>
+
+                                         Fill="{DynamicResource NavTextColor}"/>
                                             </Canvas>
-                                            <TextBlock Text="Inventario" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Inventario" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -231,16 +212,21 @@
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
 
                                                 <Rectangle Canvas.Left="1" Canvas.Top="5" Width="12" Height="10"
-                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+
+                                           Fill="Transparent" Stroke="{DynamicResource NavTextColor}"
                                            StrokeThickness="1.5" RadiusX="1" RadiusY="1"/>
                                                 <Polygon Points="13,8 19,8 19,15 13,15"
-                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+
+                                         Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
                                                 <Ellipse Canvas.Left="3"  Canvas.Top="14" Width="4" Height="4"
-                                         Fill="{StaticResource NavTextColor}"/>
+
+                                         Fill="{DynamicResource NavTextColor}"/>
                                                 <Ellipse Canvas.Left="14" Canvas.Top="14" Width="4" Height="4"
-                                         Fill="{StaticResource NavTextColor}"/>
+
+                                         Fill="{DynamicResource NavTextColor}"/>
                                             </Canvas>
-                                            <TextBlock Text="Distribución" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Distribución" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -250,13 +236,14 @@
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
                                                 <Ellipse Canvas.Left="6" Canvas.Top="1" Width="8" Height="8"
-                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
+
+                                         Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
                                                 <Path Data="M 1,19 Q 2,13 10,13 Q 18,13 19,19"
-                                      Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.5"/>
-                                                <Ellipse Canvas.Left="1" Canvas.Top="3" Width="6" Height="6"
-                                         Fill="Transparent" Stroke="{StaticResource NavTextColor}" StrokeThickness="1.2"/>
+
+                                      Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
+                                                                                                <Ellipse Canvas.Left="1" Canvas.Top="3" Width="6" Height="6" Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.2"/>
                                             </Canvas>
-                                            <TextBlock Text="Clientes" Foreground="{StaticResource NavTextColor}"
+                                            <TextBlock Text="Clientes" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -266,12 +253,15 @@
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
                                                 <Rectangle Canvas.Left="1" Canvas.Top="4" Width="18" Height="13"
-                                           Fill="Transparent" Stroke="{StaticResource NavTextColor}"
+
+                                           Fill="Transparent" Stroke="{DynamicResource NavTextColor}"
                                            StrokeThickness="1.5" RadiusX="2" RadiusY="2"/>
                                                 <Rectangle Canvas.Left="1" Canvas.Top="7" Width="18" Height="3"
-                                           Fill="{StaticResource NavTextColor}"/>
+
+                                           Fill="{DynamicResource NavTextColor}"/>
                                             </Canvas>
-                                            <TextBlock Text="Ventas y pagos" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Ventas y pagos" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -279,18 +269,21 @@
 
                                     <TextBlock Text="ANALISIS" Style="{StaticResource SectionLabelStyle}"/>
 
-
                                     <Button Style="{StaticResource NavItemStyle}">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
                                                 <Rectangle Canvas.Left="1"  Canvas.Top="12" Width="4" Height="7"
-                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+
+                                           Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
                                                 <Rectangle Canvas.Left="7"  Canvas.Top="8"  Width="4" Height="11"
-                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+
+                                           Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
                                                 <Rectangle Canvas.Left="13" Canvas.Top="4"  Width="4" Height="15"
-                                           Fill="{StaticResource NavTextColor}" RadiusX="1" RadiusY="1"/>
+
+                                           Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
                                             </Canvas>
-                                            <TextBlock Text="Reportes" Foreground="{StaticResource NavTextColor}"
+
+                                            <TextBlock Text="Reportes" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="15" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
