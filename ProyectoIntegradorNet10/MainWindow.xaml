@@ -186,6 +186,7 @@
                                      Height="44"
                                      Background="Transparent"
                                      Foreground="{DynamicResource LOscuro2}"
+                                     CaretBrush="{DynamicResource LOscuro2}"
                                      BorderThickness="0"
                                      Padding="16,12"
                                      FontSize="13"/>
@@ -199,6 +200,7 @@
                                          Height="44"
                                          Background="Transparent"
                                          Foreground="{DynamicResource LOscuro2}"
+                                         CaretBrush="{DynamicResource LOscuro2}"
                                          BorderThickness="0"
                                          Padding="16,12"
                                          FontSize="13"/>

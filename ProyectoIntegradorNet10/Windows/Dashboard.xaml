@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:ProyectoIntegradorNet10.Windows"
         mc:Ignorable="d"
         Title="Dashboard" Height="800" Width="1280" Background="Transparent" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" AllowsTransparency="True">
+        WindowStyle="None" AllowsTransparency="True"
+        WindowState="Maximized">
             <Window.Resources>
                 <Style x:Key="NavItemStyle" TargetType="Button">
             <Setter Property="Background"   Value="Transparent"/>
@@ -52,10 +53,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="Transparent" CornerRadius="20" Margin="12">
-        <Border.Effect>
-            <DropShadowEffect ShadowDepth="0" Opacity="0.15" BlurRadius="20"/>
-        </Border.Effect>
+    <Border Background="Transparent" CornerRadius="0" Margin="0">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
@@ -68,7 +66,7 @@
 
 
             <Border Grid.Column="0" Grid.RowSpan="2"
-            CornerRadius="20,0,0,20"
+            CornerRadius="0"
             Background="Transparent"
             Panel.ZIndex="1">
 
@@ -95,9 +93,8 @@
 
 
                         <Canvas Grid.Row="0" Grid.RowSpan="2" IsHitTestVisible="False">
-                            <Rectangle Width="260" Height="920" Fill="#0F5C8C" Opacity="0.3"/>
-                            <Ellipse Canvas.Left="-80" Canvas.Top="-80" Width="250" Height="250" Fill="#FFFFFF" Opacity="0.08"/>
-                            <Polygon Canvas.Right="-40" Canvas.Bottom="-40" Points="0,0 60,0 30,50" Fill="#FFFFFF" Opacity="0.05"/>
+                            <Ellipse Canvas.Left="30" Canvas.Top="30" Width="160" Height="160" Fill="#FFFFFF" Opacity="0.08"/>
+                            <Polygon Canvas.Right="30" Canvas.Bottom="30" Points="0,0 40,0 20,34" Fill="#FFFFFF" Opacity="0.05"/>
                         </Canvas>
 
                         <DockPanel Panel.ZIndex="1">
@@ -243,14 +240,29 @@
 
                                       Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
                                                                                                 <Ellipse Canvas.Left="1" Canvas.Top="3" Width="6" Height="6" Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.2"/>
-                                            </Canvas>
-                                            <TextBlock Text="Clientes" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="15" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Button>
+                                                                                            </Canvas>
+                                                                                            <TextBlock Text="Clientes" Foreground="{DynamicResource NavTextColor}"
+                                                                                                       FontSize="15" VerticalAlignment="Center"/>
+                                                                                        </StackPanel>
+                                                                                    </Button>
 
+                                                                                    <!-- Empleados -->
+                                                                                    <Button Style="{StaticResource NavItemStyle}" Click="NavEmpleados_Click">
+                                                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                                                                <Ellipse Canvas.Left="5" Canvas.Top="1" Width="10" Height="10"
+                                                                                                         Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
+                                                                                                <Path Data="M 2,19 Q 2,12 10,12 Q 18,12 18,19"
+                                                                                                      Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5"/>
+                                                                                                <Ellipse Canvas.Left="1" Canvas.Top="3" Width="6" Height="6"
+                                                                                                         Fill="Transparent" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.2"/>
+                                                                                            </Canvas>
+                                                                                            <TextBlock Text="Empleados" Foreground="{DynamicResource NavTextColor}"
+                                                                                                       FontSize="15" VerticalAlignment="Center"/>
+                                                                                        </StackPanel>
+                                                                                    </Button>
 
-                                    <Button Style="{StaticResource NavItemStyle}">
+                                                                                    <Button Style="{StaticResource NavItemStyle}">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <Canvas Width="20" Height="20" Margin="0,0,12,0">
                                                 <Rectangle Canvas.Left="1" Canvas.Top="4" Width="18" Height="13"
@@ -289,6 +301,22 @@
                                         </StackPanel>
                                     </Button>
 
+                                    <!-- Separator before logout -->
+                                    <Border Height="1" Margin="20,10,20,10" CornerRadius="0.5" Background="{DynamicResource SeparatorColor}"/>
+
+                                    <!-- Logout button -->
+                                    <Button Style="{StaticResource NavItemStyle}" Click="btnLogout_Click">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
+                                                <Path Data="M 3,3 L 17,17 M 17,3 L 3,17"
+                                                      Stroke="{DynamicResource NavTextColor}" StrokeThickness="2"
+                                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                            </Canvas>
+                                            <TextBlock Text="Cerrar sesión" Foreground="{DynamicResource NavTextColor}"
+                                                       FontSize="15" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+
                                 </StackPanel>
                             </ScrollViewer>
 
@@ -301,7 +329,7 @@
             <Border Grid.Column="1" Grid.Row="0"
             Background="{DynamicResource BarraBrush}"
             Height="62"
-            CornerRadius="0,20,0,0"
+            CornerRadius="0"
             Panel.ZIndex="1"
             MouseDown="TitleBar_MouseDown">
                 <Grid>
@@ -393,7 +421,7 @@
                     </StackPanel>
 
                     <Canvas IsHitTestVisible="False">
-                        <Ellipse Canvas.Right="-30" Canvas.Top="-30" Width="150" Height="150" Fill="#FFFFFF" Opacity="0.1"/>
+                        <Ellipse Canvas.Right="10" Canvas.Top="10" Width="80" Height="80" Fill="#FFFFFF" Opacity="0.1"/>
                     </Canvas>
                 </Grid>
             </Border>
@@ -401,15 +429,15 @@
 
             <Border Grid.Column="1" Grid.Row="1"
             Background="{DynamicResource FOscuro1}"
-            CornerRadius="0,0,20,0">
+            CornerRadius="0">
                 <Grid>
                     <Canvas IsHitTestVisible="False">
-                        <Rectangle Canvas.Right="-50" Canvas.Top="20" Width="300" Height="300" Fill="#3DAAD4" Opacity="0.06" RadiusX="30" RadiusY="30"/>
+                        <Rectangle Canvas.Right="30" Canvas.Top="30" Width="160" Height="160" Fill="#3DAAD4" Opacity="0.06" RadiusX="30" RadiusY="30"/>
                         <Polygon Canvas.Left="40" Canvas.Bottom="60" Points="0,0 40,0 20,35" Fill="#1A4A7A" Opacity="0.04"/>
                     </Canvas>
                 </Grid>
             </Border>
-            <Border CornerRadius="0,10,10,0" Grid.Column="1" Grid.Row="1" Background="Transparent">
+            <Border CornerRadius="0" Grid.Column="1" Grid.Row="1" Background="Transparent">
                 <ContentControl x:Name="Contenido" Margin="0"></ContentControl>
             </Border>
         </Grid>

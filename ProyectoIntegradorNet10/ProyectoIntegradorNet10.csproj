@@ -9,15 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UserControls\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="Images\*.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="10.0.2" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ProyectoIntegradorNet10.Services;
+using ProyectoIntegradorNet10.UserControls;
 namespace ProyectoIntegradorNet10.Windows
 {
     public partial class Dashboard : Window
@@ -47,6 +48,13 @@ namespace ProyectoIntegradorNet10.Windows
             MessageBox.Show("Dashboard button clicked!");
         }
 
+        // --- Navigation ---
+
+        private void NavEmpleados_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new EmpleadosUC();
+        }
+
         // --- Window control buttons ---
 
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
@@ -64,6 +72,15 @@ namespace ProyectoIntegradorNet10.Windows
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        // --- Logout: go back to login ---
+
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow login = new MainWindow();
+            login.Show();
+            this.Close();
         }
 
         // --- Window dragging (since WindowStyle="None") ---
