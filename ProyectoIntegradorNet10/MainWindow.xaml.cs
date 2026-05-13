@@ -8,9 +8,6 @@ namespace ProyectoIntegradorNet10
 {
     public partial class MainWindow : Window
     {
-        // TODO: Replace with PostgreSQL authentication later
-        // private NpgsqlConnection? conex = DatabaseConnection.GetConnection();
-
         int intentos = 3;
 
         public MainWindow()
@@ -39,9 +36,9 @@ namespace ProyectoIntegradorNet10
             AplicarModo();
         }
 
-        private void btnInicio_Click(object sender, RoutedEventArgs e)
+        private async void btnInicio_Click(object sender, RoutedEventArgs e)
         {
-            string usuario = txtUsuario.Text;
+            string usuario = txtUsuario.Text.Trim();
             string pass = passContrasenia.Password;
 
             if (string.IsNullOrEmpty(usuario) || string.IsNullOrEmpty(pass))
@@ -50,41 +47,31 @@ namespace ProyectoIntegradorNet10
                 return;
             }
 
-            // HARDCODED CREDENTIALS FOR DEVELOPMENT:
-            //   admin / admin   -> administrador
-            //   oper / oper     -> operario
-            if (usuario == "admin" && pass == "admin")
+            try
             {
-                MessageBox.Show("Bienvenido Administrador");
-                AbrirDashboard(usuario, "administrador");
-            }
-            else if (usuario == "oper" && pass == "oper")
-            {
-                MessageBox.Show("Bienvenido Operario");
-                AbrirDashboard(usuario, "operario");
-            }
-            else
-            {
-                intentos--;
-                MessageBox.Show("Usuario o contraseña incorrectos.\nIntentos restantes: " + intentos);
+                var empleado = await EmpleadoService.LoginAsync(usuario, pass);
 
-                if (intentos == 0)
+                if (empleado != null)
                 {
-                    MessageBox.Show("Intentos máximos alcanzados");
-                    Application.Current.Shutdown();
+                    MessageBox.Show($"Bienvenido {empleado.Nombre} {empleado.Apellido}");
+                    AbrirDashboard(empleado.Nombre, "usuario");
+                }
+                else
+                {
+                    intentos--;
+                    MessageBox.Show("Usuario o contraseña incorrectos.\nIntentos restantes: " + intentos);
+
+                    if (intentos == 0)
+                    {
+                        MessageBox.Show("Intentos máximos alcanzados");
+                        Application.Current.Shutdown();
+                    }
                 }
             }
-
-            // ---------------------------------------------------------------
-            // ORIGINAL SQL SERVER CODE (commented out for PostgreSQL migration):
-            // try
-            // {
-            //     conex.Close();
-            //     conex.Open();
-            //     using (SqlCommand command = new SqlCommand(...))
-            //     { ... }
-            // }
-            // catch (Exception ex) { ... }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error de conexión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void AbrirDashboard(string usuario, string rol)

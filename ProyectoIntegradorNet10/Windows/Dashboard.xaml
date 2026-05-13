@@ -373,7 +373,7 @@
                             <Button Name="btnModo"
                             Content="☀ Modo"
                             Background="Transparent"
-                            Foreground="{DynamicResource NavTextColor}"
+                            Foreground="White"
                             BorderThickness="0"
                             FontSize="13"
                             FontWeight="SemiBold"

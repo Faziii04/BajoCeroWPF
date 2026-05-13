@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Npgsql;
 using ProyectoIntegradorNet10.Models;
 
@@ -11,68 +12,68 @@ namespace ProyectoIntegradorNet10.Services
 
         // ────────────────────────────── EMPLEADOS ──────────────────────────────
 
-        public static List<EmpleadoModel> GetAllEmpleados()
+        public static async Task<List<EmpleadoModel>> GetAllEmpleados()
         {
             var list = new List<EmpleadoModel>();
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "SELECT ci, nombre, apellido, direccion, correo, area, telefono, " +
                 "usuario, contrasena, url, turno FROM empleado ORDER BY nombre, apellido", conn);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                list.Add(MapEmpleado(reader));
+                list.Add(await MapEmpleado(reader));
             }
             return list;
         }
 
-        public static EmpleadoModel? GetEmpleadoByCi(string ci)
+        public static async Task<EmpleadoModel?> GetEmpleadoByCi(string ci)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "SELECT ci, nombre, apellido, direccion, correo, area, telefono, " +
                 "usuario, contrasena, url, turno FROM empleado WHERE ci = @ci", conn);
             cmd.Parameters.AddWithValue("@ci", ci);
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-                return MapEmpleado(reader);
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+                return await MapEmpleado(reader);
             return null;
         }
 
-        public static void InsertEmpleado(EmpleadoModel emp)
+        public static async Task InsertEmpleado(EmpleadoModel emp)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "INSERT INTO empleado (ci, nombre, apellido, direccion, correo, area, telefono, " +
                 "usuario, contrasena, url, turno) " +
                 "VALUES (@ci, @nombre, @apellido, @direccion, @correo, @area, @telefono, " +
                 "@usuario, @contrasena, @url, @turno)", conn);
             AddParameters(cmd, emp);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
-        public static void UpdateEmpleado(EmpleadoModel emp)
+        public static async Task UpdateEmpleado(EmpleadoModel emp)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE empleado SET nombre = @nombre, apellido = @apellido, " +
                 "direccion = @direccion, correo = @correo, area = @area, telefono = @telefono, " +
                 "usuario = @usuario, contrasena = @contrasena, url = @url, turno = @turno " +
                 "WHERE ci = @ci", conn);
             AddParameters(cmd, emp);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
-        public static void DeleteEmpleado(string ci)
+        public static async Task DeleteEmpleado(string ci)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
 
             // Delete related empleado_rol first
             using (var delRoles = new NpgsqlCommand(
                 "DELETE FROM empleado_rol WHERE empleado_ci = @ci", conn))
             {
                 delRoles.Parameters.AddWithValue("@ci", ci);
-                delRoles.ExecuteNonQuery();
+                await delRoles.ExecuteNonQueryAsync();
             }
 
             // Delete repartidor if exists
@@ -80,20 +81,20 @@ namespace ProyectoIntegradorNet10.Services
                 "DELETE FROM repartidor WHERE empleado_ci = @ci", conn))
             {
                 delRepartidor.Parameters.AddWithValue("@ci", ci);
-                delRepartidor.ExecuteNonQuery();
+                await delRepartidor.ExecuteNonQueryAsync();
             }
 
             // Delete the employee
             using var cmd = new NpgsqlCommand(
                 "DELETE FROM empleado WHERE ci = @ci", conn);
             cmd.Parameters.AddWithValue("@ci", ci);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
-        public static List<EmpleadoModel> SearchEmpleados(string term)
+        public static async Task<List<EmpleadoModel>> SearchEmpleados(string term)
         {
             var list = new List<EmpleadoModel>();
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "SELECT ci, nombre, apellido, direccion, correo, area, telefono, " +
                 "usuario, contrasena, url, turno FROM empleado " +
@@ -101,24 +102,45 @@ namespace ProyectoIntegradorNet10.Services
                 "OR LOWER(ci) LIKE @term OR LOWER(usuario) LIKE @term " +
                 "ORDER BY nombre, apellido", conn);
             cmd.Parameters.AddWithValue("@term", $"%{term.ToLowerInvariant()}%");
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                list.Add(MapEmpleado(reader));
+                list.Add(await MapEmpleado(reader));
             }
             return list;
         }
 
+        // ────────────────────────────── AUTHENTICATION ──────────────────────────────
+
+        /// <summary>
+        /// Authenticates a user by username and password against the empleado table.
+        /// Returns the EmpleadoModel if credentials match, null otherwise.
+        /// </summary>
+        public static async Task<EmpleadoModel?> LoginAsync(string usuario, string contrasena)
+        {
+            using var conn = await DS.OpenConnectionAsync();
+            using var cmd = new NpgsqlCommand(
+                "SELECT ci, nombre, apellido, direccion, correo, area, telefono, " +
+                "usuario, contrasena, url, turno FROM empleado " +
+                "WHERE usuario = @usuario AND contrasena = @contrasena", conn);
+            cmd.Parameters.AddWithValue("@usuario", usuario);
+            cmd.Parameters.AddWithValue("@contrasena", contrasena);
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+                return await MapEmpleado(reader);
+            return null;
+        }
+
         // ────────────────────────────── ROLES ──────────────────────────────
 
-        public static List<RolModel> GetAllRoles()
+        public static async Task<List<RolModel>> GetAllRoles()
         {
             var list = new List<RolModel>();
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "SELECT id, nombre, descripcion FROM rol ORDER BY nombre", conn);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
                 list.Add(new RolModel
                 {
@@ -130,10 +152,10 @@ namespace ProyectoIntegradorNet10.Services
             return list;
         }
 
-        public static List<EmpleadoRolModel> GetRolesByEmpleado(string ci)
+        public static async Task<List<EmpleadoRolModel>> GetRolesByEmpleado(string ci)
         {
             var list = new List<EmpleadoRolModel>();
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "SELECT er.empleado_ci, er.rol_id, er.estado, er.fecha_hora_asigacion, " +
                 "er.fecha_hora_fin, r.nombre " +
@@ -142,8 +164,8 @@ namespace ProyectoIntegradorNet10.Services
                 "WHERE er.empleado_ci = @ci " +
                 "ORDER BY r.nombre", conn);
             cmd.Parameters.AddWithValue("@ci", ci);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
                 list.Add(new EmpleadoRolModel
                 {
@@ -158,9 +180,9 @@ namespace ProyectoIntegradorNet10.Services
             return list;
         }
 
-        public static void AssignRoleToEmpleado(string ci, int rolId)
+        public static async Task AssignRoleToEmpleado(string ci, int rolId)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "INSERT INTO empleado_rol (empleado_ci, rol_id, estado, fecha_hora_asigacion) " +
                 "VALUES (@ci, @rolId, 'Activo', @now) " +
@@ -169,24 +191,24 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@ci", ci);
             cmd.Parameters.AddWithValue("@rolId", rolId);
             cmd.Parameters.AddWithValue("@now", DateTime.Now);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
-        public static void RemoveRoleFromEmpleado(string ci, int rolId)
+        public static async Task RemoveRoleFromEmpleado(string ci, int rolId)
         {
-            using var conn = DS.OpenConnection();
+            using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE empleado_rol SET estado = 'Inactivo', fecha_hora_fin = @now " +
                 "WHERE empleado_ci = @ci AND rol_id = @rolId", conn);
             cmd.Parameters.AddWithValue("@ci", ci);
             cmd.Parameters.AddWithValue("@rolId", rolId);
             cmd.Parameters.AddWithValue("@now", DateTime.Now);
-            cmd.ExecuteNonQuery();
+            await cmd.ExecuteNonQueryAsync();
         }
 
         // ────────────────────────────── HELPERS ──────────────────────────────
 
-        private static EmpleadoModel MapEmpleado(NpgsqlDataReader reader)
+        private static async Task<EmpleadoModel> MapEmpleado(NpgsqlDataReader reader)
         {
             return new EmpleadoModel
             {

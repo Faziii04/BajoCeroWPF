@@ -25,17 +25,25 @@ namespace ProyectoIntegradorNet10.UserControls
         public EmpleadosUC()
         {
             InitializeComponent();
-            LoadEmpleados();
-            LoadRoles();
+            this.Loaded += EmpleadosUC_Loaded;
         }
 
         // ────────────────────────────── DATA LOADING ──────────────────────────────
 
-        private void LoadEmpleados()
+        private async void EmpleadosUC_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Unhook event handler to prevent multiple executions if control reloads
+            this.Loaded -= EmpleadosUC_Loaded;
+
+            // Run both data loads concurrently to speed up screen initialization
+            await Task.WhenAll(LoadEmpleados(), LoadRoles());
+        }
+
+        private async Task LoadEmpleados()
         {
             try
             {
-                var empleados = EmpleadoService.GetAllEmpleados();
+                var empleados = await EmpleadoService.GetAllEmpleados();
                 dgEmpleados.ItemsSource = empleados;
                 txtEmptyState.Visibility = empleados.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
@@ -45,11 +53,11 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        private void LoadRoles()
+        private async Task LoadRoles()
         {
             try
             {
-                var roles = EmpleadoService.GetAllRoles();
+                var roles = await EmpleadoService.GetAllRoles();
                 _allRoles = roles.Select(r => new RolCheckItem
                 {
                     Id = r.Id,
@@ -64,11 +72,11 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        private void LoadRolesForEmpleado(string ci)
+        private async Task LoadRolesForEmpleado(string ci)
         {
             try
             {
-                var assignedRoles = EmpleadoService.GetRolesByEmpleado(ci);
+                var assignedRoles = await EmpleadoService.GetRolesByEmpleado(ci);
                 var assignedIds = new HashSet<int>(assignedRoles
                     .Where(r => r.Estado == "Activo")
                     .Select(r => r.RolId));
@@ -134,7 +142,7 @@ namespace ProyectoIntegradorNet10.UserControls
             txtCi.IsEnabled = false;
             btnEliminar.IsEnabled = true;
 
-            LoadRolesForEmpleado(emp.Ci);
+            _ = LoadRolesForEmpleado(emp.Ci);
         }
 
         private EmpleadoModel? GetFormData()
@@ -210,18 +218,18 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        private async void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
             string term = txtBuscar.Text.Trim();
             if (string.IsNullOrEmpty(term))
             {
-                LoadEmpleados();
+                await LoadEmpleados();
                 return;
             }
 
             try
             {
-                var results = EmpleadoService.SearchEmpleados(term);
+                var results = await EmpleadoService.SearchEmpleados(term);
                 dgEmpleados.ItemsSource = results;
                 txtEmptyState.Visibility = results.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
@@ -237,15 +245,15 @@ namespace ProyectoIntegradorNet10.UserControls
             txtCi.Focus();
         }
 
-        private void BtnRefrescar_Click(object sender, RoutedEventArgs e)
+        private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)
         {
             txtBuscar.Clear();
-            LoadEmpleados();
-            LoadRoles();
+            await LoadEmpleados();
+            await LoadRoles();
             ClearForm();
         }
 
-        private void BtnGuardar_Click(object sender, RoutedEventArgs e)
+        private async void BtnGuardar_Click(object sender, RoutedEventArgs e)
         {
             var data = GetFormData();
             if (data == null) return;
@@ -255,20 +263,20 @@ namespace ProyectoIntegradorNet10.UserControls
                 if (_isEditing)
                 {
                     // Update existing
-                    EmpleadoService.UpdateEmpleado(data);
+                    await EmpleadoService.UpdateEmpleado(data);
                     MessageBox.Show("Empleado actualizado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
                     // Insert new
-                    EmpleadoService.InsertEmpleado(data);
+                    await EmpleadoService.InsertEmpleado(data);
                     MessageBox.Show("Empleado creado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 // Save role assignments
-                SaveRoleAssignments(data.Ci);
+                await SaveRoleAssignments(data.Ci);
 
-                LoadEmpleados();
+                await LoadEmpleados();
                 ClearForm();
             }
             catch (Exception ex)
@@ -277,7 +285,7 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        private void BtnEliminar_Click(object sender, RoutedEventArgs e)
+        private async void BtnEliminar_Click(object sender, RoutedEventArgs e)
         {
             if (_editingCi == null) return;
 
@@ -291,9 +299,9 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
-                EmpleadoService.DeleteEmpleado(_editingCi);
+                await EmpleadoService.DeleteEmpleado(_editingCi);
                 MessageBox.Show("Empleado eliminado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                LoadEmpleados();
+                await LoadEmpleados();
                 ClearForm();
             }
             catch (Exception ex)
@@ -315,11 +323,11 @@ namespace ProyectoIntegradorNet10.UserControls
 
         // ────────────────────────────── ROLE SAVING ──────────────────────────────
 
-        private void SaveRoleAssignments(string ci)
+        private async Task SaveRoleAssignments(string ci)
         {
             try
             {
-                var currentlyAssigned = EmpleadoService.GetRolesByEmpleado(ci)
+                var currentlyAssigned = (await EmpleadoService.GetRolesByEmpleado(ci))
                     .Where(r => r.Estado == "Activo")
                     .Select(r => r.RolId)
                     .ToHashSet();
@@ -334,7 +342,7 @@ namespace ProyectoIntegradorNet10.UserControls
                 {
                     if (!currentlyAssigned.Contains(roleId))
                     {
-                        EmpleadoService.AssignRoleToEmpleado(ci, roleId);
+                        await EmpleadoService.AssignRoleToEmpleado(ci, roleId);
                     }
                 }
 
@@ -343,7 +351,7 @@ namespace ProyectoIntegradorNet10.UserControls
                 {
                     if (!desiredAssigned.Contains(roleId))
                     {
-                        EmpleadoService.RemoveRoleFromEmpleado(ci, roleId);
+                        await EmpleadoService.RemoveRoleFromEmpleado(ci, roleId);
                     }
                 }
             }

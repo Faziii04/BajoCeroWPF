@@ -7,7 +7,7 @@
     <Color x:Key="LetraOscuro">#1F4E6B</Color>
     <Color x:Key="BarraColor">#2DAAE1</Color>
     <Color x:Key="AcentoColor">#1A4A7A</Color>
-    <Color x:Key="NavColor">#FFFFFF</Color>
+    <Color x:Key="NavColor">#1F4E6B</Color>
 
     <!-- DataGrid-specific colors -->
     <Color x:Key="GridRowAltColor">#E8EDF2</Color>
@@ -25,7 +25,7 @@
     <SolidColorBrush x:Key="AcentoBrush" Color="{DynamicResource AcentoColor}"/>
     <SolidColorBrush x:Key="NavTextColor" Color="{DynamicResource NavColor}"/>
     <SolidColorBrush x:Key="SectionLabelColor" Color="#7AAAC8"/>
-    <SolidColorBrush x:Key="SeparatorColor" Color="#2A5A8A"/>
+    <SolidColorBrush x:Key="SeparatorColor" Color="#C0D0E0"/>
 
     <SolidColorBrush x:Key="GridRowAltBrush" Color="{DynamicResource GridRowAltColor}"/>
     <SolidColorBrush x:Key="GridRowHoverBrush" Color="{DynamicResource GridRowHoverColor}"/>

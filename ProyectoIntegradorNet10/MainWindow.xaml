@@ -36,23 +36,23 @@
 
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#2DAAE1"/>
+            <Setter Property="Foreground" Value="{DynamicResource AcentoBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="Transparent" BorderBrush="#2DAAE1" BorderThickness="1.5" CornerRadius="16" Height="40" SnapsToDevicePixels="True">
+                        <Border x:Name="border" Background="Transparent" BorderBrush="{DynamicResource AcentoBrush}" BorderThickness="1.5" CornerRadius="16" Height="40" SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#2DAAE1"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AcentoBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#1E7FA8"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -166,7 +166,7 @@
                     <StackPanel Margin="30,30,30,10" Panel.ZIndex="1">
                         <Border Height="4" Background="#2DAAE1" CornerRadius="8" Margin="0,0,100,20"/>
                         <TextBlock Text="Bienvenido" FontFamily="Apple Garamond" FontSize="28" Foreground="{DynamicResource LOscuro2}" FontWeight="Bold"/>
-                        <TextBlock Text="Ingresa tus credenciales para continuar" FontFamily="Apple Garamond" FontSize="14" Foreground="{DynamicResource LOscuro2}" Margin="0,5,0,20"/>
+                        <TextBlock Text="Ingresa tus credenciales para continuar" FontFamily="Apple Garamond" FontSize="14" Foreground="{DynamicResource LOscuro2}" Margin="0,5,0,20" Opacity="0.7"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Margin="30" Panel.ZIndex="1">
@@ -181,7 +181,7 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Usuario" FontSize="13" Foreground="{DynamicResource LOscuro2}" Margin="0,0,0,8" FontWeight="SemiBold"/>
-                                <Border BorderBrush="#DDD" BorderThickness="1.5" CornerRadius="14" Background="{DynamicResource POscuro2}">
+                                <Border BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1.5" CornerRadius="14" Background="{DynamicResource POscuro2}">
                                     <TextBox Name="txtUsuario"
                                      Height="44"
                                      Background="Transparent"
@@ -195,7 +195,7 @@
 
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Contraseña" FontSize="13" Foreground="{DynamicResource LOscuro2}" Margin="0,0,0,8" FontWeight="SemiBold"/>
-                                <Border BorderBrush="#DDD" BorderThickness="1.5" CornerRadius="14" Background="{DynamicResource POscuro2}">
+                                <Border BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1.5" CornerRadius="14" Background="{DynamicResource POscuro2}">
                                     <PasswordBox Name="passContrasenia"
                                          Height="44"
                                          Background="Transparent"
@@ -215,7 +215,7 @@
                             </Grid.ColumnDefinitions>
 
                             <CheckBox Content="Recordar sesión" VerticalAlignment="Center" Foreground="{DynamicResource LOscuro2}" FontSize="12"/>
-                            <TextBlock Grid.Column="1" Text="¿Olvidaste tu contraseña?" Foreground="#2DAAE1" HorizontalAlignment="Right" Cursor="Hand" FontSize="12">
+                            <TextBlock Grid.Column="1" Text="¿Olvidaste tu contraseña?" Foreground="{DynamicResource AcentoBrush}" HorizontalAlignment="Right" Cursor="Hand" FontSize="12">
                                 <TextBlock.TextDecorations>
                                     <TextDecoration Location="Underline"/>
                                 </TextBlock.TextDecorations>
@@ -244,9 +244,10 @@
                             Click="btnprueba_Click"/>
                         </Grid>
 
-                        <TextBlock Text="Sistema multiplataforma · Modo claro"
-                           Foreground="#A0AAB5"
+                        <TextBlock Text="Sistema multiplataforma"
+                           Foreground="{DynamicResource LOscuro2}"
                            FontSize="12"
+                           Opacity="0.5"
                            HorizontalAlignment="Center"
                            Margin="0,10,0,0"/>
                         <Button Name="btnModo"
