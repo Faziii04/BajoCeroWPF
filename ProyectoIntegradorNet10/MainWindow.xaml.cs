@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input;
 using ProyectoIntegradorNet10.Services;
 using ProyectoIntegradorNet10.Windows;
 
@@ -98,6 +99,26 @@ namespace ProyectoIntegradorNet10
         private void btnprueba_Click(object sender, RoutedEventArgs e)
         {
             AbrirDashboard("Admin", "administrador");
+        }
+
+        // --- Window control buttons ---
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        // --- Window dragging (since WindowStyle="None") ---
+
+        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                DragMove();
         }
     }
 }

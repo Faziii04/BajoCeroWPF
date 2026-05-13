@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProyectoIntegradorNet10"
         mc:Ignorable="d"
-        Title="Inicio de sesión" Height="560" Width="900" Background="Transparent" WindowStartupLocation="CenterScreen">
+        Title="Inicio de sesión" Height="560" Width="900" Background="Transparent" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True">
         <Window.Resources>
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -61,7 +62,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="White" CornerRadius="30" Margin="10">
+    <Border Background="Transparent" CornerRadius="30" Margin="10">
         <Border.Effect>
             <DropShadowEffect ShadowDepth="0" Opacity="0.12" BlurRadius="12"/>
         </Border.Effect>
@@ -120,7 +121,8 @@
             </Border>
 
 
-            <Border Grid.Column="1" Background="{DynamicResource FOscuro1}" CornerRadius="0,24,24,0">
+            <Border Grid.Column="1" Background="{DynamicResource FOscuro1}" CornerRadius="0,24,24,0"
+                    MouseDown="TitleBar_MouseDown">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -132,6 +134,34 @@
                         <Rectangle Canvas.Right="0" Canvas.Top="0" Width="250" Height="250" Fill="#2DAAE1" Opacity="0.08" RadiusX="50" RadiusY="50"/>
                         <Polygon Canvas.Left="20" Canvas.Bottom="30" Points="0,0 30,0 15,25" Fill="#0F5C8C" Opacity="0.05"/>
                     </Canvas>
+
+                    <!-- Window control buttons (top-right) -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Panel.ZIndex="10">
+                        <Border Width="34" Height="34" CornerRadius="8" Background="Transparent" Margin="2,0">
+                            <Button Name="btnMinimize"
+                            Content="─"
+                            Background="Transparent"
+                            Foreground="{DynamicResource LOscuro2}"
+                            BorderThickness="0"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Click="btnMinimize_Click"
+                            ToolTip="Minimize"/>
+                        </Border>
+                        <Border Width="34" Height="34" CornerRadius="8" Background="Transparent" Margin="2,0">
+                            <Button Name="btnClose"
+                            Content="✕"
+                            Background="Transparent"
+                            Foreground="{DynamicResource LOscuro2}"
+                            BorderThickness="0"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Click="btnClose_Click"
+                            ToolTip="Close"/>
+                        </Border>
+                    </StackPanel>
 
                     <StackPanel Margin="30,30,30,10" Panel.ZIndex="1">
                         <Border Height="4" Background="#2DAAE1" CornerRadius="8" Margin="0,0,100,20"/>
