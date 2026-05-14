@@ -50,9 +50,84 @@ namespace ProyectoIntegradorNet10.Windows
 
         // --- Navigation ---
 
+        private void NavProductos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new ProductosUC();
+        }
+
+        private void NavProduccion_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new ProduccionUC();
+        }
+
+        private void NavInsumos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new InsumosUC();
+        }
+
+        private void NavProveedores_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new ProveedoresUC();
+        }
+
+        private void NavOrdenesCompra_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new OrdenesCompraUC();
+        }
+
+        private void NavInventario_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new InventarioUC();
+        }
+
+        private void NavDistribucion_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new DistribucionUC();
+        }
+
+        private void NavClientes_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new ClientesUC();
+        }
+
+        private void NavPrestamos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new PrestamosUC();
+        }
+
         private void NavEmpleados_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new EmpleadosUC();
+        }
+
+        private void NavVentasPagos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new VentasPagosUC();
+        }
+
+        private void NavFacturacion_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new FacturacionUC();
+        }
+
+        private void NavReportes_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new ReportesUC();
+        }
+
+        private void NavRolesPermisos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new RolesPermisosUC();
+        }
+
+        private void NavVehiculos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new VehiculosUC();
+        }
+
+        private void NavDepositos_Click(object sender, RoutedEventArgs e)
+        {
+            Contenido.Content = new DepositosUC();
         }
 
         // --- Window control buttons ---
