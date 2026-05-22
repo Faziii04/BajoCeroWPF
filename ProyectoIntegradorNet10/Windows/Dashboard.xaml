@@ -20,6 +20,8 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bd"
                             Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="12"
                             Margin="10,3">
                             <ContentPresenter HorizontalAlignment="Left"
@@ -28,7 +30,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2A5A8A"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
                                 <Setter TargetName="Bd" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect ShadowDepth="0" Opacity="0.3" BlurRadius="8"/>
@@ -36,7 +38,7 @@
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#3DAAD4"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -126,25 +128,6 @@
                                                                 <StackPanel>
 
                                     <TextBlock Text="PRINCIPAL" Style="{StaticResource SectionLabelStyle}"/>
-
-                                    <Button x:Name="navDashboard" Style="{StaticResource NavItemStyle}" Click="Button_Click">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-
-                                            <Canvas Width="20" Height="20" Margin="0,0,12,0">
-
-
-
-
-                                                <Rectangle Canvas.Left="0"  Canvas.Top="0"  Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="10" Canvas.Top="0"  Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="0"  Canvas.Top="10" Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                                <Rectangle Canvas.Left="10" Canvas.Top="10" Width="8" Height="8" Fill="{DynamicResource NavTextColor}" RadiusX="1" RadiusY="1"/>
-                                            </Canvas>
-
-                                            <TextBlock Text="Dashboard" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Button>
 
                                     <!-- Productos -->
                                     <Button x:Name="navProductos" Style="{StaticResource NavItemStyle}" Click="NavProductos_Click">

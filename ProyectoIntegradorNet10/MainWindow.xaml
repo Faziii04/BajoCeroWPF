@@ -36,14 +36,14 @@
 
         <Style x:Key="SecondaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource AcentoBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource LOscuro2}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="Transparent" BorderBrush="{DynamicResource AcentoBrush}" BorderThickness="1.5" CornerRadius="16" Height="40" SnapsToDevicePixels="True">
+                        <Border x:Name="border" Background="#20FFFFFF" BorderBrush="{DynamicResource LOscuro2}" BorderThickness="1.5" CornerRadius="16" Height="40" SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>

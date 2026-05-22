@@ -99,6 +99,7 @@ Services/
  GlobalVars.cs
  InventarioService.cs
  ProductosService.cs
+ ReportesService.cs
  RolesPermisosService.cs
  VehiculoService.cs
  VentasService.cs
@@ -331,9 +332,16 @@ Windows/Dashboard.xaml.cs
  UIAutomationTypes.dll
  WindowsBase.dll
 <NUGET>/
+ closedxml.parser/2.0.0/lib/netstandard2.1/ClosedXML.Parser.dll
+ closedxml/0.105.0/lib/netstandard2.1/ClosedXML.dll
+ documentformat.openxml.framework/3.1.1/lib/net8.0/DocumentFormat.OpenXml.Framework.dll
+ documentformat.openxml/3.1.1/lib/net8.0/DocumentFormat.OpenXml.dll
+ excelnumberformat/1.1.0/lib/netstandard2.0/ExcelNumberFormat.dll
  microsoft.extensions.dependencyinjection.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
  microsoft.extensions.logging.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
  npgsql/9.0.3/lib/net8.0/Npgsql.dll
+ rbush.signed/4.0.0/lib/net8.0/RBush.dll
+ sixlabors.fonts/1.0.0/lib/netcoreapp3.1/SixLabors.Fonts.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.8/analyzers/dotnet/cs/

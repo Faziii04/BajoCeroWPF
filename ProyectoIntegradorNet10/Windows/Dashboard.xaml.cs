@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ProyectoIntegradorNet10.Services;
 using ProyectoIntegradorNet10.UserControls;
 namespace ProyectoIntegradorNet10.Windows
@@ -23,6 +25,11 @@ namespace ProyectoIntegradorNet10.Windows
         /// Set of permission names the current user has (e.g. "VerProductos", "VerInsumos").
         /// </summary>
         public HashSet<string> Permisos { get; set; } = new();
+
+        /// <summary>
+        /// Tracks the currently selected nav button for the active visual state.
+        /// </summary>
+        private Button? _activeNavButton;
 
         public Dashboard()
         {
@@ -106,15 +113,30 @@ namespace ProyectoIntegradorNet10.Windows
             }
         }
 
+        /// <summary>
+        /// Highlights the given button as the active nav tab and clears the previous one.
+        /// </summary>
+        private void SetActiveNav(Button button)
+        {
+            // Reset previous active button
+            if (_activeNavButton != null && _activeNavButton != button)
+            {
+                _activeNavButton.ClearValue(BackgroundProperty);
+                _activeNavButton.ClearValue(BorderBrushProperty);
+                _activeNavButton.ClearValue(BorderThicknessProperty);
+            }
+
+            // Set new active button using theme-aware resources
+            _activeNavButton = button;
+            _activeNavButton.Background = (Brush)FindResource("GridRowSelectedBrush");
+            _activeNavButton.BorderBrush = (Brush)FindResource("NavTextColor");
+            _activeNavButton.BorderThickness = new Thickness(3, 0, 0, 0);
+        }
+
         private void btnModo_Click(object sender, RoutedEventArgs e)
         {
             GlobalVars.SwitchTheme();
             AplicarModo();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Dashboard button clicked!");
         }
 
         // --- Navigation ---
@@ -122,81 +144,97 @@ namespace ProyectoIntegradorNet10.Windows
         private void NavProductos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new ProductosUC();
+            SetActiveNav(navProductos);
         }
 
         private void NavProduccion_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new ProduccionUC();
+            SetActiveNav(navProduccion);
         }
 
         private void NavInsumos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new InsumosUC();
+            SetActiveNav(navInsumos);
         }
 
         private void NavProveedores_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new ProveedoresUC();
+            SetActiveNav(navProveedores);
         }
 
         private void NavOrdenesCompra_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new OrdenesCompraUC();
+            SetActiveNav(navOrdenesCompra);
         }
 
         private void NavInventario_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new InventarioUC();
+            SetActiveNav(navInventario);
         }
 
         private void NavDistribucion_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new DistribucionUC();
+            SetActiveNav(navDistribucion);
         }
 
         private void NavClientes_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new ClientesUC();
+            SetActiveNav(navClientes);
         }
 
         private void NavPrestamos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new PrestamosUC();
+            SetActiveNav(navPrestamos);
         }
 
         private void NavEmpleados_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new EmpleadosUC();
+            SetActiveNav(navEmpleados);
         }
 
         private void NavVentasPagos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new VentasPagosUC();
+            SetActiveNav(navVentasPagos);
         }
 
         private void NavFacturacion_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new FacturacionUC();
+            SetActiveNav(navFacturacion);
         }
 
         private void NavReportes_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new ReportesUC();
+            SetActiveNav(navReportes);
         }
 
         private void NavRolesPermisos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new RolesPermisosUC();
+            SetActiveNav(navRolesPermisos);
         }
 
         private void NavVehiculos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new VehiculosUC();
+            SetActiveNav(navVehiculos);
         }
 
         private void NavDepositos_Click(object sender, RoutedEventArgs e)
         {
             Contenido.Content = new DepositosUC();
+            SetActiveNav(navDepositos);
         }
 
         // --- Window control buttons ---
