@@ -255,6 +255,8 @@ namespace ProyectoIntegradorNet10.UserControls
                 txtPagosEmpty.Visibility = Visibility.Visible;
                 btnGenerarPagos.Visibility = Visibility.Collapsed;
                 btnMarcarPagado.Visibility = Visibility.Collapsed;
+                btnGenerarFactura.Visibility = Visibility.Collapsed;
+                txtFacturaInfo.Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -273,6 +275,23 @@ namespace ProyectoIntegradorNet10.UserControls
 
                 // Check if sum of Pagado pagos >= total → show "Marcar como Pagado" button
                 CheckPagoSum();
+
+                // Check if factura already exists for this venta
+                var existingFactura = await FacturasService.GetByVentaId(_selectedVenta.Id);
+                if (existingFactura != null)
+                {
+                    btnGenerarFactura.Visibility = Visibility.Collapsed;
+                    txtFacturaInfo.Text = $"✅ Factura #{existingFactura.Id} emitida (Total: {existingFactura.TotalDisplay})";
+                    txtFacturaInfo.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    // Only show "Generar Factura" button if the venta is fully paid
+                    btnGenerarFactura.Visibility = (_selectedVenta.Estado == "Pagado")
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+                    txtFacturaInfo.Visibility = Visibility.Collapsed;
+                }
             }
             catch (Exception ex)
             {
@@ -881,6 +900,61 @@ namespace ProyectoIntegradorNet10.UserControls
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al generar pagos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ──────────── FACTURAS ────────────
+
+        private async void BtnGenerarFactura_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedVenta == null || _selectedVenta.Id <= 0) return;
+
+            try
+            {
+                // Check if factura already exists
+                var existing = await FacturasService.GetByVentaId(_selectedVenta.Id);
+                if (existing != null)
+                {
+                    MessageBox.Show($"Ya existe una factura para esta venta (ID: {existing.Id}).",
+                        "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Get cliente info for the factura
+                string? nombreCompleto = null;
+                string? nit = null;
+                if (!string.IsNullOrEmpty(_selectedVenta.ClienteCi))
+                {
+                    var cliente = await ClientesService.GetByCi(_selectedVenta.ClienteCi);
+                    if (cliente != null)
+                    {
+                        nombreCompleto = cliente.NombreCompleto;
+                        nit = cliente.Nit;
+                    }
+                }
+
+                var factura = new FacturaModel
+                {
+                    VentaId = _selectedVenta.Id,
+                    Subtotal = _selectedVenta.Total,
+                    Total = _selectedVenta.Total,
+                    Descuento = _selectedVenta.PorcentajeDescuento,
+                    FechaEmision = DateTime.Now,
+                    NombreCompleto = nombreCompleto,
+                    Nit = nit,
+                    DescuentoTipo = _selectedVenta.PorcentajeDescuento.HasValue && _selectedVenta.PorcentajeDescuento.Value > 0 ? "Porcentaje" : null,
+                };
+
+                await FacturasService.Insert(factura);
+                MessageBox.Show($"Factura generada correctamente para Venta #{_selectedVenta.Id}.",
+                    "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Refresh the UI
+                LoadPagosForSelectedVenta();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar factura: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

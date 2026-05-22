@@ -585,6 +585,17 @@
                                         <TextBlock x:Name="txtPagoVentaInfo" Text="Seleccione una venta"
                                                    Foreground="{DynamicResource NavTextColor}" FontSize="14" FontWeight="SemiBold"/>
                                         <TextBlock x:Name="txtPagoVentaTotal" Text="" Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                        <Button x:Name="btnGenerarFactura" Style="{StaticResource ActionButton}"
+                                                Click="BtnGenerarFactura_Click"
+                                                Visibility="Collapsed" Margin="0,8,0,0" Height="34"
+                                                HorizontalAlignment="Stretch">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <TextBlock Text="📄" Margin="0,0,8,0" FontSize="14"/>
+                                                <TextBlock Text="Generar Factura" FontSize="13" FontWeight="Bold"/>
+                                            </StackPanel>
+                                        </Button>
+                                        <TextBlock x:Name="txtFacturaInfo" Text="" Foreground="{DynamicResource AcentoBrush}"
+                                                   FontSize="11" Margin="0,4,0,0" Visibility="Collapsed"/>
                                     </StackPanel>
                                 </Border>
 

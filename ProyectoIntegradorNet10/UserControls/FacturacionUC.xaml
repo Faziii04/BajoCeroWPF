@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ProyectoIntegradorNet10.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000">
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="FacturacionUC_Loaded">
 
     <UserControl.Resources>
         <Style TargetType="DataGrid" x:Key="GridStyle">
@@ -77,6 +78,7 @@
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="CaretBrush" Value="{DynamicResource NavTextColor}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="IsReadOnly" Value="True"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
@@ -222,10 +224,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
-                                <TextBox Name="txtBuscar"
+                                <TextBox x:Name="txtBuscar"
                                          Background="Transparent" BorderThickness="0"
                                          Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
+                                         FontSize="13" VerticalAlignment="Center"
+                                         TextChanged="txtBuscar_TextChanged"/>
                                 <TextBlock IsHitTestVisible="False" Margin="8,0"
                                            Text="Buscar factura..." Foreground="#888" FontSize="13"
                                            VerticalAlignment="Center">
@@ -245,14 +248,7 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Nuevo"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -266,24 +262,27 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="1.5*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- ─── LEFT: DataGrid ─── -->
                 <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                     <Grid>
-                        <DataGrid x:Name="dgFacturas" Style="{StaticResource GridStyle}">
+                        <DataGrid x:Name="dgFacturas" Style="{StaticResource GridStyle}"
+                                  SelectionChanged="dgFacturas_SelectionChanged">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                                <DataGridTextColumn Header="N° Factura" Binding="{Binding NumeroFactura}" Width="100"/>
-                                <DataGridTextColumn Header="Cliente" Binding="{Binding Cliente}" Width="*"/>
-                                <DataGridTextColumn Header="Fecha Emisión" Binding="{Binding FechaEmision}" Width="110"/>
-                                <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="100"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="90"/>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="Venta #" Binding="{Binding VentaId}" Width="70"/>
+                                <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre}" Width="*"/>
+                                <DataGridTextColumn Header="Nombre" Binding="{Binding NombreCompleto}" Width="120"/>
+                                <DataGridTextColumn Header="NIT" Binding="{Binding Nit}" Width="100"/>
+                                <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalDisplay}" Width="80"/>
+                                <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay}" Width="80"/>
+                                <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="110"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay facturas registradas."
+                        <TextBlock x:Name="txtEmptyState" Text="No hay facturas registradas."
                                    Foreground="#888" FontSize="14"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Visibility="Collapsed"/>
@@ -293,43 +292,95 @@
                 <!-- ─── Separator ─── -->
                 <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
 
-                <!-- ─── RIGHT: Detail Form ─── -->
+                <!-- ─── RIGHT: Detail View ─── -->
                 <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                     <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
                         <StackPanel>
-                            <TextBlock Text="Datos de Factura" FontSize="16" FontWeight="Bold"
+                            <TextBlock Text="Detalle de Factura" FontSize="16" FontWeight="Bold"
                                        Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="N° Factura *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtNumeroFactura" Style="{StaticResource FormTextBox}"/>
+                            <!-- Factura info -->
+                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock x:Name="txtDetalleId" Text="ID: ---"
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock x:Name="txtDetalleVenta" Text="Venta #: ---"
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                    <TextBlock x:Name="txtDetalleFecha" Text=""
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                    <TextBlock x:Name="txtDetalleCliente" Text=""
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                    <TextBlock x:Name="txtDetalleNombre" Text=""
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                    <TextBlock x:Name="txtDetalleNit" Text=""
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
 
-                            <TextBlock Text="Cliente *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtCliente" Style="{StaticResource FormTextBox}"/>
+                            <!-- Montos section -->
+                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal:" FontSize="13"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="txtDetalleSubtotal" Text="0.00" FontSize="13"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Descuento:" FontSize="13"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="txtDetalleDescuento" Text="0.00" FontSize="13"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total:" FontSize="16" FontWeight="Bold"
+                                               Foreground="{DynamicResource NavTextColor}" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="txtDetalleTotal" Text="0.00" FontSize="18" FontWeight="Bold"
+                                               Foreground="{DynamicResource AcentoBrush}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
 
-                            <TextBlock Text="Fecha de Emisión" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtFechaEmision" Style="{StaticResource FormTextBox}"/>
+                            <!-- Productos section -->
+                            <TextBlock Text="Productos" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,6"/>
+                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="8"
+                                    MaxHeight="140" Margin="0,0,0,12">
+                                <ListBox x:Name="lstDetalleProductos" Background="Transparent"
+                                         BorderThickness="0" Foreground="{DynamicResource NavTextColor}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" FontSize="12" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
 
-                            <TextBlock Text="Total" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtTotal" Style="{StaticResource FormTextBox}"/>
+                            <!-- Pagos section -->
+                            <TextBlock Text="Pagos" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,6"/>
+                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="8"
+                                    MaxHeight="120" Margin="0,0,0,12">
+                                <ListBox x:Name="lstDetallePagos" Background="Transparent"
+                                         BorderThickness="0" Foreground="{DynamicResource NavTextColor}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" FontSize="12" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
 
-                            <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtEstado" Style="{StaticResource FormTextBox}"/>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Guardar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource DangerButton}">
+                            <!-- Action buttons -->
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="🗑" Margin="0,0,6,0"/>
                                         <TextBlock Text="Eliminar"/>
                                     </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
-                                    <TextBlock Text="Cancelar"/>
                                 </Button>
                             </StackPanel>
                         </StackPanel>

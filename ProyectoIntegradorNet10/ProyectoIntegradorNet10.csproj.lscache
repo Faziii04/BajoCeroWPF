@@ -60,6 +60,7 @@ MainWindow.xaml.cs
 Models/
  ClienteModel.cs
  EmpleadoModel.cs
+ FacturaModel.cs
  InventarioModel.cs
  ProductoModel.cs
  UsuarioModel.cs
@@ -94,6 +95,7 @@ Services/
  DatabaseConnection.cs
  DepositosService.cs
  EmpleadoService.cs
+ FacturasService.cs
  GlobalVars.cs
  InventarioService.cs
  ProductosService.cs
