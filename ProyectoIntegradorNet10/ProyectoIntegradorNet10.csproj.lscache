@@ -66,13 +66,46 @@ obj/Debug/net10.0-windows/
  MainWindow.g.cs
  ProyectoIntegradorNet10.AssemblyInfo.cs
  ProyectoIntegradorNet10.GlobalUsings.g.cs
- UserControls/EmpleadosUC.g.cs
+ UserControls/
+  ClientesUC.g.cs
+  DepositosUC.g.cs
+  DistribucionUC.g.cs
+  EmpleadosUC.g.cs
+  FacturacionUC.g.cs
+  InsumosUC.g.cs
+  InventarioUC.g.cs
+  OrdenesCompraUC.g.cs
+  PrestamosUC.g.cs
+  ProduccionUC.g.cs
+  ProductosUC.g.cs
+  ProveedoresUC.g.cs
+  ReportesUC.g.cs
+  RolesPermisosUC.g.cs
+  VehiculosUC.g.cs
+  VentasPagosUC.g.cs
  Windows/Dashboard.g.cs
 Services/
  DatabaseConnection.cs
  EmpleadoService.cs
  GlobalVars.cs
-UserControls/EmpleadosUC.xaml.cs
+ RolesPermisosService.cs
+UserControls/
+ ClientesUC.xaml.cs
+ DepositosUC.xaml.cs
+ DistribucionUC.xaml.cs
+ EmpleadosUC.xaml.cs
+ FacturacionUC.xaml.cs
+ InsumosUC.xaml.cs
+ InventarioUC.xaml.cs
+ OrdenesCompraUC.xaml.cs
+ PrestamosUC.xaml.cs
+ ProduccionUC.xaml.cs
+ ProductosUC.xaml.cs
+ ProveedoresUC.xaml.cs
+ ReportesUC.xaml.cs
+ RolesPermisosUC.xaml.cs
+ VehiculosUC.xaml.cs
+ VentasPagosUC.xaml.cs
 Windows/Dashboard.xaml.cs
 
 [metadataReferences]

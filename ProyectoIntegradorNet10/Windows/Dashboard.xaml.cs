@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using ProyectoIntegradorNet10.Services;
@@ -9,6 +11,18 @@ namespace ProyectoIntegradorNet10.Windows
     {
         public string UsuarioNombre { get; set; } = "usuario";
         public string UsuarioRol { get; set; } = "operario";
+        public string UsuarioEmail { get; set; } = string.Empty;
+        public string UsuarioUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The CI of the logged-in employee, used to load permissions.
+        /// </summary>
+        public string EmpleadoCi { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Set of permission names the current user has (e.g. "VerProductos", "VerInsumos").
+        /// </summary>
+        public HashSet<string> Permisos { get; set; } = new();
 
         public Dashboard()
         {
@@ -16,7 +30,46 @@ namespace ProyectoIntegradorNet10.Windows
             AplicarModo();
         }
 
-        private void AplicarModo()
+        /// <summary>
+        /// Call this after setting Permisos to show/hide nav buttons.
+        /// </summary>
+        public void AplicarPermisos()
+        {
+            // Map each nav button name → its permission name
+            var navMap = new Dictionary<string, string>
+            {
+                { "navProductos",       "VerProductos" },
+                { "navProduccion",      "VerProduccion" },
+                { "navInsumos",         "VerInsumos" },
+                { "navProveedores",     "VerProveedores" },
+                { "navOrdenesCompra",   "VerOrdenesCompra" },
+                { "navInventario",      "VerInventario" },
+                { "navDistribucion",    "VerDistribucion" },
+                { "navClientes",        "VerClientes" },
+                { "navPrestamos",       "VerPrestamos" },
+                { "navEmpleados",       "VerEmpleados" },
+                { "navVentasPagos",     "VerVentasPagos" },
+                { "navFacturacion",     "VerFacturacion" },
+                { "navReportes",        "VerReportes" },
+                { "navRolesPermisos",   "VerRolesPermisos" },
+                { "navVehiculos",       "VerVehiculos" },
+                { "navDepositos",       "VerDepositos" },
+            };
+
+            foreach (var kvp in navMap)
+            {
+                // Find the button by name in the visual tree
+                var btn = this.FindName(kvp.Key) as UIElement;
+                if (btn != null)
+                {
+                    btn.Visibility = Permisos.Contains(kvp.Value)
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
+                }
+            }
+        }
+
+        public void AplicarModo()
         {
             if (GlobalVars.ModoOscuro)
             {
@@ -35,6 +88,22 @@ namespace ProyectoIntegradorNet10.Windows
                 txtInicialUsuario.Text = UsuarioNombre[0].ToString().ToUpper();
             }
             txtRolUsuario.Text = UsuarioRol;
+
+            // Show email
+            txtEmailUsuario.Text = UsuarioEmail;
+
+            // Show photo if URL is provided, otherwise hide the image
+            if (!string.IsNullOrEmpty(UsuarioUrl))
+            {
+                imgUsuario.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(UsuarioUrl));
+                imgUsuario.Visibility = Visibility.Visible;
+                txtInicialUsuario.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                imgUsuario.Visibility = Visibility.Collapsed;
+                txtInicialUsuario.Visibility = Visibility.Visible;
+            }
         }
 
         private void btnModo_Click(object sender, RoutedEventArgs e)

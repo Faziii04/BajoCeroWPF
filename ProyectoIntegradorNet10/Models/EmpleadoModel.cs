@@ -35,4 +35,23 @@ namespace ProyectoIntegradorNet10.Models
         // Display helpers (not from DB)
         public string? RolNombre { get; set; }
     }
+
+    public class PermisoModel
+    {
+        public int Id { get; set; }
+        public string Permiso { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+    }
+
+    public class RolPermisoModel
+    {
+        public int RolId { get; set; }
+        public int PermisoId { get; set; }
+        public string? Estado { get; set; }
+        public DateTime? FechaAsignacion { get; set; }
+        public DateTime? FechaFin { get; set; }
+
+        // Display helpers (not from DB)
+        public string? PermisoNombre { get; set; }
+    }
 }

@@ -54,7 +54,7 @@ namespace ProyectoIntegradorNet10
                 if (empleado != null)
                 {
                     MessageBox.Show($"Bienvenido {empleado.Nombre} {empleado.Apellido}");
-                    AbrirDashboard(empleado.Nombre, "usuario");
+                    await AbrirDashboardAsync(empleado.Ci, $"{empleado.Nombre} {empleado.Apellido}", "usuario", empleado.Correo, empleado.Url ?? "");
                 }
                 else
                 {
@@ -74,18 +74,51 @@ namespace ProyectoIntegradorNet10
             }
         }
 
-        private void AbrirDashboard(string usuario, string rol)
+        private async Task AbrirDashboardAsync(string ci, string nombre, string rol, string email, string url)
         {
             Dashboard dashboard = new Dashboard();
-            dashboard.UsuarioNombre = usuario;
+            dashboard.UsuarioNombre = nombre;
             dashboard.UsuarioRol = rol;
+            dashboard.EmpleadoCi = ci;
+            dashboard.UsuarioEmail = email;
+            dashboard.UsuarioUrl = url;
+
+            // Load permissions for this employee
+            try
+            {
+                dashboard.Permisos = await RolesPermisosService.GetPermisoNombresByEmpleadoCi(ci);
+            }
+            catch
+            {
+                // If it fails (e.g. tables don't exist yet), grant no permissions
+                dashboard.Permisos = new HashSet<string>();
+            }
+
+            dashboard.AplicarModo();
+            dashboard.AplicarPermisos();
             dashboard.Show();
             this.Close();
         }
 
         private void btnprueba_Click(object sender, RoutedEventArgs e)
         {
-            AbrirDashboard("Admin", "administrador");
+            // Quick-test: open dashboard with full permissions
+            Dashboard dashboard = new Dashboard();
+            dashboard.UsuarioNombre = "Admin";
+            dashboard.UsuarioRol = "administrador";
+            dashboard.UsuarioEmail = "admin@bajocero.com";
+            dashboard.UsuarioUrl = "";
+            dashboard.Permisos = new HashSet<string>
+            {
+                "VerProductos", "VerProduccion", "VerInsumos", "VerProveedores",
+                "VerOrdenesCompra", "VerInventario", "VerDistribucion", "VerClientes",
+                "VerPrestamos", "VerEmpleados", "VerVentasPagos", "VerFacturacion",
+                "VerReportes", "VerRolesPermisos", "VerVehiculos", "VerDepositos"
+            };
+            dashboard.AplicarModo();
+            dashboard.AplicarPermisos();
+            dashboard.Show();
+            this.Close();
         }
 
         // --- Window control buttons ---

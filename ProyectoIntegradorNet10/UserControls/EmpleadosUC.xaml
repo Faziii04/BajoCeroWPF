@@ -383,17 +383,17 @@
 
                                     <ListBox Name="lstRoles" Background="Transparent" BorderThickness="0"
                                              Height="120" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                             SelectionMode="Multiple"
+                                             SelectionMode="Single"
                                              Foreground="{DynamicResource NavTextColor}">
                                         <ListBox.ItemTemplate>
                                             <DataTemplate>
-                                                <CheckBox Content="{Binding Nombre}"
-                                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                          Foreground="{DynamicResource NavTextColor}"
-                                                          FontSize="12"
-                                                          Margin="2,2"
-                                                          Checked="ChkRole_CheckedChanged"
-                                                          Unchecked="ChkRole_CheckedChanged"/>
+                                                <RadioButton Content="{Binding Nombre}"
+                                                             IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                             GroupName="EmpleadoRole"
+                                                             Foreground="{DynamicResource NavTextColor}"
+                                                             FontSize="12"
+                                                             Margin="2,2"
+                                                             Checked="ChkRole_CheckedChanged"/>
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
                                         <ListBox.ItemContainerStyle>
