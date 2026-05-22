@@ -34,4 +34,12 @@
     <SolidColorBrush x:Key="InputBgBrush" Color="{DynamicResource InputBgColor}"/>
     <SolidColorBrush x:Key="InputBorderBrush" Color="{DynamicResource InputBorderColor}"/>
 
+    <!-- SOAT Status Colors -->
+    <SolidColorBrush x:Key="SoatVigenteBrush" Color="#2ECC71"/>
+    <SolidColorBrush x:Key="SoatPorVencerBrush" Color="#F1C40F"/>
+    <SolidColorBrush x:Key="SoatVencidoBrush" Color="#E74C3C"/>
+    <SolidColorBrush x:Key="SoatVigenteBgBrush" Color="#1A2E1A"/>
+    <SolidColorBrush x:Key="SoatPorVencerBgBrush" Color="#2E2E1A"/>
+    <SolidColorBrush x:Key="SoatVencidoBgBrush" Color="#2E1A1A"/>
+
 </ResourceDictionary>

@@ -63,6 +63,7 @@ Models/
  InventarioModel.cs
  ProductoModel.cs
  UsuarioModel.cs
+ VehiculoModel.cs
  VentaModel.cs
 obj/Debug/net10.0-windows/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
@@ -97,6 +98,7 @@ Services/
  InventarioService.cs
  ProductosService.cs
  RolesPermisosService.cs
+ VehiculoService.cs
  VentasService.cs
 UserControls/
  ClientesUC.xaml.cs

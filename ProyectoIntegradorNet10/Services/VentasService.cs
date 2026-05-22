@@ -19,6 +19,7 @@ namespace ProyectoIntegradorNet10.Services
             using var cmd = new NpgsqlCommand(
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
+                "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
@@ -37,6 +38,7 @@ namespace ProyectoIntegradorNet10.Services
             using var cmd = new NpgsqlCommand(
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
+                "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
@@ -110,6 +112,7 @@ namespace ProyectoIntegradorNet10.Services
             using var cmd = new NpgsqlCommand(
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
+                "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
@@ -307,7 +310,8 @@ namespace ProyectoIntegradorNet10.Services
                 PorcentajeDescuento = r.IsDBNull(5) ? null : r.GetDecimal(5),
                 RepartidorId = r.IsDBNull(6) ? null : r.GetInt32(6),
                 ClienteCi = r.IsDBNull(7) ? null : r.GetString(7),
-                ClienteNombre = r.IsDBNull(8) ? null : r.GetString(8),
+                MontoFromDb = r.IsDBNull(8) ? null : r.GetDecimal(8),
+                ClienteNombre = r.IsDBNull(9) ? null : r.GetString(9),
             };
         }
 

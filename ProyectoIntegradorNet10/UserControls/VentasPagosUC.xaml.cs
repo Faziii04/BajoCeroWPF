@@ -254,6 +254,7 @@ namespace ProyectoIntegradorNet10.UserControls
                 dgPagos.ItemsSource = null;
                 txtPagosEmpty.Visibility = Visibility.Visible;
                 btnGenerarPagos.Visibility = Visibility.Collapsed;
+                btnMarcarPagado.Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -269,11 +270,45 @@ namespace ProyectoIntegradorNet10.UserControls
                 btnGenerarPagos.Visibility = (_selectedVenta.Tipo == "Plan de pago" && (_pagos == null || _pagos.Count == 0))
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+
+                // Check if sum of Pagado pagos >= total → show "Marcar como Pagado" button
+                CheckPagoSum();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar pagos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// Checks if the sum of all "Pagado" pagos meets or exceeds the venta total.
+        /// If so, shows the "Marcar como Pagado" button (only if venta is not already Pagado).
+        /// </summary>
+        private void CheckPagoSum()
+        {
+            if (_selectedVenta == null || _pagos == null || _pagos.Count == 0)
+            {
+                btnMarcarPagado.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // Don't show if already Pagado
+            if (_selectedVenta.Estado == "Pagado")
+            {
+                btnMarcarPagado.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            decimal totalPagado = 0;
+            foreach (var p in _pagos)
+            {
+                if (p.Estado == "Pagado")
+                    totalPagado += p.Monto;
+            }
+
+            btnMarcarPagado.Visibility = (totalPagado >= _selectedVenta.Total)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         // ──────────── TIPO CHECKED ────────────
@@ -795,6 +830,33 @@ namespace ProyectoIntegradorNet10.UserControls
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al eliminar pago: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void BtnMarcarPagado_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedVenta == null || _selectedVenta.Id <= 0) return;
+
+            var result = MessageBox.Show(
+                $"¿Marcar venta #{_selectedVenta.Id} como Pagado?\n" +
+                $"Los pagos suman el total requerido.",
+                "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                _selectedVenta.Estado = "Pagado";
+                await VentasService.UpdateVenta(_selectedVenta);
+                MessageBox.Show("Venta marcada como Pagado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Refresh
+                LoadPagosForSelectedVenta();
+                await LoadData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al actualizar venta: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

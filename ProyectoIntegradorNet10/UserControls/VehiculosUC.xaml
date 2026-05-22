@@ -8,64 +8,77 @@
              d:DesignHeight="700" d:DesignWidth="1000">
 
     <UserControl.Resources>
-        <Style TargetType="DataGrid" x:Key="GridStyle">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="GridLinesVisibility" Value="None"/>
-            <Setter Property="RowHeaderWidth" Value="0"/>
-            <Setter Property="AutoGenerateColumns" Value="False"/>
-            <Setter Property="SelectionMode" Value="Single"/>
-            <Setter Property="SelectionUnit" Value="FullRow"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="RowHeight" Value="42"/>
-            <Setter Property="AlternatingRowBackground" Value="{DynamicResource GridRowAltBrush}"/>
-            <Setter Property="AlternationCount" Value="2"/>
-            <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
-            <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
-            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
+        <!-- Card style for vehicle items -->
+        <Style x:Key="VehiculoCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,12,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Opacity="0.15" BlurRadius="6" Direction="270"/>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="{DynamicResource GridHeaderBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
+        <!-- SOAT badge style -->
+        <Style x:Key="SoatBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Filter toggle button style -->
+        <Style x:Key="FilterToggleStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SeparatorColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-
-        <Style TargetType="DataGridRow">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AcentoBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style TargetType="DataGridCell">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <!-- Dashboard card style -->
+        <Style x:Key="DashboardCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" Opacity="0.1" BlurRadius="6" Direction="270"/>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- ── Shared styles (same as other UserControls) ── -->
 
         <Style TargetType="TextBox" x:Key="FormTextBox">
             <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
@@ -198,6 +211,8 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -222,12 +237,13 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
-                                <TextBox Name="txtBuscar"
+                                <TextBox x:Name="txtBuscar"
                                          Background="Transparent" BorderThickness="0"
                                          Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
+                                         FontSize="13" VerticalAlignment="Center"
+                                         TextChanged="txtBuscar_TextChanged"/>
                                 <TextBlock IsHitTestVisible="False" Margin="8,0"
-                                           Text="Buscar vehículo..." Foreground="#888" FontSize="13"
+                                           Text="Buscar vehículo (placa, marca, modelo...)" Foreground="#888" FontSize="13"
                                            VerticalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
@@ -245,14 +261,14 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="2" x:Name="btnNuevo" Style="{StaticResource ActionButton}" Click="BtnNuevo_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Nuevo"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="3" x:Name="btnRefrescar" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -261,80 +277,301 @@
                 </Grid>
             </Border>
 
-            <!-- ════════ MAIN CONTENT ════════ -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="1.2*"/>
-                </Grid.ColumnDefinitions>
+            <!-- ════════ DASHBOARD CARDS ════════ -->
+            <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- ─── LEFT: DataGrid ─── -->
-                <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
+                    <!-- Total -->
+                    <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource AcentoBrush}"
+                                    VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="🚗" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtTotalVehiculos" Text="0" FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource NavTextColor}"/>
+                                <TextBlock Text="Total vehículos" FontSize="11" Foreground="{DynamicResource SectionLabelColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Vigentes -->
+                    <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource SoatVigenteBgBrush}"
+                                    VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="✅" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtSoatVigentes" Text="0" FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource SoatVigenteBrush}"/>
+                                <TextBlock Text="SOAT Vigentes" FontSize="11" Foreground="{DynamicResource SectionLabelColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Por vencer -->
+                    <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource SoatPorVencerBgBrush}"
+                                    VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="⚠️" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtSoatPorVencer" Text="0" FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource SoatPorVencerBrush}"/>
+                                <TextBlock Text="Por vencer (30d)" FontSize="11" Foreground="{DynamicResource SectionLabelColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Vencidos -->
+                    <Border Grid.Column="3" Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="10" Background="{DynamicResource SoatVencidoBgBrush}"
+                                    VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="❌" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="txtSoatVencidos" Text="0" FontSize="22" FontWeight="Bold"
+                                           Foreground="{DynamicResource SoatVencidoBrush}"/>
+                                <TextBlock Text="SOAT Vencidos" FontSize="11" Foreground="{DynamicResource SectionLabelColor}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ════════ FILTER TOGGLES ════════ -->
+            <Border Grid.Row="2" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="12" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Filtrar:" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource NavTextColor}" VerticalAlignment="Center" Margin="12,0,16,0"/>
+                    <RadioButton x:Name="rbTodos" GroupName="FiltroSoat" IsChecked="True"
+                                 Style="{StaticResource FilterToggleStyle}" Checked="Filtro_Checked" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Todos" Margin="0,0,4,0"/>
+                            <TextBlock x:Name="txtCountTodos" Text="(0)" Foreground="{DynamicResource SectionLabelColor}"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="rbVigentes" GroupName="FiltroSoat"
+                                 Style="{StaticResource FilterToggleStyle}" Checked="Filtro_Checked" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Vigentes" Foreground="{DynamicResource SoatVigenteBrush}"/>
+                            <TextBlock x:Name="txtCountVigentes" Text=" (0)" Foreground="{DynamicResource SoatVigenteBrush}"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="rbPorVencer" GroupName="FiltroSoat"
+                                 Style="{StaticResource FilterToggleStyle}" Checked="Filtro_Checked" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Por vencer" Foreground="{DynamicResource SoatPorVencerBrush}"/>
+                            <TextBlock x:Name="txtCountPorVencer" Text=" (0)" Foreground="{DynamicResource SoatPorVencerBrush}"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="rbVencidos" GroupName="FiltroSoat"
+                                 Style="{StaticResource FilterToggleStyle}" Checked="Filtro_Checked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Vencidos" Foreground="{DynamicResource SoatVencidoBrush}"/>
+                            <TextBlock x:Name="txtCountVencidos" Text=" (0)" Foreground="{DynamicResource SoatVencidoBrush}"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </Border>
+
+            <!-- ════════ MAIN CONTENT: Vehicle Cards + Modal Overlay ════════ -->
+            <Grid Grid.Row="3">
+                <!-- ─── Vehicle Cards Area ─── -->
+                <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
                     <Grid>
-                        <DataGrid x:Name="dgVehiculos" Style="{StaticResource GridStyle}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                                <DataGridTextColumn Header="Placa" Binding="{Binding Placa}" Width="100"/>
-                                <DataGridTextColumn Header="Marca" Binding="{Binding Marca}" Width="120"/>
-                                <DataGridTextColumn Header="Modelo" Binding="{Binding Modelo}" Width="120"/>
-                                <DataGridTextColumn Header="Año" Binding="{Binding Anio}" Width="70"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="90"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="icVehiculos">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Width="280" Style="{StaticResource VehiculoCardStyle}"
+                                                MouseDown="Card_MouseDown">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay vehículos registrados."
+                                                <!-- Placa + SOAT badge -->
+                                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Placa}"
+                                                               FontSize="16" FontWeight="Bold"
+                                                               Foreground="{DynamicResource NavTextColor}"
+                                                               VerticalAlignment="Center"/>
+                                                    <Border Grid.Column="1" Style="{StaticResource SoatBadgeStyle}"
+                                                            Background="{Binding SoatBadgeBgBrush}">
+                                                        <TextBlock Text="{Binding SoatEstado}"
+                                                                   FontSize="11" FontWeight="Bold"
+                                                                   Foreground="{Binding SoatColorBrush}"/>
+                                                    </Border>
+                                                </Grid>
+
+                                                <!-- Marca / Modelo -->
+                                                <TextBlock Grid.Row="1" Text="{Binding MarcaModelo}"
+                                                           FontSize="14" Foreground="{DynamicResource SectionLabelColor}"
+                                                           Margin="0,0,0,6"/>
+
+                                                <!-- Details row -->
+                                                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <TextBlock Text="{Binding Tipo}" FontSize="12"
+                                                               Foreground="{DynamicResource NavTextColor}"
+                                                               Margin="0,0,16,0"/>
+                                                    <TextBlock Text="{Binding KilometrajeDisplay}" FontSize="12"
+                                                               Foreground="{DynamicResource NavTextColor}"/>
+                                                </StackPanel>
+
+                                                <!-- SOAT vencimiento -->
+                                                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                                    <TextBlock Text="SOAT: " FontSize="11"
+                                                               Foreground="{DynamicResource SectionLabelColor}"/>
+                                                    <TextBlock Text="{Binding SoatVencimientoDisplay}" FontSize="11"
+                                                               Foreground="{DynamicResource NavTextColor}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <TextBlock x:Name="txtEmptyState" Text="No hay vehículos registrados."
                                    Foreground="#888" FontSize="14"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Visibility="Collapsed"/>
                     </Grid>
                 </Border>
 
-                <!-- ─── Separator ─── -->
-                <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
+                <!-- ─── Modal Overlay ─── -->
+                <Grid x:Name="modalOverlay" Visibility="Collapsed" Panel.ZIndex="10">
+                    <!-- Semi-transparent backdrop -->
+                    <Rectangle Fill="#000000" Opacity="0.4">
+                        <Rectangle.Style>
+                            <Style TargetType="Rectangle">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <BlurEffect Radius="4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Rectangle.Style>
+                    </Rectangle>
 
-                <!-- ─── RIGHT: Detail Form ─── -->
-                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                    <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="Datos del Vehículo" FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
+                    <!-- Modal panel -->
+                    <Border Width="480" MaxHeight="600" Background="{DynamicResource POscuro2}"
+                            CornerRadius="16" Padding="24"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Header -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="txtModalTitle" Grid.Column="0"
+                                               Text="Nuevo Vehículo" FontSize="18" FontWeight="Bold"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <Button Grid.Column="1" Background="Transparent"
+                                            BorderThickness="0" Cursor="Hand"
+                                            Width="30" Height="30" Click="BtnCerrarModal_Click">
+                                        <TextBlock Text="✕" FontSize="18" Foreground="{DynamicResource NavTextColor}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
 
-                            <TextBlock Text="Placa *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtPlaca" Style="{StaticResource FormTextBox}"/>
+                                <!-- Placa -->
+                                <TextBlock Text="Placa *" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="txtPlaca" Style="{StaticResource FormTextBox}" MaxLength="20"/>
 
-                            <TextBlock Text="Marca" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtMarca" Style="{StaticResource FormTextBox}"/>
+                                <!-- Marca -->
+                                <TextBlock Text="Marca" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="txtMarca" Style="{StaticResource FormTextBox}" MaxLength="50"/>
 
-                            <TextBlock Text="Modelo" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtModelo" Style="{StaticResource FormTextBox}"/>
+                                <!-- Modelo -->
+                                <TextBlock Text="Modelo" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="txtModelo" Style="{StaticResource FormTextBox}" MaxLength="50"/>
 
-                            <TextBlock Text="Año" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtAnio" Style="{StaticResource FormTextBox}"/>
+                                <!-- Tipo -->
+                                <TextBlock Text="Tipo" Style="{StaticResource FormLabel}"/>
+                                <ComboBox x:Name="cmbTipo"
+                                          Background="{DynamicResource InputBgBrush}"
+                                          Foreground="{DynamicResource NavTextColor}"
+                                          BorderBrush="{DynamicResource InputBorderBrush}"
+                                          BorderThickness="1"
+                                          Padding="10,7"
+                                          FontSize="13"
+                                          Margin="0,0,0,10"
+                                          SelectedIndex="0"
+                                          IsEditable="True">
+                                    <ComboBoxItem Content="Sedán"/>
+                                    <ComboBoxItem Content="SUV"/>
+                                    <ComboBoxItem Content="Camioneta"/>
+                                    <ComboBoxItem Content="Furgoneta"/>
+                                    <ComboBoxItem Content="Camión"/>
+                                    <ComboBoxItem Content="Moto"/>
+                                    <ComboBoxItem Content="Otro"/>
+                                </ComboBox>
 
-                            <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtEstado" Style="{StaticResource FormTextBox}"/>
+                                <!-- Kilometraje -->
+                                <TextBlock Text="Kilometraje (km)" Style="{StaticResource FormLabel}"/>
+                                <TextBox x:Name="txtKilometraje" Style="{StaticResource FormTextBox}" MaxLength="10"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Guardar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource DangerButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="🗑" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Eliminar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
-                                    <TextBlock Text="Cancelar"/>
-                                </Button>
+                                <!-- SOAT Vencimiento -->
+                                <TextBlock Text="Vencimiento SOAT" Style="{StaticResource FormLabel}"/>
+                                <DatePicker x:Name="dpSoatVencimiento"
+                                            Background="{DynamicResource InputBgBrush}"
+                                            Foreground="{DynamicResource NavTextColor}"
+                                            BorderBrush="{DynamicResource InputBorderBrush}"
+                                            BorderThickness="1"
+                                            Padding="10,7"
+                                            FontSize="13"
+                                            Margin="0,0,0,10"
+                                            SelectedDateFormat="Short"/>
+
+                                <!-- Action buttons -->
+                                <StackPanel Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Right">
+                                    <Button x:Name="btnGuardar" Style="{StaticResource ActionButton}" Click="BtnGuardar_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="💾" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Guardar"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click"
+                                            Visibility="Collapsed">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🗑" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Eliminar"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource SecondaryButton}" Click="BtnCerrarModal_Click">
+                                        <TextBlock Text="Cancelar"/>
+                                    </Button>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                        </ScrollViewer>
                     </Border>
-                </ScrollViewer>
+                </Grid>
             </Grid>
         </Grid>
     </Border>

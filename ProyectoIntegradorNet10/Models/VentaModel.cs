@@ -20,16 +20,25 @@ namespace ProyectoIntegradorNet10.Models
         public List<VentaDetalleModel> Detalles { get; set; } = new();
         public int? Meses { get; set; } // For "Plan de pago"
 
+        // Raw monto from database (persisted value)
+        public decimal? MontoFromDb { get; set; }
+
         public decimal Total
         {
             get
             {
-                decimal subtotal = 0;
-                foreach (var d in Detalles)
-                    subtotal += (d.Cantidad ?? 0) * (d.PrecioUnitario ?? 0);
-                if (PorcentajeDescuento.HasValue && PorcentajeDescuento.Value > 0)
-                    subtotal -= subtotal * (PorcentajeDescuento.Value / 100m);
-                return subtotal;
+                // If we have detalles loaded, compute from them
+                if (Detalles.Count > 0)
+                {
+                    decimal subtotal = 0;
+                    foreach (var d in Detalles)
+                        subtotal += (d.Cantidad ?? 0) * (d.PrecioUnitario ?? 0);
+                    if (PorcentajeDescuento.HasValue && PorcentajeDescuento.Value > 0)
+                        subtotal -= subtotal * (PorcentajeDescuento.Value / 100m);
+                    return subtotal;
+                }
+                // Otherwise use the persisted monto from DB
+                return MontoFromDb ?? 0;
             }
         }
         public string FechaDisplay => Fecha.ToString("dd/MM/yyyy");
