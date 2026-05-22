@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ProyectoIntegradorNet10.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000">
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="ProductosUC_Loaded">
 
     <UserControl.Resources>
         <Style TargetType="DataGrid" x:Key="GridStyle">
@@ -222,10 +223,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
-                                <TextBox Name="txtBuscar"
+                                <TextBox x:Name="txtBuscar"
                                          Background="Transparent" BorderThickness="0"
                                          Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
+                                         FontSize="13" VerticalAlignment="Center"
+                                         TextChanged="txtBuscar_TextChanged"/>
                                 <TextBlock IsHitTestVisible="False" Margin="8,0"
                                            Text="Buscar producto..." Foreground="#888" FontSize="13"
                                            VerticalAlignment="Center">
@@ -245,14 +247,14 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="2" Style="{StaticResource ActionButton}" Click="BtnNuevo_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Nuevo"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -272,17 +274,18 @@
                 <!-- ─── LEFT: DataGrid ─── -->
                 <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                     <Grid>
-                        <DataGrid x:Name="dgProductos" Style="{StaticResource GridStyle}">
+                        <DataGrid x:Name="dgProductos" Style="{StaticResource GridStyle}"
+                                  SelectionChanged="dgProductos_SelectionChanged">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
                                 <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>
                                 <DataGridTextColumn Header="Categoría" Binding="{Binding Categoria}" Width="120"/>
-                                <DataGridTextColumn Header="Precio Venta" Binding="{Binding PrecioVenta}" Width="110"/>
+                                <DataGridTextColumn Header="Precio Venta" Binding="{Binding PrecioDisplay}" Width="110"/>
                                 <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="90"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay productos registrados."
+                        <TextBlock x:Name="txtEmptyState" Text="No hay productos registrados."
                                    Foreground="#888" FontSize="14"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Visibility="Collapsed"/>
@@ -300,31 +303,32 @@
                                        Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="Nombre *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtNombre" Style="{StaticResource FormTextBox}"/>
+                            <TextBox x:Name="txtNombre" Style="{StaticResource FormTextBox}"/>
 
                             <TextBlock Text="Categoría" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtCategoria" Style="{StaticResource FormTextBox}"/>
+                            <TextBox x:Name="txtCategoria" Style="{StaticResource FormTextBox}"/>
 
                             <TextBlock Text="Precio de Venta" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtPrecioVenta" Style="{StaticResource FormTextBox}"/>
+                            <TextBox x:Name="txtPrecioVenta" Style="{StaticResource FormTextBox}"/>
 
                             <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtEstado" Style="{StaticResource FormTextBox}"/>
+                            <TextBox x:Name="txtEstado" Style="{StaticResource FormTextBox}" IsReadOnly="True"
+                                     Foreground="{DynamicResource GridRowHoverBrush}"/>
 
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
+                                <Button x:Name="btnGuardar" Style="{StaticResource ActionButton}" Click="BtnGuardar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="💾" Margin="0,0,6,0"/>
                                         <TextBlock Text="Guardar"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource DangerButton}">
+                                <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="🗑" Margin="0,0,6,0"/>
                                         <TextBlock Text="Eliminar"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
+                                <Button x:Name="btnCancelar" Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
                                     <TextBlock Text="Cancelar"/>
                                 </Button>
                             </StackPanel>

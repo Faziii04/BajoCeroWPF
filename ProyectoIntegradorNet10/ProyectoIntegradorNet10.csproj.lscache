@@ -58,8 +58,12 @@ App.xaml.cs
 AssemblyInfo.cs
 MainWindow.xaml.cs
 Models/
+ ClienteModel.cs
  EmpleadoModel.cs
+ InventarioModel.cs
+ ProductoModel.cs
  UsuarioModel.cs
+ VentaModel.cs
 obj/Debug/net10.0-windows/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  App.g.cs
@@ -85,10 +89,15 @@ obj/Debug/net10.0-windows/
   VentasPagosUC.g.cs
  Windows/Dashboard.g.cs
 Services/
+ ClientesService.cs
  DatabaseConnection.cs
+ DepositosService.cs
  EmpleadoService.cs
  GlobalVars.cs
+ InventarioService.cs
+ ProductosService.cs
  RolesPermisosService.cs
+ VentasService.cs
 UserControls/
  ClientesUC.xaml.cs
  DepositosUC.xaml.cs

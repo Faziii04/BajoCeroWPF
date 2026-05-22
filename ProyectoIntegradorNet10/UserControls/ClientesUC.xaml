@@ -225,7 +225,8 @@
                                 <TextBox Name="txtBuscar"
                                          Background="Transparent" BorderThickness="0"
                                          Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
+                                         FontSize="13" VerticalAlignment="Center"
+                                         TextChanged="txtBuscar_TextChanged"/>
                                 <TextBlock IsHitTestVisible="False" Margin="8,0"
                                            Text="Buscar cliente..." Foreground="#888" FontSize="13"
                                            VerticalAlignment="Center">
@@ -245,14 +246,14 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="2" Style="{StaticResource ActionButton}" Click="BtnNuevo_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Nuevo"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -272,13 +273,14 @@
                 <!-- ─── LEFT: DataGrid ─── -->
                 <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                     <Grid>
-                        <DataGrid x:Name="dgClientes" Style="{StaticResource GridStyle}">
+                        <DataGrid x:Name="dgClientes" Style="{StaticResource GridStyle}"
+                                  SelectionChanged="dgClientes_SelectionChanged">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                                <DataGridTextColumn Header="CI" Binding="{Binding Ci}" Width="100"/>
                                 <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>
-                                <DataGridTextColumn Header="Dirección" Binding="{Binding Direccion}" Width="150"/>
+                                <DataGridTextColumn Header="Apellido" Binding="{Binding Apellido}" Width="*"/>
                                 <DataGridTextColumn Header="Teléfono" Binding="{Binding Telefono}" Width="110"/>
-                                <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="150"/>
+                                <DataGridTextColumn Header="NIT" Binding="{Binding Nit}" Width="110"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -299,8 +301,14 @@
                             <TextBlock Text="Datos del Cliente" FontSize="16" FontWeight="Bold"
                                        Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
 
+                            <TextBlock Text="CI *" Style="{StaticResource FormLabel}"/>
+                            <TextBox Name="txtCi" Style="{StaticResource FormTextBox}"/>
+
                             <TextBlock Text="Nombre *" Style="{StaticResource FormLabel}"/>
                             <TextBox Name="txtNombre" Style="{StaticResource FormTextBox}"/>
+
+                            <TextBlock Text="Apellido" Style="{StaticResource FormLabel}"/>
+                            <TextBox Name="txtApellido" Style="{StaticResource FormTextBox}"/>
 
                             <TextBlock Text="Dirección" Style="{StaticResource FormLabel}"/>
                             <TextBox Name="txtDireccion" Style="{StaticResource FormTextBox}"/>
@@ -308,23 +316,23 @@
                             <TextBlock Text="Teléfono" Style="{StaticResource FormLabel}"/>
                             <TextBox Name="txtTelefono" Style="{StaticResource FormTextBox}"/>
 
-                            <TextBlock Text="Email" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtEmail" Style="{StaticResource FormTextBox}"/>
+                            <TextBlock Text="NIT" Style="{StaticResource FormLabel}"/>
+                            <TextBox Name="txtNit" Style="{StaticResource FormTextBox}"/>
 
                             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
+                                <Button Name="btnGuardar" Style="{StaticResource ActionButton}" Click="BtnGuardar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="💾" Margin="0,0,6,0"/>
                                         <TextBlock Text="Guardar"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource DangerButton}">
+                                <Button Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="🗑" Margin="0,0,6,0"/>
                                         <TextBlock Text="Eliminar"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
+                                <Button Name="btnCancelar" Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
                                     <TextBlock Text="Cancelar"/>
                                 </Button>
                             </StackPanel>

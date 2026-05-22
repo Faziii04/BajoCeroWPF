@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ProyectoIntegradorNet10.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000">
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="InventarioUC_Loaded">
 
     <UserControl.Resources>
         <Style TargetType="DataGrid" x:Key="GridStyle">
@@ -87,6 +88,17 @@
             </Style.Triggers>
         </Style>
 
+        <Style TargetType="ComboBox" x:Key="FormComboBox">
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Height" Value="36"/>
+        </Style>
+
         <Style TargetType="TextBlock" x:Key="FormLabel">
             <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
             <Setter Property="FontSize" Value="12"/>
@@ -117,6 +129,36 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SuccessButton">
+            <Setter Property="Background" Value="#27AE60"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2ECC71"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1E8449"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -222,10 +264,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
-                                <TextBox Name="txtBuscar"
+                                <TextBox x:Name="txtBuscar"
                                          Background="Transparent" BorderThickness="0"
                                          Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
+                                         FontSize="13" VerticalAlignment="Center"
+                                         TextChanged="txtBuscar_TextChanged"/>
                                 <TextBlock IsHitTestVisible="False" Margin="8,0"
                                            Text="Buscar en inventario..." Foreground="#888" FontSize="13"
                                            VerticalAlignment="Center">
@@ -245,14 +288,7 @@
                         </Grid>
                     </Border>
 
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Nuevo"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <Button Grid.Column="2" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -272,15 +308,16 @@
                 <!-- ─── LEFT: DataGrid ─── -->
                 <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                     <Grid>
-                        <DataGrid x:Name="dgInventario" Style="{StaticResource GridStyle}">
+                        <DataGrid x:Name="dgInventario" Style="{StaticResource GridStyle}"
+                                  SelectionChanged="dgInventario_SelectionChanged">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Producto ID" Binding="{Binding ProductoId}" Width="90"/>
-                                <DataGridTextColumn Header="Depósito ID" Binding="{Binding DepositoId}" Width="90"/>
-                                <DataGridTextColumn Header="Cantidad" Binding="{Binding Cantidad}" Width="*"/>
+                                <DataGridTextColumn Header="Producto" Binding="{Binding ProductoNombre}" Width="*"/>
+                                <DataGridTextColumn Header="Depósito" Binding="{Binding DepositoNombre}" Width="120"/>
+                                <DataGridTextColumn Header="Cantidad" Binding="{Binding CantidadDisplay}" Width="90"/>
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay registros de inventario."
+                        <TextBlock x:Name="txtEmptyState" Text="No hay registros de inventario."
                                    Foreground="#888" FontSize="14"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Visibility="Collapsed"/>
@@ -290,37 +327,61 @@
                 <!-- ─── Separator ─── -->
                 <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
 
-                <!-- ─── RIGHT: Detail Form ─── -->
+                <!-- ─── RIGHT: Stock Management Form ─── -->
                 <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                     <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
                         <StackPanel>
-                            <TextBlock Text="Registro de Inventario" FontSize="16" FontWeight="Bold"
+                            <TextBlock Text="Gestión de Stock" FontSize="16" FontWeight="Bold"
                                        Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
 
-                            <TextBlock Text="ID Producto *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtProductoId" Style="{StaticResource FormTextBox}"/>
+                            <!-- Producto -->
+                            <TextBlock Text="Producto *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="cmbProducto" Style="{StaticResource FormComboBox}"
+                                      DisplayMemberPath="Nombre" SelectedValuePath="Id"/>
 
-                            <TextBlock Text="ID Depósito *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtDepositoId" Style="{StaticResource FormTextBox}"/>
+                            <!-- Depósito -->
+                            <TextBlock Text="Depósito *" Style="{StaticResource FormLabel}"/>
+                            <ComboBox x:Name="cmbDeposito" Style="{StaticResource FormComboBox}"
+                                      DisplayMemberPath="Nombre" SelectedValuePath="Id"/>
 
-                            <TextBlock Text="Cantidad" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtCantidad" Style="{StaticResource FormTextBox}"/>
+                            <!-- Cantidad a agregar -->
+                            <TextBlock Text="Cantidad *" Style="{StaticResource FormLabel}"/>
+                            <TextBox x:Name="txtCantidad" Style="{StaticResource FormTextBox}" Text="1"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
+                            <!-- Current stock info -->
+                            <Border x:Name="panelStockInfo" Background="{DynamicResource FOscuro1}" CornerRadius="8"
+                                    Padding="12,8" Margin="0,0,0,10" Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock x:Name="txtStockActual" FontSize="13"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Action buttons -->
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button x:Name="btnAgregarStock" Style="{StaticResource SuccessButton}" Click="BtnAgregarStock_Click">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Guardar"/>
+                                        <TextBlock Text="＋" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Agregar Stock"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource DangerButton}">
+                                <Button x:Name="btnSetStock" Style="{StaticResource ActionButton}" Click="BtnSetStock_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="✎" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Fijar Stock"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="🗑" Margin="0,0,6,0"/>
                                         <TextBlock Text="Eliminar"/>
                                     </StackPanel>
                                 </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
-                                    <TextBlock Text="Cancelar"/>
+                                <Button x:Name="btnCancelar" Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
+                                    <TextBlock Text="Limpiar"/>
                                 </Button>
                             </StackPanel>
                         </StackPanel>
