@@ -319,7 +319,32 @@
                             <TextBlock Text="NIT" Style="{StaticResource FormLabel}"/>
                             <TextBox Name="txtNit" Style="{StaticResource FormTextBox}"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                            <!-- ─── Image Section ─── -->
+                            <TextBlock Text="Imagen" Style="{StaticResource FormLabel}" Margin="0,8,0,0"/>
+                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8"
+                                    Padding="8" Margin="0,0,0,10" Height="120">
+                                <Grid>
+                                    <!-- Preview image -->
+                                    <Image x:Name="imgPreview" Stretch="Uniform"
+                                           Visibility="Collapsed" Margin="4"/>
+                                    <!-- Placeholder when no image -->
+                                    <TextBlock x:Name="txtNoImage" Text="Sin imagen"
+                                               Foreground="#888" FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <TextBlock x:Name="txtImageStatus" Text="Sin imagen seleccionada"
+                                       Foreground="#888" FontSize="11" Margin="0,-6,0,8"/>
+                            <Button Name="btnUploadImage" Style="{StaticResource SecondaryButton}"
+                                    Click="BtnUploadImage_Click" Height="32" Margin="0,0,0,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="📁" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Seleccionar imagen"/>
+                                </StackPanel>
+                            </Button>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                 <Button Name="btnGuardar" Style="{StaticResource ActionButton}" Click="BtnGuardar_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="💾" Margin="0,0,6,0"/>

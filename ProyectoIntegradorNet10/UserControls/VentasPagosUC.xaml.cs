@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using ProyectoIntegradorNet10.Models;
+using ProyectoIntegradorNet10.PopWindows;
 using ProyectoIntegradorNet10.Services;
 
 namespace ProyectoIntegradorNet10.UserControls
@@ -13,19 +14,12 @@ namespace ProyectoIntegradorNet10.UserControls
     public partial class VentasPagosUC : UserControl
     {
         private List<VentaModel> _ventas = new();
-        private List<ProductoModel> _productos = new();
-        private List<ClienteModel> _clientes = new();
-        private List<ClienteModel> _filteredClientes = new();
+        private List<VentaModel> _filteredVentas = new();
         private List<VentaModel> _filteredVentasPagos = new(); // For pagos tab venta list
         private List<PagoModel> _pagos = new();
         private VentaModel? _selectedVenta;
         private PagoModel? _selectedPago;
-        private bool _isEditing;
-        private bool _isUpdatingForm;
         private bool _isNewPago;
-
-        // Debounce timer for client search
-        private DispatcherTimer? _clienteSearchTimer;
 
         public VentasPagosUC()
         {
@@ -42,18 +36,7 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _ventas = await VentasService.GetAllVentas();
-                dgVentas.ItemsSource = _ventas;
-                UpdateEmptyState();
-
-                _productos = await VentasService.GetAllProductos();
-                cmbProducto.ItemsSource = _productos;
-
-                _clientes = await VentasService.GetAllClientes();
-                _filteredClientes = new List<ClienteModel>(_clientes);
-                cmbCliente.ItemsSource = _filteredClientes;
-                cmbCliente.Text = string.Empty;
-
-                // Load ventas for the pagos tab
+                ApplyVentasFilter();
                 ApplyPagosFilter();
             }
             catch (Exception ex)
@@ -62,71 +45,65 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
+        // ──────────── VENTAS TAB: FILTERS ────────────
+
+        private void ApplyVentasFilter()
+        {
+            // Guard against calls during XAML initialization
+            if (dgVentas == null) return;
+
+            string searchTerm = txtBuscar?.Text?.Trim().ToLower() ?? "";
+
+            var filtered = _ventas.AsEnumerable();
+
+            // Text search
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                filtered = filtered.Where(v =>
+                    (v.ClienteNombre?.ToLower().Contains(searchTerm) ?? false) ||
+                    v.Id.ToString().Contains(searchTerm));
+            }
+
+            // Date range filter
+            if (dpFechaDesde?.SelectedDate != null)
+            {
+                var desde = dpFechaDesde.SelectedDate.Value;
+                filtered = filtered.Where(v => v.Fecha >= desde);
+            }
+            if (dpFechaHasta?.SelectedDate != null)
+            {
+                var hasta = dpFechaHasta.SelectedDate.Value.AddDays(1);
+                filtered = filtered.Where(v => v.Fecha < hasta);
+            }
+
+            // Tipo filter
+            if (cmbFiltroTipo?.SelectedItem is ComboBoxItem tipoItem && tipoItem.Content.ToString() != "Todos")
+            {
+                string tipo = tipoItem.Content.ToString();
+                filtered = filtered.Where(v => v.Tipo == tipo);
+            }
+
+            _filteredVentas = filtered.ToList();
+            dgVentas.ItemsSource = _filteredVentas;
+            UpdateEmptyState();
+        }
+
+        private void Filtro_Changed(object sender, RoutedEventArgs e)
+        {
+            ApplyVentasFilter();
+        }
+
         private void UpdateEmptyState()
         {
-            txtEmptyState.Visibility = (_ventas == null || _ventas.Count == 0)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-        }
-
-        private void ClearForm()
-        {
-            _isEditing = false;
-            _selectedVenta = null;
-            cmbCliente.SelectedIndex = -1;
-            cmbCliente.Text = string.Empty;
-            rbContado.IsChecked = true;
-            txtMeses.Text = "1";
-            txtDescuento.Text = "0";
-            cmbProducto.SelectedIndex = -1;
-            lstProductos.ItemsSource = null;
-            txtTotal.Text = "0.00";
-            btnEliminarVenta.IsEnabled = false;
-            panelMeses.Visibility = Visibility.Collapsed;
-            panelCantidad.Visibility = Visibility.Collapsed;
-        }
-
-        private void PopulateForm(VentaModel v)
-        {
-            _isEditing = true;
-            _selectedVenta = v;
-
-            // Set cliente
-            if (!string.IsNullOrEmpty(v.ClienteCi))
-                cmbCliente.SelectedValue = v.ClienteCi;
-            else
-                cmbCliente.SelectedIndex = -1;
-
-            // Set tipo
-            if (v.Tipo == "Plan de pago")
+            if (txtEmptyState != null)
             {
-                rbPlanPago.IsChecked = true;
-                panelMeses.Visibility = Visibility.Visible;
-                txtMeses.Text = v.Meses?.ToString() ?? "1";
-            }
-            else
-            {
-                rbContado.IsChecked = true;
-                panelMeses.Visibility = Visibility.Collapsed;
-                txtMeses.Text = "1";
-            }
-
-            // Set descuento
-            txtDescuento.Text = v.PorcentajeDescuento?.ToString() ?? "0";
-
-            // Load detalles
-            lstProductos.ItemsSource = v.Detalles;
-            UpdateTotalDisplay();
-            btnEliminarVenta.IsEnabled = true;
-        }
-
-        private void UpdateTotalDisplay()
-        {
-            if (_selectedVenta != null)
-            {
-                txtTotal.Text = _selectedVenta.Total.ToString("N2");
+                txtEmptyState.Visibility = (_filteredVentas == null || _filteredVentas.Count == 0)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
         }
+
+        // ──────────── VENTAS TAB: SELECTION & DOUBLE-CLICK ────────────
 
         private async void dgVentas_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -134,10 +111,8 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 try
                 {
-                    // Load detalles for this venta
                     venta.Detalles = await VentasService.GetDetallesByVenta(venta.Id);
                     _selectedVenta = venta;
-                    PopulateForm(venta);
                 }
                 catch (Exception ex)
                 {
@@ -146,11 +121,46 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
+        private async void dgVentas_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (dgVentas.SelectedItem is VentaModel venta)
+            {
+                try
+                {
+                    // Load full venta with detalles
+                    venta.Detalles = await VentasService.GetDetallesByVenta(venta.Id);
+                    var fullVenta = await VentasService.GetVentaById(venta.Id);
+                    if (fullVenta != null)
+                    {
+                        fullVenta.Detalles = venta.Detalles;
+                        fullVenta.Meses = venta.Meses;
+
+                        var popup = new PWVentas
+                        {
+                            Owner = Window.GetWindow(this),
+                            EditVenta = fullVenta
+                        };
+
+                        popup.OnDataChanged += async () =>
+                        {
+                            await LoadData();
+                        };
+
+                        popup.ShowDialog();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al cargar venta: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         // ──────────── TAB SWITCHING ────────────
 
         private void Tab_Checked(object sender, RoutedEventArgs e)
         {
-            // Null guard: this event fires during XAML parsing before InitializeComponent
             if (gridVentasTab == null || gridPagosTab == null) return;
 
             if (rbVentas.IsChecked == true)
@@ -162,7 +172,6 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 gridVentasTab.Visibility = Visibility.Collapsed;
                 gridPagosTab.Visibility = Visibility.Visible;
-                // Refresh the pagos tab venta list when switching to it
                 ApplyPagosFilter();
             }
         }
@@ -178,11 +187,9 @@ namespace ProyectoIntegradorNet10.UserControls
                 tipoFilter = "Contado";
             else if (rbFiltroPlan?.IsChecked == true)
                 tipoFilter = "Plan de pago";
-            // else "Todos" - no filter
 
             var filtered = _ventas.AsEnumerable();
 
-            // Filter by search term (client name)
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 filtered = filtered.Where(v =>
@@ -190,7 +197,6 @@ namespace ProyectoIntegradorNet10.UserControls
                     v.Id.ToString().Contains(searchTerm));
             }
 
-            // Filter by tipo
             if (tipoFilter != null)
             {
                 filtered = filtered.Where(v => v.Tipo == tipoFilter);
@@ -198,9 +204,12 @@ namespace ProyectoIntegradorNet10.UserControls
 
             _filteredVentasPagos = filtered.ToList();
             dgVentasPagos.ItemsSource = _filteredVentasPagos;
-            txtPagosEmpty.Visibility = (_filteredVentasPagos.Count == 0)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            if (txtPagosEmpty != null)
+            {
+                txtPagosEmpty.Visibility = (_filteredVentasPagos.Count == 0)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            }
         }
 
         private void txtPagoSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -210,7 +219,6 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private void FiltroTipo_Checked(object sender, RoutedEventArgs e)
         {
-            // Null guard: this event fires during XAML parsing before InitializeComponent
             if (dgVentasPagos == null) return;
             ApplyPagosFilter();
         }
@@ -252,7 +260,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 txtPagoVentaInfo.Text = "Seleccione una venta";
                 txtPagoVentaTotal.Text = "";
                 dgPagos.ItemsSource = null;
-                txtPagosEmpty.Visibility = Visibility.Visible;
                 btnGenerarPagos.Visibility = Visibility.Collapsed;
                 btnMarcarPagado.Visibility = Visibility.Collapsed;
                 btnGenerarFactura.Visibility = Visibility.Collapsed;
@@ -268,15 +275,12 @@ namespace ProyectoIntegradorNet10.UserControls
                 _pagos = await VentasService.GetPagosByVenta(_selectedVenta.Id);
                 dgPagos.ItemsSource = _pagos;
 
-                // Show "Generar Pagos" button only for Plan de pago with no pagos yet
                 btnGenerarPagos.Visibility = (_selectedVenta.Tipo == "Plan de pago" && (_pagos == null || _pagos.Count == 0))
                     ? Visibility.Visible
                     : Visibility.Collapsed;
 
-                // Check if sum of Pagado pagos >= total → show "Marcar como Pagado" button
                 CheckPagoSum();
 
-                // Check if factura already exists for this venta
                 var existingFactura = await FacturasService.GetByVentaId(_selectedVenta.Id);
                 if (existingFactura != null)
                 {
@@ -286,7 +290,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 }
                 else
                 {
-                    // Only show "Generar Factura" button if the venta is fully paid
                     btnGenerarFactura.Visibility = (_selectedVenta.Estado == "Pagado")
                         ? Visibility.Visible
                         : Visibility.Collapsed;
@@ -299,10 +302,6 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        /// <summary>
-        /// Checks if the sum of all "Pagado" pagos meets or exceeds the venta total.
-        /// If so, shows the "Marcar como Pagado" button (only if venta is not already Pagado).
-        /// </summary>
         private void CheckPagoSum()
         {
             if (_selectedVenta == null || _pagos == null || _pagos.Count == 0)
@@ -311,7 +310,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 return;
             }
 
-            // Don't show if already Pagado
             if (_selectedVenta.Estado == "Pagado")
             {
                 btnMarcarPagado.Visibility = Visibility.Collapsed;
@@ -330,318 +328,21 @@ namespace ProyectoIntegradorNet10.UserControls
                 : Visibility.Collapsed;
         }
 
-        // ──────────── TIPO CHECKED ────────────
-
-        private void Tipo_Checked(object sender, RoutedEventArgs e)
-        {
-            // Null guard: this event fires during XAML parsing before InitializeComponent
-            if (panelMeses == null) return;
-
-            if (rbPlanPago.IsChecked == true)
-            {
-                panelMeses.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                panelMeses.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        // ──────────── CLIENT SEARCH (EDITABLE COMBOBOX) ────────────
-
-        private void cmbCliente_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Find the internal TextBox of the editable ComboBox and subscribe to TextChanged
-            if (cmbCliente.Template.FindName("PART_EditableTextBox", cmbCliente) is TextBox tb)
-            {
-                tb.TextChanged += (s, args) =>
-                {
-                    // Restart debounce timer on each keystroke
-                    if (_clienteSearchTimer == null)
-                    {
-                        _clienteSearchTimer = new DispatcherTimer
-                        {
-                            Interval = TimeSpan.FromMilliseconds(300)
-                        };
-                        _clienteSearchTimer.Tick += (timerSender, timerArgs) =>
-                        {
-                            _clienteSearchTimer.Stop();
-                            ApplyClienteFilter();
-                        };
-                    }
-                    else
-                    {
-                        _clienteSearchTimer.Stop();
-                    }
-                    _clienteSearchTimer.Start();
-                };
-            }
-        }
-
-        private void ApplyClienteFilter()
-        {
-            var term = cmbCliente.Text.Trim().ToLower();
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                _filteredClientes = new List<ClienteModel>(_clientes);
-            }
-            else
-            {
-                _filteredClientes = _clientes
-                    .Where(c => (c.Nombre?.ToLower().Contains(term) ?? false)
-                             || (c.Apellido?.ToLower().Contains(term) ?? false)
-                             || (c.Ci?.ToLower().Contains(term) ?? false)
-                             || c.NombreCompleto.ToLower().Contains(term))
-                    .ToList();
-            }
-            cmbCliente.ItemsSource = _filteredClientes;
-            cmbCliente.IsDropDownOpen = _filteredClientes.Count > 0;
-        }
-
-        // ──────────── PRODUCTOS ────────────
-
-        private void cmbProducto_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (cmbProducto.SelectedItem is ProductoModel)
-            {
-                panelCantidad.Visibility = Visibility.Visible;
-                txtCantidad.Text = "1";
-            }
-            else
-            {
-                panelCantidad.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void BtnAgregarProducto_Click(object sender, RoutedEventArgs e)
-        {
-            if (cmbProducto.SelectedItem is ProductoModel prod)
-            {
-                // Get quantity from input, default to 1
-                int cantidad = 1;
-                if (!string.IsNullOrWhiteSpace(txtCantidad.Text))
-                {
-                    int.TryParse(txtCantidad.Text, out cantidad);
-                }
-                if (cantidad <= 0) cantidad = 1;
-
-                // Check if product already added
-                var existing = _selectedVenta?.Detalles.FirstOrDefault(d => d.ProductoId == prod.Id);
-                if (existing != null)
-                {
-                    existing.Cantidad = (existing.Cantidad ?? 0) + cantidad;
-                    existing.PrecioUnitario = prod.PrecioVenta;
-                }
-                else
-                {
-                    if (_selectedVenta == null)
-                    {
-                        _selectedVenta = new VentaModel();
-                    }
-                    _selectedVenta.Detalles.Add(new VentaDetalleModel
-                    {
-                        ProductoId = prod.Id,
-                        ProductoNombre = prod.Nombre,
-                        Cantidad = cantidad,
-                        PrecioUnitario = prod.PrecioVenta,
-                    });
-                }
-
-                // Refresh list
-                lstProductos.ItemsSource = null;
-                if (_selectedVenta != null)
-                    lstProductos.ItemsSource = _selectedVenta.Detalles;
-                UpdateTotalDisplay();
-                cmbProducto.SelectedIndex = -1;
-                panelCantidad.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void lstProductos_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (lstProductos.SelectedItem is VentaDetalleModel det)
-            {
-                panelCantidad.Visibility = Visibility.Visible;
-                _isUpdatingForm = true;
-                txtCantidad.Text = det.Cantidad?.ToString() ?? "1";
-                _isUpdatingForm = false;
-            }
-            else
-            {
-                panelCantidad.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void txtCantidad_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isUpdatingForm) return;
-            if (lstProductos.SelectedItem is VentaDetalleModel det)
-            {
-                if (int.TryParse(txtCantidad.Text, out int cant) && cant > 0)
-                {
-                    det.Cantidad = cant;
-                    lstProductos.ItemsSource = null;
-                    lstProductos.ItemsSource = _selectedVenta?.Detalles;
-                    UpdateTotalDisplay();
-                }
-            }
-        }
-
-        private void RemoveProducto_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is TextBlock tb && tb.DataContext is VentaDetalleModel det)
-            {
-                _selectedVenta?.Detalles.Remove(det);
-                lstProductos.ItemsSource = null;
-                lstProductos.ItemsSource = _selectedVenta?.Detalles;
-                UpdateTotalDisplay();
-            }
-        }
-
-        private void CalcularTotal(object sender, TextChangedEventArgs e)
-        {
-            if (_selectedVenta != null)
-            {
-                if (decimal.TryParse(txtDescuento.Text, out decimal desc))
-                {
-                    _selectedVenta.PorcentajeDescuento = desc;
-                }
-                else
-                {
-                    _selectedVenta.PorcentajeDescuento = 0;
-                }
-                UpdateTotalDisplay();
-            }
-        }
-
-        // ──────────── VENTA CRUD ────────────
-
-        private async void BtnGuardarVenta_Click(object sender, RoutedEventArgs e)
-        {
-            // Validate
-            if (cmbCliente.SelectedValue == null)
-            {
-                MessageBox.Show("Seleccione un cliente.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (_selectedVenta == null || _selectedVenta.Detalles.Count == 0)
-            {
-                MessageBox.Show("Agregue al menos un producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                _selectedVenta.ClienteCi = cmbCliente.SelectedValue.ToString();
-                _selectedVenta.Fecha = DateTime.Today;
-                _selectedVenta.Hora = DateTime.Now.TimeOfDay;
-                _selectedVenta.Tipo = rbPlanPago.IsChecked == true ? "Plan de pago" : "Contado";
-                _selectedVenta.Estado = "Pendiente";
-
-                if (decimal.TryParse(txtDescuento.Text, out decimal desc))
-                    _selectedVenta.PorcentajeDescuento = desc;
-                else
-                    _selectedVenta.PorcentajeDescuento = 0;
-
-                if (int.TryParse(txtMeses.Text, out int meses) && meses > 0)
-                    _selectedVenta.Meses = meses;
-                else
-                    _selectedVenta.Meses = 1;
-
-                if (_isEditing && _selectedVenta.Id > 0)
-                {
-                    // Update existing venta
-                    await VentasService.UpdateVenta(_selectedVenta);
-                    await VentasService.ClearDetalles(_selectedVenta.Id);
-                    foreach (var d in _selectedVenta.Detalles)
-                    {
-                        d.VentaId = _selectedVenta.Id;
-                        await VentasService.InsertDetalle(d);
-                    }
-                    MessageBox.Show("Venta actualizada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    // Insert new venta
-                    int newId = await VentasService.InsertVenta(_selectedVenta);
-                    foreach (var d in _selectedVenta.Detalles)
-                    {
-                        d.VentaId = newId;
-                        await VentasService.InsertDetalle(d);
-                    }
-
-                    // If Plan de pago, auto-generate pagos
-                    if (_selectedVenta.Tipo == "Plan de pago" && _selectedVenta.Meses.HasValue && _selectedVenta.Meses.Value > 1)
-                    {
-                        await GenerarPagosPlan(newId, _selectedVenta.Total, _selectedVenta.Meses.Value);
-                    }
-
-                    MessageBox.Show("Venta creada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-
-                ClearForm();
-                await LoadData();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al guardar venta: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async System.Threading.Tasks.Task GenerarPagosPlan(int ventaId, decimal total, int meses)
-        {
-            decimal montoPorMes = Math.Round(total / meses, 2);
-            decimal remainder = total - (montoPorMes * meses);
-            DateTime baseDate = DateTime.Today;
-
-            for (int i = 0; i < meses; i++)
-            {
-                var pago = new PagoModel
-                {
-                    VentaId = ventaId,
-                    Fecha = baseDate.AddMonths(i + 1),
-                    Hora = new TimeSpan(0, 0, 0),
-                    Monto = (i == meses - 1) ? montoPorMes + remainder : montoPorMes, // Last payment gets remainder
-                    Metodo = "Efectivo",
-                    Estado = "Pendiente",
-                };
-                await VentasService.InsertPago(pago);
-            }
-        }
-
-        private async void BtnEliminarVenta_Click(object sender, RoutedEventArgs e)
-        {
-            if (_selectedVenta == null || _selectedVenta.Id <= 0) return;
-
-            var result = MessageBox.Show($"¿Eliminar venta #{_selectedVenta.Id}?", "Confirmar",
-                MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
-
-            try
-            {
-                await VentasService.DeleteVenta(_selectedVenta.Id);
-                MessageBox.Show("Venta eliminada.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                await LoadData();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al eliminar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnCancelarVenta_Click(object sender, RoutedEventArgs e)
-        {
-            ClearForm();
-            dgVentas.SelectedItem = null;
-        }
+        // ──────────── NUEVA VENTA (POPUP) ────────────
 
         private void BtnNuevo_Click(object sender, RoutedEventArgs e)
         {
-            ClearForm();
-            _selectedVenta = new VentaModel();
-            cmbCliente.Focus();
+            var popup = new PWVentas
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            popup.OnDataChanged += async () =>
+            {
+                await LoadData();
+            };
+
+            popup.ShowDialog();
         }
 
         private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)
@@ -651,23 +352,7 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private async void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string term = txtBuscar.Text.Trim();
-            if (string.IsNullOrEmpty(term))
-            {
-                await LoadData();
-                return;
-            }
-
-            try
-            {
-                _ventas = await VentasService.SearchVentas(term);
-                dgVentas.ItemsSource = _ventas;
-                UpdateEmptyState();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al buscar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            ApplyVentasFilter();
         }
 
         // ──────────── PAGOS ────────────
@@ -694,7 +379,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 txtPagoMonto.Text = pago.MontoDisplay;
                 txtBtnGuardarPago.Text = "Actualizar Pago";
 
-                // Set metodo
                 foreach (ComboBoxItem item in cmbPagoMetodo.Items)
                 {
                     if (item.Content.ToString() == pago.Metodo)
@@ -704,7 +388,6 @@ namespace ProyectoIntegradorNet10.UserControls
                     }
                 }
 
-                // Set estado
                 foreach (ComboBoxItem item in cmbPagoEstado.Items)
                 {
                     if (item.Content.ToString() == pago.Estado)
@@ -733,8 +416,8 @@ namespace ProyectoIntegradorNet10.UserControls
             dgPagos.SelectedItem = null;
             txtPagoSelectedInfo.Text = $"Nuevo pago para Venta #{_selectedVenta.Id}";
             txtPagoMonto.Text = "";
-            cmbPagoMetodo.SelectedIndex = 0; // Default: Efectivo
-            cmbPagoEstado.SelectedIndex = 0; // Default: Pendiente
+            cmbPagoMetodo.SelectedIndex = 0;
+            cmbPagoEstado.SelectedIndex = 0;
             txtBtnGuardarPago.Text = "Guardar Pago";
             txtPagoMonto.Focus();
         }
@@ -747,7 +430,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 return;
             }
 
-            // Validate monto
             if (!decimal.TryParse(txtPagoMonto.Text, out decimal monto) || monto <= 0)
             {
                 MessageBox.Show("Ingrese un monto válido.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -758,7 +440,6 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 if (_isNewPago)
                 {
-                    // Insert new pago
                     string estado = (cmbPagoEstado.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pendiente";
                     var nuevoPago = new PagoModel
                     {
@@ -776,7 +457,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 }
                 else
                 {
-                    // Update existing pago
                     if (_selectedPago == null)
                     {
                         MessageBox.Show("Seleccione un pago para actualizar.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -787,7 +467,6 @@ namespace ProyectoIntegradorNet10.UserControls
                     _selectedPago.Metodo = (cmbPagoMetodo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Efectivo";
                     string nuevoEstado = (cmbPagoEstado.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pendiente";
 
-                    // If marking as Pagado, set current date/time
                     if (nuevoEstado == "Pagado" && _selectedPago.Estado != "Pagado")
                     {
                         _selectedPago.Fecha = DateTime.Today;
@@ -869,7 +548,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 await VentasService.UpdateVenta(_selectedVenta);
                 MessageBox.Show("Venta marcada como Pagado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Refresh
                 LoadPagosForSelectedVenta();
                 await LoadData();
             }
@@ -903,6 +581,27 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
+        private async System.Threading.Tasks.Task GenerarPagosPlan(int ventaId, decimal total, int meses)
+        {
+            decimal montoPorMes = Math.Round(total / meses, 2);
+            decimal remainder = total - (montoPorMes * meses);
+            DateTime baseDate = DateTime.Today;
+
+            for (int i = 0; i < meses; i++)
+            {
+                var pago = new PagoModel
+                {
+                    VentaId = ventaId,
+                    Fecha = baseDate.AddMonths(i + 1),
+                    Hora = new TimeSpan(0, 0, 0),
+                    Monto = (i == meses - 1) ? montoPorMes + remainder : montoPorMes,
+                    Metodo = "Efectivo",
+                    Estado = "Pendiente",
+                };
+                await VentasService.InsertPago(pago);
+            }
+        }
+
         // ──────────── FACTURAS ────────────
 
         private async void BtnGenerarFactura_Click(object sender, RoutedEventArgs e)
@@ -911,7 +610,6 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
-                // Check if factura already exists
                 var existing = await FacturasService.GetByVentaId(_selectedVenta.Id);
                 if (existing != null)
                 {
@@ -920,7 +618,6 @@ namespace ProyectoIntegradorNet10.UserControls
                     return;
                 }
 
-                // Get cliente info for the factura
                 string? nombreCompleto = null;
                 string? nit = null;
                 if (!string.IsNullOrEmpty(_selectedVenta.ClienteCi))
@@ -949,7 +646,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 MessageBox.Show($"Factura generada correctamente para Venta #{_selectedVenta.Id}.",
                     "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Refresh the UI
                 LoadPagosForSelectedVenta();
             }
             catch (Exception ex)

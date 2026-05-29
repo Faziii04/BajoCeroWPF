@@ -10,6 +10,7 @@ namespace ProyectoIntegradorNet10.Models
         public string? Direccion { get; set; }
         public string? Nit { get; set; }
         public string? Telefono { get; set; }
+        public string? Url { get; set; }
 
         // Display helper (not from DB)
         public string NombreCompleto => $"{Nombre ?? ""} {Apellido ?? ""}".Trim();

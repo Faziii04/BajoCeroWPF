@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using ProyectoIntegradorNet10.Models;
+using ProyectoIntegradorNet10.PopWindows;
 using ProyectoIntegradorNet10.Services;
 
 namespace ProyectoIntegradorNet10.UserControls
@@ -12,8 +14,6 @@ namespace ProyectoIntegradorNet10.UserControls
     public partial class ProductosUC : UserControl
     {
         private List<ProductoModel> _productos = new();
-        private ProductoModel? _selectedProducto;
-        private bool _isEditing;
         private bool _isLoading;
         private bool _suspendSearch;
 
@@ -35,7 +35,7 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _productos = await ProductosService.GetAll();
-                dgProductos.ItemsSource = _productos;
+                icProductos.ItemsSource = _productos;
                 UpdateEmptyState();
             }
             catch (Exception ex)
@@ -55,138 +55,38 @@ namespace ProyectoIntegradorNet10.UserControls
                 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void ClearForm()
+        private void OpenProductPopup(ProductoModel? producto = null)
         {
-            _selectedProducto = null;
-            _isEditing = false;
-            txtNombre.Text = string.Empty;
-            txtCategoria.Text = string.Empty;
-            txtPrecioVenta.Text = string.Empty;
-            txtEstado.Text = "Activo";
-            btnEliminar.IsEnabled = false;
-            dgProductos.SelectedItem = null;
-        }
-
-        private void PopulateForm(ProductoModel p)
-        {
-            txtNombre.Text = p.Nombre;
-            txtCategoria.Text = p.Categoria ?? string.Empty;
-            txtPrecioVenta.Text = p.PrecioVenta?.ToString("N2") ?? string.Empty;
-            txtEstado.Text = p.Estado ?? "Activo";
-            btnEliminar.IsEnabled = true;
-        }
-
-        private ProductoModel? GetFormData()
-        {
-            var nombre = txtNombre.Text.Trim();
-            if (string.IsNullOrWhiteSpace(nombre))
+            var popup = new PWProductos
             {
-                MessageBox.Show("El nombre del producto es obligatorio.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtNombre.Focus();
-                return null;
-            }
-
-            decimal? precio = null;
-            if (!string.IsNullOrWhiteSpace(txtPrecioVenta.Text))
-            {
-                if (!decimal.TryParse(txtPrecioVenta.Text.Replace(",", ""), out var parsed))
-                {
-                    MessageBox.Show("El precio de venta no es válido.", "Validación",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    txtPrecioVenta.Focus();
-                    return null;
-                }
-                precio = parsed;
-            }
-
-            return new ProductoModel
-            {
-                Id = _selectedProducto?.Id ?? 0,
-                Nombre = nombre,
-                Categoria = string.IsNullOrWhiteSpace(txtCategoria.Text) ? null : txtCategoria.Text.Trim(),
-                PrecioVenta = precio,
-                Estado = string.IsNullOrWhiteSpace(txtEstado.Text) ? "Activo" : txtEstado.Text.Trim(),
+                Owner = Window.GetWindow(this),
+                EditProduct = producto
             };
-        }
 
-        private void dgProductos_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_suspendSearch) return;
-
-            if (dgProductos.SelectedItem is ProductoModel p)
+            popup.OnDataChanged += async () =>
             {
-                _selectedProducto = p;
-                _isEditing = true;
-                PopulateForm(p);
-            }
-        }
-
-        private async void BtnGuardar_Click(object sender, RoutedEventArgs e)
-        {
-            var producto = GetFormData();
-            if (producto == null) return;
-
-            try
-            {
-                if (_isEditing && _selectedProducto != null)
-                {
-                    await ProductosService.Update(producto);
-                    MessageBox.Show("Producto actualizado correctamente.", "Éxito",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    var newId = await ProductosService.Insert(producto);
-                    producto.Id = newId;
-                    MessageBox.Show("Producto creado correctamente.", "Éxito",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-
-                ClearForm();
                 await LoadProductos();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al guardar producto: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            };
+
+            popup.ShowDialog();
         }
 
-        private async void BtnEliminar_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Handles click on a product card to open the edit popup.
+        /// </summary>
+        private void Card_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_selectedProducto == null) return;
-
-            var result = MessageBox.Show(
-                $"¿Está seguro de desactivar el producto \"{_selectedProducto.Nombre}\"?",
-                "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result != MessageBoxResult.Yes) return;
-
-            try
+            if (sender is FrameworkElement element && element.DataContext is ProductoModel producto)
             {
-                await ProductosService.Delete(_selectedProducto.Id);
-                MessageBox.Show("Producto desactivado correctamente.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                await LoadProductos();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al desactivar producto: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                OpenProductPopup(producto);
             }
         }
 
-        private void BtnCancelar_Click(object sender, RoutedEventArgs e)
-        {
-            ClearForm();
-        }
+        // ────────────────────────────── EVENT HANDLERS ──────────────────────────────
 
         private void BtnNuevo_Click(object sender, RoutedEventArgs e)
         {
-            ClearForm();
-            txtNombre.Focus();
+            OpenProductPopup();
         }
 
         private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)
@@ -194,7 +94,6 @@ namespace ProyectoIntegradorNet10.UserControls
             _suspendSearch = true;
             txtBuscar.Text = string.Empty;
             _suspendSearch = false;
-            ClearForm();
             await LoadProductos();
         }
 
@@ -212,7 +111,7 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _productos = await ProductosService.Search(term);
-                dgProductos.ItemsSource = _productos;
+                icProductos.ItemsSource = _productos;
                 UpdateEmptyState();
             }
             catch (Exception ex)

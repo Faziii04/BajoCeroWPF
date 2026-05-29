@@ -10,12 +10,23 @@ namespace ProyectoIntegradorNet10.Services
     {
         private static NpgsqlDataSource DS => DatabaseConnection.DataSource;
 
+        private const string SelectColumns =
+            "p.id, p.nombre, p.categoria, p.precio_venta, p.estado, p.url, " +
+            "COALESCE(SUM(pd.cantidad), 0) AS stock_total";
+
+        private const string FromClause =
+            "FROM producto p " +
+            "LEFT JOIN producto_deposito pd ON pd.producto_id = p.id";
+
+        private const string GroupBy =
+            "GROUP BY p.id, p.nombre, p.categoria, p.precio_venta, p.estado, p.url";
+
         public static async Task<List<ProductoModel>> GetAll()
         {
             var list = new List<ProductoModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT id, nombre, categoria, precio_venta, estado FROM producto ORDER BY nombre", conn);
+                $"SELECT {SelectColumns} {FromClause} {GroupBy} ORDER BY p.nombre", conn);
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -28,7 +39,7 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT id, nombre, categoria, precio_venta, estado FROM producto WHERE id = @id", conn);
+                $"SELECT {SelectColumns} {FromClause} WHERE p.id = @id {GroupBy}", conn);
             cmd.Parameters.AddWithValue("@id", id);
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
@@ -40,8 +51,8 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "INSERT INTO producto (nombre, categoria, precio_venta, estado) " +
-                "VALUES (@nombre, @categoria, @precio_venta, @estado) RETURNING id", conn);
+                "INSERT INTO producto (nombre, categoria, precio_venta, estado, url) " +
+                "VALUES (@nombre, @categoria, @precio_venta, @estado, @url) RETURNING id", conn);
             AddParams(cmd, p);
             var result = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(result);
@@ -52,7 +63,7 @@ namespace ProyectoIntegradorNet10.Services
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE producto SET nombre = @nombre, categoria = @categoria, " +
-                "precio_venta = @precio_venta, estado = @estado WHERE id = @id", conn);
+                "precio_venta = @precio_venta, estado = @estado, url = @url WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("@id", p.Id);
             AddParams(cmd, p);
             await cmd.ExecuteNonQueryAsync();
@@ -72,9 +83,9 @@ namespace ProyectoIntegradorNet10.Services
             var list = new List<ProductoModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT id, nombre, categoria, precio_venta, estado FROM producto " +
-                "WHERE LOWER(nombre) LIKE @term OR LOWER(categoria) LIKE @term " +
-                "ORDER BY nombre", conn);
+                $"SELECT {SelectColumns} {FromClause} " +
+                "WHERE LOWER(p.nombre) LIKE @term OR LOWER(p.categoria) LIKE @term " +
+                $"{GroupBy} ORDER BY p.nombre", conn);
             cmd.Parameters.AddWithValue("@term", $"%{term.ToLower()}%");
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -93,6 +104,8 @@ namespace ProyectoIntegradorNet10.Services
                 Categoria = r.IsDBNull(2) ? null : r.GetString(2),
                 PrecioVenta = r.IsDBNull(3) ? null : r.GetDecimal(3),
                 Estado = r.IsDBNull(4) ? null : r.GetString(4),
+                Url = r.IsDBNull(5) ? null : r.GetString(5),
+                StockTotal = r.GetDecimal(6),
             };
         }
 
@@ -102,6 +115,7 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@categoria", (object?)p.Categoria ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@precio_venta", (object?)p.PrecioVenta ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@estado", (object?)p.Estado ?? "Activo");
+            cmd.Parameters.AddWithValue("@url", (object?)p.Url ?? DBNull.Value);
         }
     }
 }

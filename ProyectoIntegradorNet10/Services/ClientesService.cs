@@ -10,12 +10,14 @@ namespace ProyectoIntegradorNet10.Services
     {
         private static NpgsqlDataSource DS => DatabaseConnection.DataSource;
 
+        private const string SelectColumns = "ci, nombre, apellido, direccion, nit, telefono, url";
+
         public static async Task<List<ClienteModel>> GetAll()
         {
             var list = new List<ClienteModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT ci, nombre, apellido, direccion, nit, telefono FROM cliente ORDER BY nombre, apellido", conn);
+                $"SELECT {SelectColumns} FROM cliente ORDER BY nombre, apellido", conn);
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -28,7 +30,7 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT ci, nombre, apellido, direccion, nit, telefono FROM cliente WHERE ci = @ci", conn);
+                $"SELECT {SelectColumns} FROM cliente WHERE ci = @ci", conn);
             cmd.Parameters.AddWithValue("@ci", ci);
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
@@ -40,8 +42,8 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "INSERT INTO cliente (ci, nombre, apellido, direccion, nit, telefono) " +
-                "VALUES (@ci, @nombre, @apellido, @direccion, @nit, @telefono)", conn);
+                "INSERT INTO cliente (ci, nombre, apellido, direccion, nit, telefono, url) " +
+                "VALUES (@ci, @nombre, @apellido, @direccion, @nit, @telefono, @url)", conn);
             AddParams(cmd, c);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -51,7 +53,7 @@ namespace ProyectoIntegradorNet10.Services
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE cliente SET nombre = @nombre, apellido = @apellido, direccion = @direccion, " +
-                "nit = @nit, telefono = @telefono WHERE ci = @ci", conn);
+                "nit = @nit, telefono = @telefono, url = @url WHERE ci = @ci", conn);
             AddParams(cmd, c);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -69,7 +71,7 @@ namespace ProyectoIntegradorNet10.Services
             var list = new List<ClienteModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT ci, nombre, apellido, direccion, nit, telefono FROM cliente " +
+                $"SELECT {SelectColumns} FROM cliente " +
                 "WHERE LOWER(nombre) LIKE @term OR LOWER(apellido) LIKE @term OR LOWER(ci) LIKE @term " +
                 "ORDER BY nombre, apellido", conn);
             cmd.Parameters.AddWithValue("@term", $"%{term.ToLower()}%");
@@ -91,6 +93,7 @@ namespace ProyectoIntegradorNet10.Services
                 Direccion = r.IsDBNull(3) ? null : r.GetString(3),
                 Nit = r.IsDBNull(4) ? null : r.GetString(4),
                 Telefono = r.IsDBNull(5) ? null : r.GetString(5),
+                Url = r.IsDBNull(6) ? null : r.GetString(6),
             };
         }
 
@@ -102,6 +105,7 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@direccion", (object?)c.Direccion ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@nit", (object?)c.Nit ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@telefono", (object?)c.Telefono ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@url", (object?)c.Url ?? DBNull.Value);
         }
     }
 }

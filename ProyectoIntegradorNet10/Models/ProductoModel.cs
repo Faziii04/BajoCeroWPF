@@ -9,7 +9,10 @@ namespace ProyectoIntegradorNet10.Models
         public string? Categoria { get; set; }
         public decimal? PrecioVenta { get; set; }
         public string? Estado { get; set; }
+        public string? Url { get; set; }
+        public decimal StockTotal { get; set; }
 
         public string PrecioDisplay => PrecioVenta?.ToString("N2") ?? "0.00";
+        public string StockDisplay => StockTotal.ToString("N0");
     }
 }

@@ -1,8 +1,11 @@
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using ProyectoIntegradorNet10.Models;
 using ProyectoIntegradorNet10.Services;
 
@@ -12,6 +15,12 @@ namespace ProyectoIntegradorNet10.UserControls
     {
         private List<ClienteModel> _clientes = new();
         private bool _isEditing;
+
+        /// <summary>
+        /// Tracks the local file path when an image is selected via the file picker.
+        /// If set, the image will be uploaded to S3 on save.
+        /// </summary>
+        private string? _pendingImagePath;
 
         public ClientesUC()
         {
@@ -56,6 +65,15 @@ namespace ProyectoIntegradorNet10.UserControls
             txtNit.Text = "";
             txtCi.IsEnabled = true;
             btnEliminar.IsEnabled = false;
+            ClearImagePreview();
+            _pendingImagePath = null;
+        }
+
+        private void ClearImagePreview()
+        {
+            imgPreview.Visibility = Visibility.Collapsed;
+            txtNoImage.Visibility = Visibility.Visible;
+            txtImageStatus.Text = "Sin imagen seleccionada";
         }
 
         private void PopulateForm(ClienteModel c)
@@ -69,6 +87,37 @@ namespace ProyectoIntegradorNet10.UserControls
             txtNit.Text = c.Nit ?? "";
             txtCi.IsEnabled = false;
             btnEliminar.IsEnabled = true;
+
+            // Load image if URL exists
+            if (!string.IsNullOrEmpty(c.Url))
+            {
+                LoadImageFromUrl(c.Url);
+            }
+            else
+            {
+                ClearImagePreview();
+            }
+        }
+
+        private void LoadImageFromUrl(string url)
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(url, UriKind.RelativeOrAbsolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+
+                imgPreview.Source = bitmap;
+                imgPreview.Visibility = Visibility.Visible;
+                txtNoImage.Visibility = Visibility.Collapsed;
+                txtImageStatus.Text = "Imagen cargada";
+            }
+            catch
+            {
+                ClearImagePreview();
+            }
         }
 
         private ClienteModel? GetFormData()
@@ -115,6 +164,36 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
+                // ─── Upload image to S3 if a local file was selected ───
+                if (_pendingImagePath != null && File.Exists(_pendingImagePath))
+                {
+                    btnGuardar.IsEnabled = false;
+                    btnGuardar.Content = new TextBlock
+                    {
+                        Text = "Subiendo imagen...",
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    string? uploadedUrl = await S3Helper.UploadClientImageAsync(data.Ci, _pendingImagePath);
+
+                    if (uploadedUrl != null)
+                    {
+                        data.Url = uploadedUrl;
+                        txtImageStatus.Text = "Imagen subida a la nube";
+                    }
+                    else
+                    {
+                        MessageBox.Show("No se pudo subir la imagen. Intente de nuevo.", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        btnGuardar.IsEnabled = true;
+                        btnGuardar.Content = null;
+                        return;
+                    }
+
+                    _pendingImagePath = null;
+                }
+
                 if (_isEditing)
                 {
                     await ClientesService.Update(data);
@@ -132,6 +211,11 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 MessageBox.Show($"Error al guardar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                btnGuardar.IsEnabled = true;
+                btnGuardar.Content = null;
+            }
         }
 
         private async void BtnEliminar_Click(object sender, RoutedEventArgs e)
@@ -145,6 +229,9 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
+                // Delete the image from S3
+                await S3Helper.DeleteClientImageAsync(ci);
+
                 await ClientesService.Delete(ci);
                 MessageBox.Show("Cliente eliminado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ClearForm();
@@ -191,6 +278,46 @@ namespace ProyectoIntegradorNet10.UserControls
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al buscar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ────────────────────────────── IMAGE HANDLING ──────────────────────────────
+
+        private void BtnUploadImage_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Seleccionar imagen del cliente",
+                Filter = "Imágenes (*.png;*.jpg;*.jpeg;*.gif;*.bmp)|*.png;*.jpg;*.jpeg;*.gif;*.bmp|Todos los archivos (*.*)|*.*",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                string filePath = dialog.FileName;
+
+                try
+                {
+                    // Load the image into the preview
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+
+                    imgPreview.Source = bitmap;
+                    imgPreview.Visibility = Visibility.Visible;
+                    txtNoImage.Visibility = Visibility.Collapsed;
+                    txtImageStatus.Text = $"Imagen seleccionada: {Path.GetFileName(filePath)}";
+
+                    // Store the local path — will be uploaded to S3 on save
+                    _pendingImagePath = filePath;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al cargar la imagen: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }
