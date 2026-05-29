@@ -20,7 +20,7 @@
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="RowHeight" Value="42"/>
+            <Setter Property="RowHeight" Value="48"/>
             <Setter Property="AlternatingRowBackground" Value="{DynamicResource GridRowAltBrush}"/>
             <Setter Property="AlternationCount" Value="2"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
@@ -36,9 +36,9 @@
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="38"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
@@ -67,57 +67,8 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        </Style>
-
-        <!-- ─── TextBox style for form ─── -->
-        <Style TargetType="TextBox" x:Key="FormTextBox">
-            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,7"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="CaretBrush" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ─── PasswordBox style for form ─── -->
-        <Style TargetType="PasswordBox" x:Key="FormPasswordBox">
-            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,7"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- ─── Form label style ─── -->
-        <Style TargetType="TextBlock" x:Key="FormLabel">
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,3"/>
         </Style>
 
         <!-- ─── Action buttons ─── -->
@@ -237,6 +188,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="Empleados" FontSize="20" FontWeight="Bold"
@@ -281,7 +233,14 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
+                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnEditar_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✏" FontSize="14" Margin="0,0,6,0"/>
+                            <TextBlock Text="Editar"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="4" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
                             <TextBlock Text="Refrescar"/>
@@ -290,151 +249,71 @@
                 </Grid>
             </Border>
 
-            <!-- ════════ MAIN CONTENT ════════ -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="1.2*"/>
-                </Grid.ColumnDefinitions>
+            <!-- ════════ MAIN CONTENT: Full-width DataGrid ════════ -->
+            <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
+                <Grid>
+                    <DataGrid x:Name="dgEmpleados" Style="{StaticResource GridStyle}"
+                              MouseDoubleClick="dgEmpleados_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <!-- Avatar column: image if Url is set, otherwise initials -->
+                            <DataGridTemplateColumn Header="" Width="64">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="40" Height="40" Margin="8,0,0,0">
+                                            <!-- Image (visible when Url has a value) -->
+                                            <Image x:Name="AvatarImage" Width="40" Height="40"
+                                                   Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Source="{Binding Url}"
+                                                   Visibility="Visible">
+                                                <Image.Clip>
+                                                    <RectangleGeometry Rect="0,0,40,40" RadiusX="8" RadiusY="8"/>
+                                                </Image.Clip>
+                                            </Image>
 
-                <!-- ─── LEFT: DataGrid ─── -->
-                <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
-                    <Grid>
-                        <DataGrid x:Name="dgEmpleados" Style="{StaticResource GridStyle}"
-                                  SelectionChanged="dgEmpleados_SelectionChanged">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="CI" Binding="{Binding Ci}" Width="100"/>
-                                <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>
-                                <DataGridTextColumn Header="Apellido" Binding="{Binding Apellido}" Width="*"/>
-                                <DataGridTextColumn Header="Correo" Binding="{Binding Correo}" Width="*"/>
-                                <DataGridTextColumn Header="Área" Binding="{Binding Area}" Width="80"/>
-                                <DataGridTextColumn Header="Turno" Binding="{Binding Turno}" Width="70"/>
-                                <DataGridTextColumn Header="Usuario" Binding="{Binding Usuario}" Width="90"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                                            <!-- Fallback initials (hidden by default) -->
+                                            <Border x:Name="InitialsBadge" Width="40" Height="40" CornerRadius="8"
+                                                    Background="{DynamicResource AcentoBrush}"
+                                                    Visibility="Collapsed">
+                                                <TextBlock Text="{Binding Iniciales}"
+                                                           Foreground="White"
+                                                           FontSize="15" FontWeight="Bold"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <!-- When Url is null or empty, hide image and show initials -->
+                                            <DataTrigger Binding="{Binding Url}" Value="{x:Null}">
+                                                <Setter TargetName="AvatarImage" Property="Visibility" Value="Collapsed"/>
+                                                <Setter TargetName="InitialsBadge" Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Url}" Value="">
+                                                <Setter TargetName="AvatarImage" Property="Visibility" Value="Collapsed"/>
+                                                <Setter TargetName="InitialsBadge" Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay empleados registrados."
-                                   Foreground="#888" FontSize="14"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Visibility="Collapsed"/>
-                    </Grid>
-                </Border>
+                            <DataGridTextColumn Header="CI" Binding="{Binding Ci}" Width="100"/>
+                            <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>
+                            <DataGridTextColumn Header="Apellido" Binding="{Binding Apellido}" Width="*"/>
+                            <DataGridTextColumn Header="Correo" Binding="{Binding Correo}" Width="*"/>
+                            <DataGridTextColumn Header="Teléfono" Binding="{Binding Telefono}" Width="120"/>
+                            <DataGridTextColumn Header="Área" Binding="{Binding Area}" Width="90"/>
+                            <DataGridTextColumn Header="Turno" Binding="{Binding Turno}" Width="80"/>
+                            <DataGridTextColumn Header="Usuario" Binding="{Binding Usuario}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                <!-- ─── Separator ─── -->
-                <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
-
-                <!-- ─── RIGHT: Detail Form ─── -->
-                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                    <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="Datos del Empleado" FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
-
-                            <!-- CI -->
-                            <TextBlock Text="CI *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtCi" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Nombre -->
-                            <TextBlock Text="Nombre *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtNombre" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Apellido -->
-                            <TextBlock Text="Apellido *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtApellido" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Correo -->
-                            <TextBlock Text="Correo *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtCorreo" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Teléfono -->
-                            <TextBlock Text="Teléfono" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtTelefono" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Dirección -->
-                            <TextBlock Text="Dirección" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtDireccion" Style="{StaticResource FormTextBox}" TextWrapping="Wrap" AcceptsReturn="False" MaxHeight="60"/>
-
-                            <!-- Área -->
-                            <TextBlock Text="Área" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtArea" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Turno -->
-                            <TextBlock Text="Turno" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtTurno" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Usuario -->
-                            <TextBlock Text="Usuario *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtUsuario" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- Contraseña -->
-                            <TextBlock Text="Contraseña *" Style="{StaticResource FormLabel}"/>
-                            <PasswordBox Name="txtContrasena" Style="{StaticResource FormPasswordBox}"/>
-
-                            <!-- URL (foto) -->
-                            <TextBlock Text="URL (foto)" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtUrl" Style="{StaticResource FormTextBox}"/>
-
-                            <!-- ═══ Roles Section ═══ -->
-                            <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="12" Margin="0,4,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="Roles asignados" FontSize="14" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,8"/>
-
-                                    <ListBox Name="lstRoles" Background="Transparent" BorderThickness="0"
-                                             Height="120" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                             SelectionMode="Single"
-                                             Foreground="{DynamicResource NavTextColor}">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <RadioButton Content="{Binding Nombre}"
-                                                             IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                             GroupName="EmpleadoRole"
-                                                             Foreground="{DynamicResource NavTextColor}"
-                                                             FontSize="12"
-                                                             Margin="2,2"
-                                                             Checked="ChkRole_CheckedChanged"/>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                        <ListBox.ItemContainerStyle>
-                                            <Style TargetType="ListBoxItem">
-                                                <Setter Property="Background" Value="Transparent"/>
-                                                <Setter Property="BorderThickness" Value="0"/>
-                                                <Setter Property="Padding" Value="4,2"/>
-                                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ListBox.ItemContainerStyle>
-                                    </ListBox>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- ═══ Action Buttons ═══ -->
-                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                <Button Name="btnGuardar" Style="{StaticResource ActionButton}" Click="BtnGuardar_Click">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Guardar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="🗑" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Eliminar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Name="btnCancelar" Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
-                                    <TextBlock Text="Cancelar"/>
-                                </Button>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                </ScrollViewer>
-            </Grid>
+                    <TextBlock Name="txtEmptyState" Text="No hay empleados registrados."
+                               Foreground="#888" FontSize="14"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="Collapsed"/>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

@@ -15,6 +15,14 @@ namespace ProyectoIntegradorNet10.Models
         public string Contrasena { get; set; } = string.Empty;
         public string? Url { get; set; }
         public string? Turno { get; set; }
+
+        /// <summary>
+        /// Display helper: first letter of Nombre + first letter of Apellido.
+        /// Used for the avatar column in the DataGrid.
+        /// </summary>
+        public string Iniciales =>
+            $"{(string.IsNullOrEmpty(Nombre) ? "" : Nombre[0].ToString().ToUpper())}" +
+            $"{(string.IsNullOrEmpty(Apellido) ? "" : Apellido[0].ToString().ToUpper())}";
     }
 
     public class RolModel
