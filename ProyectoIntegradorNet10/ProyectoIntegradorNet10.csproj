@@ -18,5 +18,9 @@
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<ApplicationIcon>Images/BajoCeroIcon.ico</ApplicationIcon>
+	</PropertyGroup>
+
 </Project>
 
