@@ -6,7 +6,6 @@ namespace ProyectoIntegradorNet10.Models
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
-        public string? Categoria { get; set; }
         public decimal? PrecioVenta { get; set; }
         public string? Estado { get; set; }
         public string? Url { get; set; }

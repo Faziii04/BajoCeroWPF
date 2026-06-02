@@ -192,6 +192,47 @@
             <Setter Property="FontSize" Value="13"/>
         </Style>
 
+        <!-- ─── Calendar / DatePicker popup dark mode styles ─── -->
+        <Style TargetType="Calendar">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SeparatorColor}"/>
+        </Style>
+        <Style TargetType="CalendarItem">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+        </Style>
+        <Style TargetType="CalendarDayButton">
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AcentoBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsToday" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="CalendarButton">
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- ScrollBar -->
         <Style TargetType="ScrollBar">
             <Setter Property="Width" Value="6"/>

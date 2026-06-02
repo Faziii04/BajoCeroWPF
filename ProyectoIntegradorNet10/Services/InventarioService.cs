@@ -158,7 +158,7 @@ namespace ProyectoIntegradorNet10.Services
             var list = new List<ProductoModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "SELECT id, nombre, categoria, precio_venta, estado FROM producto WHERE estado = 'Activo' ORDER BY nombre", conn);
+                "SELECT id, nombre, precio_venta, estado FROM producto WHERE estado = 'Activo' ORDER BY nombre", conn);
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -166,9 +166,8 @@ namespace ProyectoIntegradorNet10.Services
                 {
                     Id = reader.GetInt32(0),
                     Nombre = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    Categoria = reader.IsDBNull(2) ? null : reader.GetString(2),
-                    PrecioVenta = reader.IsDBNull(3) ? null : reader.GetDecimal(3),
-                    Estado = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PrecioVenta = reader.IsDBNull(2) ? null : reader.GetDecimal(2),
+                    Estado = reader.IsDBNull(3) ? null : reader.GetString(3),
                 });
             }
             return list;

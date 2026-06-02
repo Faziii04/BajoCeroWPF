@@ -19,7 +19,7 @@
   </ItemGroup>
 
 	<PropertyGroup>
-		<ApplicationIcon>Images/BajoCero.ico</ApplicationIcon>
+		<ApplicationIcon>Images/BajoCeroIcon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 </Project>

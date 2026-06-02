@@ -20,7 +20,9 @@ namespace ProyectoIntegradorNet10.Services
         private const string BucketName = "images";
         private const string ProductsPrefix = "products";
         private const string EmployeesPrefix = "employees_pfp";
-        private const string ClientsPrefix = "clients_pfp/";
+        private const string ClientsPrefix = "clients_pfp";
+        private const string FamiliesPrefix = "families";
+        private const string PagosPrefix = "pagos";
         private const string ImagesUrlBase = "https://kipxcnfckvulzsjukbws.supabase.co/storage/v1/object/public";
 
         private static readonly Lazy<AmazonS3Client> _s3Client = new(() =>
@@ -54,7 +56,7 @@ namespace ProyectoIntegradorNet10.Services
 
             // Determine file extension from the source file
             string extension = Path.GetExtension(localFilePath)?.ToLowerInvariant() ?? ".jpg";
-            string key = $"{EmployeesPrefix}{ci}{extension}";
+            string key = $"{EmployeesPrefix}/{ci}{extension}";
 
             try
             {
@@ -100,7 +102,7 @@ namespace ProyectoIntegradorNet10.Services
 
             // Determine file extension from the source file
             string extension = Path.GetExtension(localFilePath)?.ToLowerInvariant() ?? ".jpg";
-            string key = $"{ClientsPrefix}{ci}{extension}";
+            string key = $"{ClientsPrefix}/{ci}{extension}";
 
             try
             {

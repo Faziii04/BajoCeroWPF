@@ -1,11 +1,11 @@
-﻿<Window x:Class="ProyectoIntegradorNet10.PopWindows.PWProductos"
+﻿<Window x:Class="ProyectoIntegradorNet10.PopWindows.PWFamlias"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProyectoIntegradorNet10.PopWindows"
         mc:Ignorable="d"
-        Title="Producto" Height="660" Width="540"
+        Title="Familia de Producto" Height="620" Width="540"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
@@ -23,7 +23,9 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="CaretBrush" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
@@ -132,6 +134,75 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- ─── Product card template with image + remove ─── -->
+        <DataTemplate x:Key="ProductItemTemplate">
+            <Border Background="{DynamicResource POscuro2}" CornerRadius="10" Padding="8"
+                    Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Image / icon -->
+                    <Border Grid.Column="0" Width="50" Height="50" CornerRadius="8"
+                            Background="{DynamicResource FOscuro1}" ClipToBounds="True">
+                        <Grid>
+                            <Image Source="{Binding Url}"
+                                   Stretch="UniformToFill"
+                                   Width="50" Height="50"/>
+                            <TextBlock Text="📦" FontSize="20"
+                                       Foreground="{DynamicResource NavTextColor}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Url}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Url}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+
+                    <!-- Info -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,8,0">
+                        <TextBlock Text="{Binding Nombre}"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource NavTextColor}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <TextBlock Text="{Binding PrecioVenta, StringFormat={}Bs {0:N2}}"
+                                       FontSize="12" FontWeight="Bold"
+                                       Foreground="{DynamicResource NavTextColor}"
+                                       Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding Estado}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource SectionLabelColor}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Remove button -->
+                    <Border Grid.Column="2" Width="32" Height="32" CornerRadius="8"
+                            Background="{DynamicResource FOscuro1}" Cursor="Hand"
+                            MouseLeftButtonDown="BtnRemoveProducto_Click"
+                            ToolTip="Quitar producto de esta familia">
+                        <TextBlock Text="✕" FontSize="12" FontWeight="Bold"
+                                   Foreground="#E74C3C"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </DataTemplate>
     </Window.Resources>
 
     <Border Background="{DynamicResource POscuro2}" CornerRadius="16" Padding="24"
@@ -153,14 +224,14 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="40" Height="40" CornerRadius="10"
                             Background="{DynamicResource AcentoBrush}" Margin="0,0,12,0">
-                        <TextBlock Text="📦" FontSize="20"
+                        <TextBlock Text="📁" FontSize="20"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="txtTitulo" Text="Nuevo Producto"
+                        <TextBlock x:Name="txtTitulo" Text="Nueva Familia"
                                    FontSize="18" FontWeight="Bold"
                                    Foreground="{DynamicResource NavTextColor}"/>
-                        <TextBlock Text="Complete los datos del producto"
+                        <TextBlock Text="Complete los datos de la familia"
                                    FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
@@ -181,134 +252,73 @@
                           HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
 
-                    <!-- ─── Image Upload ─── -->
+                    <!-- ─── Family Data Section ─── -->
                     <Border Background="{DynamicResource FOscuro1}" CornerRadius="12" Padding="16"
-                            Margin="0,0,0,16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Datos de la familia" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,12"/>
 
-                            <!-- Image preview - square 1:1 -->
-                            <Border Grid.Column="0" Width="120" Height="120" CornerRadius="12"
+                            <TextBlock Text="Nombre *" Style="{StaticResource FormLabel}"/>
+                            <TextBox x:Name="txtNombre" Style="{StaticResource FormTextBox}"
+                                     VerticalContentAlignment="Center"
+                                     AcceptsReturn="False"/>
+
+                            <TextBlock Text="Descripción" Style="{StaticResource FormLabel}"/>
+                            <TextBox x:Name="txtDescripcion" Style="{StaticResource FormTextBox}"
+                                     MinHeight="70" MaxHeight="120"/>
+
+                            <TextBlock Text="URL de imagen" Style="{StaticResource FormLabel}"/>
+                            <TextBox x:Name="txtUrl" Style="{StaticResource FormTextBox}"
+                                     VerticalContentAlignment="Center"
+                                     AcceptsReturn="False"
+                                     TextChanged="TxtUrl_TextChanged"/>
+
+                            <!-- Image preview -->
+                            <Border Width="100" Height="100" CornerRadius="10"
                                     Background="{DynamicResource POscuro2}"
                                     BorderBrush="{DynamicResource SeparatorColor}" BorderThickness="1"
-                                    Margin="0,0,16,0">
+                                    HorizontalAlignment="Left"
+                                    Margin="0,4,0,0">
                                 <Grid>
-                                    <Image x:Name="imgPreview" Width="120" Height="120"
+                                    <Image x:Name="imgPreview" Width="100" Height="100"
                                            Stretch="UniformToFill" Visibility="Collapsed"
                                            ClipToBounds="True"/>
-                                    <Border CornerRadius="12" ClipToBounds="True">
-                                        <Image x:Name="imgPreviewClip" Width="120" Height="120"
-                                               Stretch="UniformToFill" Visibility="Collapsed"/>
-                                    </Border>
                                     <TextBlock x:Name="txtNoImage" Text="📷"
-                                               FontSize="40"
+                                               FontSize="34"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Imagen del producto"
-                                           FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource NavTextColor}"/>
-                                <TextBlock x:Name="txtImageStatus" Text="Sin imagen seleccionada"
-                                           FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
-                                           Margin="0,4,0,8"/>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtUrl" Style="{StaticResource FormTextBox}"
-                                             TextChanged="TxtUrl_TextChanged"
-                                             Margin="0,0,8,0"/>
-                                    <Button Grid.Column="1" Style="{StaticResource ActionButton}"
-                                            Click="BtnUploadImage_Click" Height="36" Width="36"
-                                            Padding="0" Margin="0">
-                                        <TextBlock Text="📂" FontSize="16"/>
-                                    </Button>
-                                </Grid>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- ─── Product Data Section ─── -->
-                    <Border Background="{DynamicResource FOscuro1}" CornerRadius="12" Padding="16"
-                            Margin="0,0,0,12">
-                        <StackPanel>
-                            <TextBlock Text="Datos del producto" FontSize="14" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,12"/>
-
-                            <TextBlock Text="Nombre *" Style="{StaticResource FormLabel}"/>
-                            <TextBox x:Name="txtNombre" Style="{StaticResource FormTextBox}"/>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Precio de Venta" Style="{StaticResource FormLabel}"/>
-                                    <TextBox x:Name="txtPrecioVenta" Style="{StaticResource FormTextBox}"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                                    <ComboBox x:Name="cmbEstado"
-                                              Background="{DynamicResource InputBgBrush}"
-                                              Foreground="{DynamicResource NavTextColor}"
-                                              BorderBrush="{DynamicResource InputBorderBrush}"
-                                              BorderThickness="1"
-                                              Padding="10,7"
-                                              FontSize="13"
-                                              Margin="0,0,0,10"
-                                              Height="36"
-                                              VerticalContentAlignment="Center">
-                                        <ComboBoxItem Content="Activo" IsSelected="True"/>
-                                        <ComboBoxItem Content="Inactivo"/>
-                                    </ComboBox>
-                                </StackPanel>
-                            </Grid>
                         </StackPanel>
                     </Border>
 
-                    <!-- ─── Familias Section ─── -->
-                    <Border Background="{DynamicResource FOscuro1}" CornerRadius="12" Padding="16"
-                            Margin="0,0,0,12">
+                    <!-- ─── Linked Products Section ─── -->
+                    <Border x:Name="borderProductos" Background="{DynamicResource FOscuro1}" CornerRadius="12" Padding="16"
+                            Margin="0,0,0,12" Visibility="Collapsed">
                         <StackPanel>
-                            <TextBlock Text="Familias" FontSize="14" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,8"/>
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Productos vinculados" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource NavTextColor}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtProductoCount" Grid.Column="1"
+                                           FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
 
-                            <!-- Search families -->
-                            <Border Background="{DynamicResource POscuro2}" CornerRadius="8"
-                                    Padding="8,0" Margin="0,0,0,8" Height="32">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtBuscarFamilia"
-                                             Background="Transparent" BorderThickness="0"
-                                             Foreground="{DynamicResource NavTextColor}"
-                                             FontSize="12" VerticalAlignment="Center"
-                                             TextChanged="TxtBuscarFamilia_TextChanged"/>
-                                    <TextBlock Grid.Column="1" Text="🔍" FontSize="12"
-                                               VerticalAlignment="Center" Margin="4,0"/>
-                                </Grid>
-                            </Border>
+                            <ItemsControl x:Name="icProductosVinculados"
+                                          ItemTemplate="{StaticResource ProductItemTemplate}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
 
-                            <!-- Family checklist -->
-                            <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel x:Name="pnlFamiliasChecklist"/>
-                            </ScrollViewer>
-
-                            <TextBlock x:Name="txtNoFamilias" Text="No hay familias disponibles."
+                            <TextBlock x:Name="txtNoProductos" Text="No hay productos vinculados a esta familia."
                                        FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
                                        Visibility="Collapsed" Margin="0,4,0,0"/>
                         </StackPanel>
@@ -327,13 +337,13 @@
                             <TextBlock Text="Guardar"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click">
+                    <Button x:Name="btnEliminar" Style="{StaticResource DangerButton}" Click="BtnEliminar_Click" IsEnabled="False">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🗑" Margin="0,0,6,0"/>
                             <TextBlock Text="Eliminar"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="btnCancelar" Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
+                    <Button Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
                         <TextBlock Text="Cancelar"/>
                     </Button>
                 </StackPanel>

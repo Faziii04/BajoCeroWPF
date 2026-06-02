@@ -263,11 +263,11 @@ namespace ProyectoIntegradorNet10.Services
             var list = new List<ProductoModel>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                @"SELECT p.id, p.nombre, p.categoria, p.precio_venta, p.estado, p.url,
+                @"SELECT p.id, p.nombre, p.precio_venta, p.estado, p.url,
                          COALESCE(SUM(pd.cantidad), 0) AS stock_total
                   FROM producto p
                   LEFT JOIN producto_deposito pd ON pd.producto_id = p.id
-                  GROUP BY p.id, p.nombre, p.categoria, p.precio_venta, p.estado, p.url
+                  GROUP BY p.id, p.nombre, p.precio_venta, p.estado, p.url
                   ORDER BY p.nombre", conn);
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -276,11 +276,10 @@ namespace ProyectoIntegradorNet10.Services
                 {
                     Id = reader.GetInt32(0),
                     Nombre = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    Categoria = reader.IsDBNull(2) ? null : reader.GetString(2),
-                    PrecioVenta = reader.IsDBNull(3) ? null : reader.GetDecimal(3),
-                    Estado = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    Url = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    StockTotal = reader.GetDecimal(6),
+                    PrecioVenta = reader.IsDBNull(2) ? null : reader.GetDecimal(2),
+                    Estado = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    Url = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    StockTotal = reader.GetDecimal(5),
                 });
             }
             return list;

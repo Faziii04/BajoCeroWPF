@@ -88,6 +88,25 @@
             </Style.Triggers>
         </Style>
 
+        <!-- ─── ComboBox dark mode (dropdown popup) ─── -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="ComboBox" x:Key="FormComboBox">
             <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
@@ -232,6 +251,79 @@
             <Setter Property="FontSize" Value="13"/>
         </Style>
 
+        <!-- ─── DatePicker internal text box dark mode ─── -->
+        <Style TargetType="DatePickerTextBox">
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePickerTextBox">
+                        <Grid>
+                            <TextBox x:Name="PART_TextBox"
+                                     Background="{TemplateBinding Background}"
+                                     Foreground="{TemplateBinding Foreground}"
+                                     BorderThickness="0"
+                                     CaretBrush="{TemplateBinding CaretBrush}"
+                                     FontSize="{TemplateBinding FontSize}"
+                                     VerticalContentAlignment="Center"
+                                     Padding="8,4"/>
+                            <!-- Watermark -->
+                            <TextBlock x:Name="PART_Watermark"
+                                       Text="Seleccionar fecha..."
+                                       Foreground="{DynamicResource SectionLabelColor}"
+                                       FontSize="12"
+                                       Visibility="Collapsed"
+                                       IsHitTestVisible="False"
+                                       Margin="8,0"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ─── Calendar / DatePicker popup dark mode styles ─── -->
+        <Style TargetType="Calendar">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SeparatorColor}"/>
+        </Style>
+        <Style TargetType="CalendarItem">
+            <Setter Property="Background" Value="{DynamicResource POscuro2}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+        </Style>
+        <Style TargetType="CalendarDayButton">
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource AcentoBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsToday" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="CalendarButton">
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style TargetType="ScrollBar">
             <Setter Property="Width" Value="8"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -245,7 +337,6 @@
     <Border Background="{DynamicResource FOscuro1}" Padding="20">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -311,20 +402,8 @@
                 </Grid>
             </Border>
 
-            <!-- ════════ TAB SELECTOR ════════ -->
-            <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,8" Margin="0,0,0,12">
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton x:Name="rbVentas" GroupName="TabGroup" IsChecked="True"
-                                 Style="{StaticResource TabRadioStyle}" Content="Ventas"
-                                 Checked="Tab_Checked"/>
-                    <RadioButton x:Name="rbPagos" GroupName="TabGroup" IsChecked="False"
-                                 Style="{StaticResource TabRadioStyle}" Content="Pagos"
-                                 Checked="Tab_Checked"/>
-                </StackPanel>
-            </Border>
-
             <!-- ════════ MAIN CONTENT ════════ -->
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="1" Grid.RowSpan="1">
 
                 <!-- ─── VENTAS TAB ─── -->
                 <Grid x:Name="gridVentasTab" Visibility="Visible">
@@ -358,11 +437,7 @@
 
                             <TextBlock Grid.Column="4" Text="Tipo:" Foreground="{DynamicResource NavTextColor}"
                                        FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox Grid.Column="5" x:Name="cmbFiltroTipo" Height="30"
-                                      Background="{DynamicResource InputBgBrush}"
-                                      Foreground="{DynamicResource NavTextColor}"
-                                      BorderBrush="{DynamicResource InputBorderBrush}"
-                                      BorderThickness="1" Padding="8,4" FontSize="12"
+                            <ComboBox Grid.Column="5" x:Name="cmbFiltroTipo" Height="30" FontSize="12"
                                       SelectionChanged="Filtro_Changed">
                                 <ComboBoxItem Content="Todos" IsSelected="True"/>
                                 <ComboBoxItem Content="Contado"/>
@@ -376,7 +451,8 @@
                         <Grid>
                             <DataGrid x:Name="dgVentas" Style="{StaticResource GridStyle}"
                                       SelectionChanged="dgVentas_SelectionChanged"
-                                      MouseDoubleClick="dgVentas_MouseDoubleClick">
+                                      MouseDoubleClick="dgVentas_MouseDoubleClick"
+                                      IsReadOnly="True">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                                     <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre}" Width="*"/>
@@ -393,239 +469,6 @@
                                        Visibility="Collapsed"/>
                         </Grid>
                     </Border>
-                </Grid>
-
-                <!-- ─── PAGOS TAB ─── -->
-                <Grid x:Name="gridPagosTab" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- TOP: Filters bar -->
-                    <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,12" Margin="0,0,0,8">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Background="{DynamicResource FOscuro1}" CornerRadius="8"
-                                    Padding="8,0" Height="34" Margin="0,0,16,0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0">
-                                        <TextBox x:Name="txtPagoSearch"
-                                                 Background="Transparent" BorderThickness="0"
-                                                 Foreground="{DynamicResource NavTextColor}"
-                                                 FontSize="13" VerticalAlignment="Center"
-                                                 TextChanged="txtPagoSearch_TextChanged"/>
-                                        <TextBlock IsHitTestVisible="False" Margin="8,0"
-                                                   Text="Buscar por cliente..." Foreground="{DynamicResource SectionLabelColor}" FontSize="13"
-                                                   VerticalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Text, ElementName=txtPagoSearch}" Value="">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Grid>
-                                    <TextBlock Grid.Column="1" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="4,0"/>
-                                </Grid>
-                            </Border>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                                <TextBlock Text="Tipo:" Foreground="{DynamicResource NavTextColor}"
-                                           FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <RadioButton x:Name="rbFiltroTodos" GroupName="FiltroTipo" Content="Todos"
-                                             IsChecked="True" Foreground="{DynamicResource NavTextColor}"
-                                             FontSize="13" Margin="0,0,12,0" Cursor="Hand"
-                                             Checked="FiltroTipo_Checked"/>
-                                <RadioButton x:Name="rbFiltroContado" GroupName="FiltroTipo" Content="Contado"
-                                             Foreground="{DynamicResource NavTextColor}"
-                                             FontSize="13" Margin="0,0,12,0" Cursor="Hand"
-                                             Checked="FiltroTipo_Checked"/>
-                                <RadioButton x:Name="rbFiltroPlan" GroupName="FiltroTipo" Content="Plan de pago"
-                                             Foreground="{DynamicResource NavTextColor}"
-                                             FontSize="13" Cursor="Hand"
-                                             Checked="FiltroTipo_Checked"/>
-                            </StackPanel>
-
-                            <Button Grid.Column="2" Style="{StaticResource ActionButton}" Click="BtnRefrescarPagos_Click"
-                                    Height="34">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Refrescar"/>
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- BOTTOM: Ventas list + Pago form -->
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="4"/>
-                            <ColumnDefinition Width="1.3*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- LEFT: Filtered Ventas DataGrid -->
-                        <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-
-                                <Border Grid.Row="0" Background="{DynamicResource FOscuro1}" CornerRadius="8"
-                                        Padding="12,8" Margin="10,10,10,0">
-                                    <StackPanel>
-                                        <TextBlock x:Name="txtPagoVentaInfo" Text="Seleccione una venta"
-                                                   Foreground="{DynamicResource NavTextColor}" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock x:Name="txtPagoVentaTotal" Text="" Foreground="{DynamicResource NavTextColor}" FontSize="12"/>
-                                        <Button x:Name="btnGenerarFactura" Style="{StaticResource ActionButton}"
-                                                Click="BtnGenerarFactura_Click"
-                                                Visibility="Collapsed" Margin="0,8,0,0" Height="34"
-                                                HorizontalAlignment="Stretch">
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <TextBlock Text="📄" Margin="0,0,8,0" FontSize="14"/>
-                                                <TextBlock Text="Generar Factura" FontSize="13" FontWeight="Bold"/>
-                                            </StackPanel>
-                                        </Button>
-                                        <TextBlock x:Name="txtFacturaInfo" Text="" Foreground="{DynamicResource AcentoBrush}"
-                                                   FontSize="11" Margin="0,4,0,0" Visibility="Collapsed"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <DataGrid Grid.Row="1" x:Name="dgVentasPagos" Style="{StaticResource GridStyle}"
-                                          Margin="0,10,0,0"
-                                          SelectionChanged="dgVentasPagos_SelectionChanged">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                                        <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre}" Width="*"/>
-                                        <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="90"/>
-                                        <DataGridTextColumn Header="Tipo" Binding="{Binding Tipo}" Width="90"/>
-                                        <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay}" Width="90"/>
-                                        <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="80"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-
-                                <TextBlock x:Name="txtPagosEmpty" Text="No se encontraron ventas."
-                                           Foreground="{DynamicResource SectionLabelColor}" FontSize="14"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Visibility="Collapsed"/>
-                            </Grid>
-                        </Border>
-
-                        <!-- Separator -->
-                        <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
-
-                        <!-- RIGHT: Pago Form -->
-                        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                            <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
-                                <StackPanel>
-                                    <TextBlock Text="Gestión de Pagos" FontSize="16" FontWeight="Bold"
-                                               Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
-
-                                    <Button x:Name="btnGenerarPagos" Style="{StaticResource ActionButton}"
-                                            Click="BtnGenerarPagos_Click" Margin="0,0,0,16"
-                                            Visibility="Collapsed">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="📅" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Generar Pagos del Plan"/>
-                                        </StackPanel>
-                                    </Button>
-
-                                    <TextBlock Text="Pagos de la Venta" FontSize="13" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,6"/>
-                                    <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="0"
-                                            MaxHeight="160" Margin="0,0,0,12">
-                                        <DataGrid x:Name="dgPagos" Style="{StaticResource GridStyle}"
-                                                  SelectionChanged="dgPagos_SelectionChanged"
-                                                  AutoGenerateColumns="False"
-                                                  HeadersVisibility="Column"
-                                                  RowHeaderWidth="0"
-                                                  CanUserAddRows="False"
-                                                  CanUserDeleteRows="False"
-                                                  IsReadOnly="True">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="ID" Binding="{Binding PagoId}" Width="40"/>
-                                                <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="80"/>
-                                                <DataGridTextColumn Header="Monto" Binding="{Binding MontoDisplay}" Width="70"/>
-                                                <DataGridTextColumn Header="Método" Binding="{Binding Metodo}" Width="70"/>
-                                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="*"/>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </Border>
-
-                                    <Border Background="{DynamicResource FOscuro1}" CornerRadius="8" Padding="12,8" Margin="0,0,0,12">
-                                        <TextBlock x:Name="txtPagoSelectedInfo"
-                                                   Text="Seleccione un pago para gestionar"
-                                                   Foreground="{DynamicResource NavTextColor}" FontSize="13"/>
-                                    </Border>
-
-                                    <TextBlock Text="Monto" Style="{StaticResource FormLabel}"/>
-                                    <TextBox x:Name="txtPagoMonto" Style="{StaticResource FormTextBox}"/>
-
-                                    <TextBlock Text="Método" Style="{StaticResource FormLabel}"/>
-                                    <ComboBox x:Name="cmbPagoMetodo" Style="{StaticResource FormComboBox}">
-                                        <ComboBoxItem Content="Efectivo"/>
-                                        <ComboBoxItem Content="Transferencia"/>
-                                        <ComboBoxItem Content="QR"/>
-                                        <ComboBoxItem Content="Tarjeta"/>
-                                    </ComboBox>
-
-                                    <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                                    <ComboBox x:Name="cmbPagoEstado" Style="{StaticResource FormComboBox}">
-                                        <ComboBoxItem Content="Pendiente"/>
-                                        <ComboBoxItem Content="Pagado"/>
-                                        <ComboBoxItem Content="Vencido"/>
-                                    </ComboBox>
-
-                                    <Button x:Name="btnMarcarPagado" Style="{StaticResource ActionButton}"
-                                            Click="BtnMarcarPagado_Click"
-                                            Visibility="Collapsed" Margin="0,8,0,0" Height="40"
-                                            HorizontalAlignment="Stretch">
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <TextBlock Text="✅" Margin="0,0,8,0" FontSize="16"/>
-                                            <TextBlock Text="Marcar Venta como Pagada" FontSize="14" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Button>
-
-                                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                        <Button x:Name="btnNuevoPago" Style="{StaticResource ActionButton}" Click="BtnNuevoPago_Click"
-                                                Margin="0,0,8,0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="＋" Margin="0,0,6,0"/>
-                                                <TextBlock Text="Nuevo Pago"/>
-                                            </StackPanel>
-                                        </Button>
-                                        <Button x:Name="btnGuardarPago" Style="{StaticResource ActionButton}" Click="BtnGuardarPago_Click">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                                <TextBlock x:Name="txtBtnGuardarPago" Text="Guardar Pago"/>
-                                            </StackPanel>
-                                        </Button>
-                                        <Button x:Name="btnEliminarPago" Style="{StaticResource DangerButton}" Click="BtnEliminarPago_Click">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="🗑" Margin="0,0,6,0"/>
-                                                <TextBlock Text="Eliminar"/>
-                                            </StackPanel>
-                                        </Button>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-                        </ScrollViewer>
-                    </Grid>
                 </Grid>
             </Grid>
         </Grid>

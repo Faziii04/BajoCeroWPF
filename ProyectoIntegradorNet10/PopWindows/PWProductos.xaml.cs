@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +17,11 @@ namespace ProyectoIntegradorNet10.PopWindows
     {
         private bool _isEditing;
         private int? _editingId;
+
+        // ─── Family assignment state ───
+        private List<FamiliaModel> _allFamilias = new();
+        private HashSet<int> _selectedFamiliaIds = new();
+        private string _familiaSearchTerm = "";
 
         /// <summary>
         /// Tracks the local file path when an image is selected via the file picker.
@@ -40,18 +47,93 @@ namespace ProyectoIntegradorNet10.PopWindows
 
         // ────────────────────────────── LOADING ──────────────────────────────
 
-        private void PWProductos_Loaded(object sender, RoutedEventArgs e)
+        private async void PWProductos_Loaded(object sender, RoutedEventArgs e)
         {
             this.Loaded -= PWProductos_Loaded;
+
+            // Load families for the checklist
+            await LoadFamilias();
 
             if (EditProduct != null)
             {
                 txtTitulo.Text = "Editar Producto";
                 PopulateForm(EditProduct);
+                // Load which families this product belongs to
+                await LoadProductFamiliaIds(EditProduct.Id);
             }
             else
             {
                 txtNombre.Focus();
+            }
+        }
+
+        private async Task LoadFamilias()
+        {
+            try
+            {
+                _allFamilias = await ProductoFamiliaService.GetAll();
+                RenderFamiliaChecklist();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading families: {ex.Message}");
+            }
+        }
+
+        private async Task LoadProductFamiliaIds(int productoId)
+        {
+            try
+            {
+                _selectedFamiliaIds = await ProductoFamiliaService.GetFamiliaIdsByProducto(productoId);
+                RenderFamiliaChecklist();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading product families: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Builds the checklist of families, filtering by search term and checking selected ones.
+        /// </summary>
+        private void RenderFamiliaChecklist()
+        {
+            pnlFamiliasChecklist.Children.Clear();
+
+            var filtered = string.IsNullOrWhiteSpace(_familiaSearchTerm)
+                ? _allFamilias
+                : _allFamilias.Where(f =>
+                    f.Nombre.Contains(_familiaSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (f.Descripcion?.Contains(_familiaSearchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+
+            txtNoFamilias.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            foreach (var familia in filtered)
+            {
+                var cb = new CheckBox
+                {
+                    Content = familia.Nombre,
+                    IsChecked = _selectedFamiliaIds.Contains(familia.Id),
+                    Margin = new Thickness(4, 3, 0, 3),
+                    Foreground = FindResource("NavTextColor") as System.Windows.Media.Brush,
+                    FontSize = 13,
+                    Tag = familia.Id,
+                    Cursor = Cursors.Hand,
+                };
+
+                cb.Checked += (s, e) =>
+                {
+                    if (s is CheckBox c && c.Tag is int id)
+                        _selectedFamiliaIds.Add(id);
+                };
+                cb.Unchecked += (s, e) =>
+                {
+                    if (s is CheckBox c && c.Tag is int id)
+                        _selectedFamiliaIds.Remove(id);
+                };
+
+                pnlFamiliasChecklist.Children.Add(cb);
             }
         }
 
@@ -60,13 +142,13 @@ namespace ProyectoIntegradorNet10.PopWindows
         private void ClearForm()
         {
             txtNombre.Clear();
-            txtCategoria.Clear();
             txtPrecioVenta.Clear();
             cmbEstado.SelectedIndex = 0; // "Activo"
             txtUrl.Clear();
             ClearImagePreview();
 
             _pendingImagePath = null;
+            _selectedFamiliaIds.Clear();
 
             _isEditing = false;
             _editingId = null;
@@ -85,7 +167,6 @@ namespace ProyectoIntegradorNet10.PopWindows
         private void PopulateForm(ProductoModel p)
         {
             txtNombre.Text = p.Nombre;
-            txtCategoria.Text = p.Categoria ?? "";
             txtPrecioVenta.Text = p.PrecioVenta?.ToString("N2") ?? "";
             txtUrl.Text = p.Url ?? "";
 
@@ -174,7 +255,6 @@ namespace ProyectoIntegradorNet10.PopWindows
             {
                 Id = _editingId ?? 0,
                 Nombre = nombre,
-                Categoria = string.IsNullOrWhiteSpace(txtCategoria.Text) ? null : txtCategoria.Text.Trim(),
                 PrecioVenta = precio,
                 Estado = estado,
                 Url = string.IsNullOrWhiteSpace(txtUrl.Text) ? null : txtUrl.Text.Trim()
@@ -235,6 +315,14 @@ namespace ProyectoIntegradorNet10.PopWindows
             }
         }
 
+        // ────────────────────────────── FAMILY SEARCH ──────────────────────────────
+
+        private void TxtBuscarFamilia_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _familiaSearchTerm = txtBuscarFamilia.Text.Trim();
+            RenderFamiliaChecklist();
+        }
+
         // ────────────────────────────── EVENT HANDLERS ──────────────────────────────
 
         private async void BtnGuardar_Click(object sender, RoutedEventArgs e)
@@ -279,9 +367,11 @@ namespace ProyectoIntegradorNet10.PopWindows
                 }
 
                 // ─── Save product data ───
+                int productId;
                 if (_isEditing)
                 {
                     await ProductosService.Update(data);
+                    productId = _editingId!.Value;
                     MessageBox.Show("Producto actualizado correctamente.", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -289,6 +379,7 @@ namespace ProyectoIntegradorNet10.PopWindows
                 {
                     int newId = await ProductosService.Insert(data);
                     data.Id = newId;
+                    productId = newId;
 
                     // If there's a pending image for a new product, upload it now with the new ID
                     if (_pendingImagePath != null && File.Exists(_pendingImagePath))
@@ -307,6 +398,9 @@ namespace ProyectoIntegradorNet10.PopWindows
                     MessageBox.Show("Producto creado correctamente.", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
+
+                // ─── Save family memberships ───
+                await ProductoFamiliaService.SetFamiliasForProducto(productId, _selectedFamiliaIds);
 
                 OnDataChanged?.Invoke();
                 this.Close();
