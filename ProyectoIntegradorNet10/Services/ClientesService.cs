@@ -10,7 +10,7 @@ namespace ProyectoIntegradorNet10.Services
     {
         private static NpgsqlDataSource DS => DatabaseConnection.DataSource;
 
-        private const string SelectColumns = "ci, nombre, apellido, direccion, nit, telefono, url";
+        private const string SelectColumns = "ci, nombre, apellido, direccion, nit, telefono, url, latitud, longitud";
 
         public static async Task<List<ClienteModel>> GetAll()
         {
@@ -42,8 +42,8 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "INSERT INTO cliente (ci, nombre, apellido, direccion, nit, telefono, url) " +
-                "VALUES (@ci, @nombre, @apellido, @direccion, @nit, @telefono, @url)", conn);
+                "INSERT INTO cliente (ci, nombre, apellido, direccion, nit, telefono, url, latitud, longitud) " +
+                "VALUES (@ci, @nombre, @apellido, @direccion, @nit, @telefono, @url, @latitud, @longitud)", conn);
             AddParams(cmd, c);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -53,7 +53,7 @@ namespace ProyectoIntegradorNet10.Services
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE cliente SET nombre = @nombre, apellido = @apellido, direccion = @direccion, " +
-                "nit = @nit, telefono = @telefono, url = @url WHERE ci = @ci", conn);
+                "nit = @nit, telefono = @telefono, url = @url, latitud = @latitud, longitud = @longitud WHERE ci = @ci", conn);
             AddParams(cmd, c);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -94,6 +94,8 @@ namespace ProyectoIntegradorNet10.Services
                 Nit = r.IsDBNull(4) ? null : r.GetString(4),
                 Telefono = r.IsDBNull(5) ? null : r.GetString(5),
                 Url = r.IsDBNull(6) ? null : r.GetString(6),
+                Latitud = r.IsDBNull(7) ? null : r.GetDecimal(7),
+                Longitud = r.IsDBNull(8) ? null : r.GetDecimal(8),
             };
         }
 
@@ -106,6 +108,8 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@nit", (object?)c.Nit ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@telefono", (object?)c.Telefono ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@url", (object?)c.Url ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@latitud", (object?)c.Latitud ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@longitud", (object?)c.Longitud ?? DBNull.Value);
         }
     }
 }

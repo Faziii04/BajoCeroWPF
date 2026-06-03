@@ -1,5 +1,3 @@
-using System;
-
 namespace ProyectoIntegradorNet10.Models
 {
     public class ClienteModel
@@ -11,6 +9,8 @@ namespace ProyectoIntegradorNet10.Models
         public string? Nit { get; set; }
         public string? Telefono { get; set; }
         public string? Url { get; set; }
+        public decimal? Latitud { get; set; }
+        public decimal? Longitud { get; set; }
 
         // Display helper (not from DB)
         public string NombreCompleto => $"{Nombre ?? ""} {Apellido ?? ""}".Trim();
