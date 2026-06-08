@@ -1,0 +1,292 @@
+﻿<Window x:Class="ProyectoIntegradorNet10.PopWindows.PWAsignarRepartidor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProyectoIntegradorNet10.PopWindows"
+        mc:Ignorable="d"
+        Title="Asignar Repartidor" Height="520" Width="700"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None" AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseDown="Window_MouseDown">
+
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="ActionButton">
+            <Setter Property="Background" Value="{DynamicResource AcentoBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="DangerButton">
+            <Setter Property="Background" Value="#C0392B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E74C3C"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#A93226"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SecondaryButton">
+            <Setter Property="Background" Value="{DynamicResource SeparatorColor}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{DynamicResource POscuro2}" CornerRadius="16" Padding="24"
+            BorderBrush="{DynamicResource SeparatorColor}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ════════ HEADER ════════ -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="40" Height="40" CornerRadius="10"
+                            Background="{DynamicResource AcentoBrush}" Margin="0,0,12,0">
+                        <TextBlock Text="🚚" FontSize="20"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="txtTitulo" Text="Asignar Repartidor"
+                                   FontSize="18" FontWeight="Bold"
+                                   Foreground="{DynamicResource NavTextColor}"/>
+                        <TextBlock x:Name="txtSubtitulo" Text="Seleccione un repartidor para el vehículo"
+                                   FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="1" Width="32" Height="32" CornerRadius="8"
+                        Background="{DynamicResource FOscuro1}" Cursor="Hand"
+                        MouseDown="BtnCerrar_Click" VerticalAlignment="Center">
+                    <TextBlock Text="✕" FontSize="14" FontWeight="Bold"
+                               Foreground="{DynamicResource NavTextColor}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </Grid>
+
+            <!-- ════════ CONTENT ════════ -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Current assignment info -->
+                <Border Grid.Row="0" Background="{DynamicResource FOscuro1}" CornerRadius="12"
+                        Padding="16" Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="Vehículo seleccionado" FontSize="13" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="txtVehiculoInfo" Text="—"
+                                   FontSize="14" Foreground="{DynamicResource AcentoBrush}"/>
+                        <TextBlock x:Name="txtAsignacionActual" Text=""
+                                   FontSize="12" Foreground="{DynamicResource SectionLabelColor}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Available repartidores list -->
+                <Border Grid.Row="1" Background="{DynamicResource FOscuro1}" CornerRadius="12" Padding="0">
+                    <Grid>
+                        <Grid Margin="12,10,12,0" VerticalAlignment="Top">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Repartidores disponibles" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource NavTextColor}"
+                                       VerticalAlignment="Center"/>
+                            <Border Grid.Column="1" Background="{DynamicResource InputBgBrush}" CornerRadius="6"
+                                    BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1"
+                                    Height="28" Width="180">
+                                <Grid>
+                                    <TextBox x:Name="txtBuscarRepartidor" Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource NavTextColor}" FontSize="12"
+                                             Padding="6,2" VerticalContentAlignment="Center"
+                                             TextChanged="TxtBuscarRepartidor_TextChanged"/>
+                                    <TextBlock Text="Buscar (CI, nombre, lic...)" FontSize="10"
+                                               Foreground="{DynamicResource SectionLabelColor}"
+                                               IsHitTestVisible="False" Margin="6,0"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=txtBuscarRepartidor}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <ListBox x:Name="lstRepartidores" Margin="0,44,0,0"
+                                 Background="Transparent" BorderThickness="0"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 SelectionMode="Single"
+                                 Foreground="{DynamicResource NavTextColor}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="12,10" Margin="6,3"
+                                            CornerRadius="8"
+                                            Background="{DynamicResource POscuro2}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding EmpleadoNombre}"
+                                                           FontSize="14" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource NavTextColor}"/>
+                                                <Border Grid.Column="1"
+                                                        Background="{DynamicResource AcentoBrush}"
+                                                        CornerRadius="4" Padding="6,2">
+                                                    <TextBlock Text="{Binding EstadoDisplay}"
+                                                               FontSize="10" FontWeight="Bold"
+                                                               Foreground="White"/>
+                                                </Border>
+                                            </Grid>
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal"
+                                                        Margin="0,4,0,0">
+                                                <TextBlock Text="Licencia: " FontSize="12"
+                                                           Foreground="{DynamicResource SectionLabelColor}"/>
+                                                <TextBlock Text="{Binding Licencia}" FontSize="12"
+                                                           Foreground="{DynamicResource NavTextColor}"
+                                                           Margin="0,0,16,0"/>
+                                                <TextBlock Text="Zona: " FontSize="12"
+                                                           Foreground="{DynamicResource SectionLabelColor}"/>
+                                                <TextBlock Text="{Binding Zona}" FontSize="12"
+                                                           Foreground="{DynamicResource NavTextColor}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock x:Name="txtEmptyState"
+                                   Text="No hay repartidores activos disponibles."
+                                   Foreground="#888" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ════════ FOOTER ════════ -->
+            <Border Grid.Row="2" Background="{DynamicResource FOscuro1}" CornerRadius="12"
+                    Padding="16,12" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="btnDesasignar" Style="{StaticResource DangerButton}"
+                            Click="BtnDesasignar_Click" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✕" Margin="0,0,6,0"/>
+                            <TextBlock Text="Desasignar"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btnAsignar" Style="{StaticResource ActionButton}"
+                            Click="BtnAsignar_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✅" Margin="0,0,6,0"/>
+                            <TextBlock Text="Asignar"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource SecondaryButton}" Click="BtnCancelar_Click">
+                        <TextBlock Text="Cancelar"/>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

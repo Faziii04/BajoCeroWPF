@@ -6,7 +6,7 @@
     <Color x:Key="PanelOscuro">#1A2E42</Color>
     <Color x:Key="LetraOscuro">#FFFFFF</Color>
     <Color x:Key="BarraColor">#0D1B2A</Color>
-    <Color x:Key="AcentoColor">#1A2E42</Color>
+    <Color x:Key="AcentoColor">#2A5A8A</Color>
     <Color x:Key="NavColor">#FFFFFF</Color>
 
     <!-- DataGrid-specific colors -->

@@ -13,6 +13,14 @@ namespace ProyectoIntegradorNet10.Models
         public DateTime? SoatVencimiento { get; set; }
         public DateTime? UltimaActualizacion { get; set; }
 
+        // ── Repartidor assignment (populated by VehiculosUC) ──
+
+        /// <summary>Display name of the currently assigned repartidor, or empty.</summary>
+        public string RepartidorAsignado { get; set; } = string.Empty;
+
+        /// <summary>True when there is an active repartidor assignment.</summary>
+        public bool TieneRepartidorActivo { get; set; }
+
         // ── Computed display properties ──
 
         public string MarcaModelo => $"{Marca ?? ""} {Modelo ?? ""}".Trim();
@@ -51,14 +59,11 @@ namespace ProyectoIntegradorNet10.Models
         {
             get
             {
-                // These brushes are defined in DarkTheme.xaml / LightTheme.xaml
-                // as DynamicResource; but for computed properties we return fallback colors.
-                // The XAML bindings will use converters or triggers instead.
                 return SoatEstado switch
                 {
-                    "Vigente" => new SolidColorBrush(Color.FromRgb(46, 204, 113)),    // green
-                    "Por vencer" => new SolidColorBrush(Color.FromRgb(241, 196, 15)),  // amber
-                    _ => new SolidColorBrush(Color.FromRgb(231, 76, 60)),              // red
+                    "Vigente" => new SolidColorBrush(Color.FromRgb(46, 204, 113)),
+                    "Por vencer" => new SolidColorBrush(Color.FromRgb(241, 196, 15)),
+                    _ => new SolidColorBrush(Color.FromRgb(231, 76, 60)),
                 };
             }
         }

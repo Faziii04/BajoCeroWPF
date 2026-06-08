@@ -62,6 +62,20 @@ namespace ProyectoIntegradorNet10.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Inserts a new role and returns the generated ID.
+        /// </summary>
+        public static async Task<int> InsertRolAndGetId(RolModel rol)
+        {
+            using var conn = await DS.OpenConnectionAsync();
+            using var cmd = new NpgsqlCommand(
+                "INSERT INTO rol (nombre, descripcion) VALUES (@nombre, @descripcion) RETURNING id", conn);
+            cmd.Parameters.AddWithValue("@nombre", rol.Nombre);
+            cmd.Parameters.AddWithValue("@descripcion", (object?)rol.Descripcion ?? DBNull.Value);
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result);
+        }
+
         public static async Task UpdateRol(RolModel rol)
         {
             using var conn = await DS.OpenConnectionAsync();

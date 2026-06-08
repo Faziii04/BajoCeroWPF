@@ -137,6 +137,10 @@ namespace ProyectoIntegradorNet10.Windows
         {
             GlobalVars.SwitchTheme();
             AplicarModo();
+
+            // Re-apply active nav style so theme-aware brushes update immediately
+            if (_activeNavButton != null)
+                SetActiveNav(_activeNavButton);
         }
 
         // --- Navigation ---

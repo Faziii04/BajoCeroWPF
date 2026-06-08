@@ -4,7 +4,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ProyectoIntegradorNet10.Models;
+using ProyectoIntegradorNet10.PopWindows;
 using ProyectoIntegradorNet10.Services;
 
 namespace ProyectoIntegradorNet10.UserControls
@@ -30,6 +32,10 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _allVehiculos = await VehiculoService.GetAll();
+
+                // Load repartidor assignments for each vehicle
+                await CargarAsignaciones();
+
                 AplicarFiltro();
                 ActualizarDashboard();
             }
@@ -37,6 +43,37 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 MessageBox.Show($"Error al cargar vehículos: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// For each vehicle, loads the active repartidor assignment (if any).
+        /// </summary>
+        private async System.Threading.Tasks.Task CargarAsignaciones()
+        {
+            try
+            {
+                var tasks = _allVehiculos.Select(async v =>
+                {
+                    var assignment = await RepartidorService.GetActiveAssignmentByPlaca(v.Placa);
+                    if (assignment != null)
+                    {
+                        v.RepartidorAsignado = assignment.RepartidorDisplay;
+                        v.TieneRepartidorActivo = true;
+                    }
+                    else
+                    {
+                        v.RepartidorAsignado = "";
+                        v.TieneRepartidorActivo = false;
+                    }
+                }).ToList();
+
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                // Silently handle — assignment info is secondary
+                System.Diagnostics.Debug.WriteLine($"Error loading assignments: {ex.Message}");
             }
         }
 
@@ -105,12 +142,83 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private void Card_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            // Ignore clicks on buttons inside the card
+            if (e.OriginalSource is DependencyObject source)
+            {
+                // Walk up the visual tree to check if we hit a Button
+                DependencyObject? current = source;
+                while (current != null)
+                {
+                    if (current is Button)
+                        return; // Don't open edit modal when clicking a button
+                    current = VisualTreeHelper.GetParent(current);
+                }
+            }
+
             if (sender is FrameworkElement fe && fe.DataContext is VehiculoModel v)
             {
                 _selectedVehiculo = v;
                 _isEditing = true;
                 PopularFormulario(v);
                 AbrirModal("Editar Vehículo", true);
+            }
+        }
+
+        // ── Repartidores button → open PWRepartidor ──
+
+        private void BtnRepartidores_Click(object sender, RoutedEventArgs e)
+        {
+            var popup = new PWRepartidor
+            {
+                Owner = Window.GetWindow(this)
+            };
+            popup.OnDataChanged += async () => await CargarVehiculos();
+            popup.ShowDialog();
+        }
+
+        // ── Asignar Repartidor button on each card ──
+
+        private void BtnAsignarRepartidor_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is VehiculoModel v)
+            {
+                var popup = new PWAsignarRepartidor
+                {
+                    Owner = Window.GetWindow(this),
+                    VehiculoPlaca = v.Placa,
+                    VehiculoInfo = $"{v.Placa} - {v.MarcaModelo}"
+                };
+                popup.OnDataChanged += async () => await CargarVehiculos();
+                popup.ShowDialog();
+            }
+        }
+
+        // ── Desasignar button on each card ──
+
+        private async void BtnDesasignarRepartidor_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is VehiculoModel v)
+            {
+                var result = MessageBox.Show(
+                    $"¿Desasignar el repartidor actual del vehículo {v.Placa}?",
+                    "Confirmar desasignación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                try
+                {
+                    await RepartidorService.RemoveAssignment(v.Placa);
+                    MessageBox.Show("Repartidor desasignado correctamente.", "Éxito",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await CargarVehiculos();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al desasignar: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 

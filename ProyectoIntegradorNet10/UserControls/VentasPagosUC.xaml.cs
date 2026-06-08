@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using ProyectoIntegradorNet10.Models;
 using ProyectoIntegradorNet10.PopWindows;
 using ProyectoIntegradorNet10.Services;
@@ -15,6 +16,9 @@ namespace ProyectoIntegradorNet10.UserControls
         private List<VentaModel> _ventas = new();
         private List<VentaModel> _filteredVentas = new();
         private VentaModel? _selectedVenta;
+        private List<ClienteModel> _allClientes = new();
+        private List<ClienteModel> _filteredClientes = new();
+        private DispatcherTimer? _clienteFilterTimer;
 
         public VentasPagosUC()
         {
@@ -31,12 +35,84 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _ventas = await VentasService.GetAllVentas();
+
+                // Load clients for the filter ComboBox
+                _allClientes = await ClientesService.GetAll();
+                _filteredClientes = new List<ClienteModel>(_allClientes);
+                PopulateClienteFilter();
+
                 ApplyVentasFilter();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar datos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // ──────────── CLIENTE FILTER COMBOBOX ────────────
+
+        private void PopulateClienteFilter()
+        {
+            if (cmbFiltroCliente == null) return;
+
+            // Keep the "Todos los clientes" item at index 0, then add clients
+            var items = new List<object> { "Todos los clientes" };
+            items.AddRange(_filteredClientes);
+            cmbFiltroCliente.ItemsSource = items;
+            cmbFiltroCliente.SelectedIndex = 0;
+        }
+
+        private void CmbFiltroCliente_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Wire up TextChanged on the editable TextBox inside the ComboBox template
+            if (cmbFiltroCliente.Template.FindName("PART_EditableTextBox", cmbFiltroCliente) is TextBox tb)
+            {
+                tb.TextChanged += (s, args) =>
+                {
+                    if (_clienteFilterTimer == null)
+                    {
+                        _clienteFilterTimer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(300)
+                        };
+                        _clienteFilterTimer.Tick += (timerSender, timerArgs) =>
+                        {
+                            _clienteFilterTimer.Stop();
+                            ApplyClienteFilterDropdown();
+                        };
+                    }
+                    else
+                    {
+                        _clienteFilterTimer.Stop();
+                    }
+                    _clienteFilterTimer.Start();
+                };
+            }
+        }
+
+        private void ApplyClienteFilterDropdown()
+        {
+            if (cmbFiltroCliente == null || _allClientes == null) return;
+
+            string term = cmbFiltroCliente.Text?.Trim().ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(term) || term == "todos los clientes")
+            {
+                _filteredClientes = new List<ClienteModel>(_allClientes);
+            }
+            else
+            {
+                _filteredClientes = _allClientes
+                    .Where(c => (c.NombreCompleto?.ToLower().Contains(term) ?? false)
+                             || (c.Ci?.ToLower().Contains(term) ?? false))
+                    .ToList();
+            }
+
+            // Preserve "Todos los clientes" at top
+            var items = new List<object> { "Todos los clientes" };
+            items.AddRange(_filteredClientes);
+            cmbFiltroCliente.ItemsSource = items;
+            cmbFiltroCliente.IsDropDownOpen = _filteredClientes.Count > 0;
         }
 
         // ──────────── VENTAS TAB: FILTERS ────────────
@@ -46,16 +122,22 @@ namespace ProyectoIntegradorNet10.UserControls
             // Guard against calls during XAML initialization
             if (dgVentas == null) return;
 
-            string searchTerm = txtBuscar?.Text?.Trim().ToLower() ?? "";
-
             var filtered = _ventas.AsEnumerable();
 
-            // Text search
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            // Cliente filter
+            if (cmbFiltroCliente?.SelectedItem != null)
             {
-                filtered = filtered.Where(v =>
-                    (v.ClienteNombre?.ToLower().Contains(searchTerm) ?? false) ||
-                    v.Id.ToString().Contains(searchTerm));
+                string? selectedClientCi = null;
+
+                if (cmbFiltroCliente.SelectedItem is ClienteModel cliente)
+                {
+                    selectedClientCi = cliente.Ci;
+                }
+
+                if (selectedClientCi != null)
+                {
+                    filtered = filtered.Where(v => v.ClienteCi == selectedClientCi);
+                }
             }
 
             // Date range filter
@@ -73,8 +155,11 @@ namespace ProyectoIntegradorNet10.UserControls
             // Tipo filter
             if (cmbFiltroTipo?.SelectedItem is ComboBoxItem tipoItem && tipoItem.Content.ToString() != "Todos")
             {
-                string tipo = tipoItem.Content.ToString();
-                filtered = filtered.Where(v => v.Tipo == tipo);
+                string? tipo = tipoItem.Content.ToString();
+                if (!string.IsNullOrEmpty(tipo))
+                {
+                    filtered = filtered.Where(v => v.Tipo == tipo);
+                }
             }
 
             _filteredVentas = filtered.ToList();
@@ -173,9 +258,14 @@ namespace ProyectoIntegradorNet10.UserControls
             await LoadData();
         }
 
-        private async void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        // ──────────── HOY (TODAY) BUTTON ────────────
+
+        private void BtnHoy_Click(object sender, RoutedEventArgs e)
         {
-            ApplyVentasFilter();
+            if (dpFechaDesde != null)
+                dpFechaDesde.SelectedDate = DateTime.Today;
+            if (dpFechaHasta != null)
+                dpFechaHasta.SelectedDate = DateTime.Today;
         }
     }
 }
