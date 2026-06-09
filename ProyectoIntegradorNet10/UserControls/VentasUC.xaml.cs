@@ -149,10 +149,8 @@ namespace ProyectoIntegradorNet10.UserControls
 
         public void PopulateForm(VentaModel venta)
         {
-            // Check if read-only
-            string estado = venta.Estado ?? "";
-            _isReadOnly = string.Equals(estado, "Pagado", StringComparison.OrdinalIgnoreCase)
-                       || estado.IndexOf("Pagado", StringComparison.OrdinalIgnoreCase) >= 0;
+            // Read-only lock when paid (but Pagado checkbox stays enabled to allow toggling)
+            _isReadOnly = venta.Pagado;
 
             if (_isReadOnly)
             {
@@ -183,6 +181,29 @@ namespace ProyectoIntegradorNet10.UserControls
             // Set descuento
             txtDescuento.Text = venta.PorcentajeDescuento?.ToString() ?? "0";
 
+            // Set NIT
+            txtNit.Text = venta.Nit ?? "";
+
+            // Set estado (delivery status)
+            string estado = venta.Estado ?? "Pedido";
+            foreach (ComboBoxItem item in cmbEstado.Items)
+            {
+                if (string.Equals(item.Content.ToString(), estado, StringComparison.OrdinalIgnoreCase))
+                {
+                    cmbEstado.SelectedItem = item;
+                    break;
+                }
+            }
+
+            // Set pagado
+            chkPagado.IsChecked = venta.Pagado;
+
+            // Set delivery
+            chkDelivery.IsChecked = venta.Delivery;
+
+            // Set entregado
+            chkEntregado.IsChecked = venta.Entregado;
+
             // Load detalles
             _detalles = venta.Detalles.ToList();
             RefreshProductList();
@@ -205,12 +226,13 @@ namespace ProyectoIntegradorNet10.UserControls
             txtMeses.IsReadOnly = readOnly;
             txtDescuento.IsReadOnly = readOnly;
             txtCantidad.IsReadOnly = readOnly;
+            txtNit.IsReadOnly = readOnly;
+            cmbEstado.IsEnabled = !readOnly;
+            chkPagado.IsEnabled = true;     // Always allow toggling Pagado
+            chkDelivery.IsEnabled = !readOnly;
+            chkEntregado.IsEnabled = !readOnly;
             btnAgregarProducto.Visibility = readOnly ? Visibility.Collapsed : Visibility.Collapsed;
-
-            if (readOnly)
-            {
-                btnGuardar.Visibility = Visibility.Collapsed;
-            }
+            btnGuardar.Visibility = Visibility.Visible;  // Always visible to allow saving Pagado changes
         }
 
         // ──────────── PRODUCT GALLERY ────────────
@@ -478,43 +500,47 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private async void BtnGuardar_Click(object sender, RoutedEventArgs e)
         {
-            if (_isReadOnly) return;
+            bool isEditing = EditVenta != null && EditVenta.Id > 0;
 
-            if (cmbCliente.SelectedValue == null)
+            // If creating new, require cliente and products
+            if (!isEditing)
             {
-                MessageBox.Show("Seleccione un cliente.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (_detalles.Count == 0)
-            {
-                MessageBox.Show("Agregue al menos un producto a la venta.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Stock validation: verify all products have sufficient stock
-            for (int i = 0; i < _detalles.Count; i++)
-            {
-                var detalle = _detalles[i];
-                var producto = _allProductos.FirstOrDefault(p => p.Id == detalle.ProductoId);
-                if (producto == null) continue;
-
-                if (producto.StockTotal <= 0)
+                if (cmbCliente.SelectedValue == null)
                 {
-                    MessageBox.Show($"El producto \"{detalle.ProductoNombre}\" no tiene stock disponible.",
-                        "Stock agotado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Seleccione un cliente.", "Validación",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if ((detalle.Cantidad ?? 0) > producto.StockTotal)
+                if (_detalles.Count == 0)
                 {
-                    MessageBox.Show(
-                        $"Stock insuficiente para \"{detalle.ProductoNombre}\".\n" +
-                        $"Solicitado: {detalle.Cantidad:N0} | Disponible: {producto.StockTotal:N0}",
-                        "Stock insuficiente", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Agregue al menos un producto a la venta.", "Validación",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
+                }
+
+                // Stock validation: verify all products have sufficient stock
+                for (int i = 0; i < _detalles.Count; i++)
+                {
+                    var detalle = _detalles[i];
+                    var producto = _allProductos.FirstOrDefault(p => p.Id == detalle.ProductoId);
+                    if (producto == null) continue;
+
+                    if (producto.StockTotal <= 0)
+                    {
+                        MessageBox.Show($"El producto \"{detalle.ProductoNombre}\" no tiene stock disponible.",
+                            "Stock agotado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if ((detalle.Cantidad ?? 0) > producto.StockTotal)
+                    {
+                        MessageBox.Show(
+                            $"Stock insuficiente para \"{detalle.ProductoNombre}\".\n" +
+                            $"Solicitado: {detalle.Cantidad:N0} | Disponible: {producto.StockTotal:N0}",
+                            "Stock insuficiente", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
                 }
             }
 
@@ -528,40 +554,67 @@ namespace ProyectoIntegradorNet10.UserControls
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                var venta = new VentaModel
+                if (isEditing)
                 {
-                    ClienteCi = cmbCliente.SelectedValue.ToString(),
-                    Fecha = DateTime.Today,
-                    Hora = DateTime.Now.TimeOfDay,
-                    Tipo = rbPlanPago.IsChecked == true ? "Plan de pago" : "Contado",
-                    Estado = "Pendiente",
-                };
+                    // ─── UPDATE existing venta ───
+                    EditVenta!.Estado = (cmbEstado.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pedido";
+                    EditVenta.Pagado = chkPagado.IsChecked == true;
+                    EditVenta.Entregado = chkEntregado.IsChecked == true;
+                    EditVenta.Nit = txtNit.Text.Trim();
+                    EditVenta.Delivery = chkDelivery.IsChecked == true;
 
-                if (decimal.TryParse(txtDescuento.Text, out decimal desc))
-                    venta.PorcentajeDescuento = desc;
-                else
-                    venta.PorcentajeDescuento = 0;
+                    if (decimal.TryParse(txtDescuento.Text, out decimal desc))
+                        EditVenta.PorcentajeDescuento = desc;
+                    if (int.TryParse(txtMeses.Text, out int meses) && meses > 0)
+                        EditVenta.Meses = meses;
 
-                if (int.TryParse(txtMeses.Text, out int meses) && meses > 0)
-                    venta.Meses = meses;
-                else
-                    venta.Meses = 1;
+                    await VentasService.UpdateVenta(EditVenta);
 
-                int newId = await VentasService.InsertVenta(venta);
-
-                foreach (var d in _detalles)
-                {
-                    d.VentaId = newId;
-                    await VentasService.InsertDetalle(d);
+                    MessageBox.Show("Venta actualizada correctamente.", "Éxito",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-
-                if (venta.Tipo == "Plan de pago" && venta.Meses.HasValue && venta.Meses.Value > 1)
+                else
                 {
-                    await GenerarPagosPlan(newId, venta.Total, venta.Meses.Value);
-                }
+                    // ─── INSERT new venta ───
+                    var venta = new VentaModel
+                    {
+                        ClienteCi = cmbCliente.SelectedValue.ToString(),
+                        Fecha = DateTime.Today,
+                        Hora = DateTime.Now.TimeOfDay,
+                        Tipo = rbPlanPago.IsChecked == true ? "Plan de pago" : "Contado",
+                        Estado = (cmbEstado.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Pedido",
+                        Pagado = chkPagado.IsChecked == true,
+                        Entregado = chkEntregado.IsChecked == true,
+                        Nit = txtNit.Text.Trim(),
+                        Delivery = chkDelivery.IsChecked == true,
+                    };
 
-                MessageBox.Show("Venta creada correctamente.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (decimal.TryParse(txtDescuento.Text, out decimal desc))
+                        venta.PorcentajeDescuento = desc;
+                    else
+                        venta.PorcentajeDescuento = 0;
+
+                    if (int.TryParse(txtMeses.Text, out int meses) && meses > 0)
+                        venta.Meses = meses;
+                    else
+                        venta.Meses = 1;
+
+                    int newId = await VentasService.InsertVenta(venta);
+
+                    foreach (var d in _detalles)
+                    {
+                        d.VentaId = newId;
+                        await VentasService.InsertDetalle(d);
+                    }
+
+                    if (venta.Tipo == "Plan de pago" && venta.Meses.HasValue && venta.Meses.Value > 1)
+                    {
+                        await GenerarPagosPlan(newId, venta.Total, venta.Meses.Value);
+                    }
+
+                    MessageBox.Show("Venta creada correctamente.", "Éxito",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
 
                 OnDataChanged?.Invoke();
 

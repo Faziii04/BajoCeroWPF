@@ -38,6 +38,84 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Height" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="Border" Grid.ColumnSpan="2"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"/>
+                            <!-- Content display (non-editable mode) -->
+                            <ContentPresenter x:Name="ContentPresenter"
+                                              Grid.Column="0"
+                                              Margin="{TemplateBinding Padding}"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              IsHitTestVisible="False"/>
+                            <!-- Editable text box (editable mode) -->
+                            <TextBox x:Name="PART_EditableTextBox"
+                                     Grid.Column="0"
+                                     Margin="{TemplateBinding Padding}"
+                                     Background="Transparent"
+                                     Foreground="{TemplateBinding Foreground}"
+                                     BorderThickness="0"
+                                     FontSize="{TemplateBinding FontSize}"
+                                     VerticalContentAlignment="Center"
+                                     CaretBrush="{TemplateBinding Foreground}"
+                                     Visibility="Collapsed"
+                                     IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <!-- Dropdown toggle button -->
+                            <ToggleButton x:Name="ToggleButton"
+                                          Grid.Column="1"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Width="28"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Cursor="Hand"
+                                          Style="{x:Null}">
+                                <TextBlock Text="▼" FontSize="8"
+                                           Foreground="{DynamicResource SectionLabelColor}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </ToggleButton>
+                            <!-- Dropdown popup -->
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" Placement="Bottom"
+                                   PopupAnimation="Slide">
+                                <Grid MinWidth="{TemplateBinding ActualWidth}">
+                                    <Border Background="{DynamicResource POscuro2}"
+                                            BorderBrush="{DynamicResource SeparatorColor}"
+                                            BorderThickness="1" CornerRadius="8" Padding="4">
+                                        <ScrollViewer>
+                                            <ItemsPresenter/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="TextBlock" x:Key="FormLabel">

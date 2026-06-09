@@ -51,7 +51,16 @@
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="8"/>
-                            <!-- Editable text box -->
+                            <!-- Content display (non-editable mode) -->
+                            <ContentPresenter x:Name="ContentPresenter"
+                                              Grid.Column="0"
+                                              Margin="{TemplateBinding Padding}"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              IsHitTestVisible="False"/>
+                            <!-- Editable text box (editable mode) -->
                             <TextBox x:Name="PART_EditableTextBox"
                                      Grid.Column="0"
                                      Margin="{TemplateBinding Padding}"
@@ -61,6 +70,7 @@
                                      FontSize="{TemplateBinding FontSize}"
                                      VerticalContentAlignment="Center"
                                      CaretBrush="{TemplateBinding Foreground}"
+                                     Visibility="Collapsed"
                                      IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource TemplatedParent}}"/>
                             <!-- Dropdown toggle button -->
                             <ToggleButton x:Name="ToggleButton"
@@ -91,6 +101,10 @@
                             </Popup>
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
                             </Trigger>
@@ -163,6 +177,56 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CheckBox" x:Key="FormCheckBox">
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Check mark box -->
+                            <Border x:Name="CheckMark"
+                                    Width="20" Height="20"
+                                    CornerRadius="4"
+                                    Background="{DynamicResource InputBgBrush}"
+                                    BorderBrush="{DynamicResource InputBorderBrush}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="CheckIcon"
+                                           Text="✓" FontSize="12" FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <!-- Label text -->
+                            <ContentPresenter Grid.Column="1"
+                                              Margin="8,0,0,0"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Background" Value="{DynamicResource AcentoBrush}"/>
+                                <Setter TargetName="CheckMark" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                                <Setter TargetName="CheckIcon" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CheckMark" Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -367,6 +431,34 @@
                     <TextBlock Text="Descuento (%)" Style="{StaticResource FormLabel}"/>
                     <TextBox x:Name="txtDescuento" Style="{StaticResource FormTextBox}" Text="0"
                              TextChanged="OnFormChanged"/>
+
+                    <!-- NIT -->
+                    <TextBlock Text="NIT" Style="{StaticResource FormLabel}"/>
+                    <TextBox x:Name="txtNit" Style="{StaticResource FormTextBox}" Text=""/>
+
+                    <!-- Estado (delivery status) -->
+                    <TextBlock Text="Estado de Entrega" Style="{StaticResource FormLabel}"/>
+                    <ComboBox x:Name="cmbEstado" Style="{StaticResource FormComboBox}" Margin="0,0,0,6">
+                        <ComboBoxItem Content="Pedido" IsSelected="True"/>
+                        <ComboBoxItem Content="En ruta"/>
+                        <ComboBoxItem Content="Incidencia"/>
+                        <ComboBoxItem Content="Completado"/>
+                    </ComboBox>
+
+                    <!-- Delivery -->
+                    <CheckBox x:Name="chkDelivery" Content="Requiere Delivery"
+                              Style="{StaticResource FormCheckBox}"
+                              IsChecked="False"/>
+
+                    <!-- Pagado -->
+                    <CheckBox x:Name="chkPagado" Content="Pagado"
+                              Style="{StaticResource FormCheckBox}"
+                              IsChecked="False"/>
+
+                    <!-- Entregado -->
+                    <CheckBox x:Name="chkEntregado" Content="Entregado"
+                              Style="{StaticResource FormCheckBox}"
+                              IsChecked="False"/>
 
                     <!-- ─── Selected Products List ─── -->
                     <TextBlock Text="Productos en la venta" FontSize="14" FontWeight="Bold"

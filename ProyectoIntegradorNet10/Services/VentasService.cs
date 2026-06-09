@@ -20,7 +20,8 @@ namespace ProyectoIntegradorNet10.Services
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
-                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
+                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
+                "v.pagado, v.entregado, v.nit, v.delivery " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "ORDER BY v.id DESC", conn);
@@ -39,7 +40,8 @@ namespace ProyectoIntegradorNet10.Services
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
-                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
+                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
+                "v.pagado, v.entregado, v.nit, v.delivery " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "WHERE v.id = @id", conn);
@@ -54,15 +56,19 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "INSERT INTO venta (fecha, hora, tipo, estado, porcentaje_descuento, repartidor_id, cliente_ci) " +
-                "VALUES (@fecha, @hora, @tipo, @estado, @descuento, @repartidor, @cliente) RETURNING id", conn);
+                "INSERT INTO venta (fecha, hora, tipo, estado, porcentaje_descuento, repartidor_id, cliente_ci, pagado, entregado, nit, delivery) " +
+                "VALUES (@fecha, @hora, @tipo, @estado, @descuento, @repartidor, @cliente, @pagado, @entregado, @nit, @delivery) RETURNING id", conn);
             cmd.Parameters.AddWithValue("@fecha", v.Fecha);
             cmd.Parameters.AddWithValue("@hora", v.Hora);
             cmd.Parameters.AddWithValue("@tipo", (object?)v.Tipo ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@estado", (object?)v.Estado ?? "Pendiente");
+            cmd.Parameters.AddWithValue("@estado", (object?)v.Estado ?? "Pedido");
             cmd.Parameters.AddWithValue("@descuento", (object?)v.PorcentajeDescuento ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@repartidor", (object?)v.RepartidorId ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@cliente", (object?)v.ClienteCi ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@pagado", v.Pagado);
+            cmd.Parameters.AddWithValue("@entregado", v.Entregado);
+            cmd.Parameters.AddWithValue("@nit", (object?)v.Nit ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@delivery", v.Delivery);
             var result = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(result);
         }
@@ -72,16 +78,21 @@ namespace ProyectoIntegradorNet10.Services
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
                 "UPDATE venta SET fecha = @fecha, hora = @hora, tipo = @tipo, estado = @estado, " +
-                "porcentaje_descuento = @descuento, repartidor_id = @repartidor, cliente_ci = @cliente " +
+                "porcentaje_descuento = @descuento, repartidor_id = @repartidor, cliente_ci = @cliente, " +
+                "pagado = @pagado, entregado = @entregado, nit = @nit, delivery = @delivery " +
                 "WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("@id", v.Id);
             cmd.Parameters.AddWithValue("@fecha", v.Fecha);
             cmd.Parameters.AddWithValue("@hora", v.Hora);
             cmd.Parameters.AddWithValue("@tipo", (object?)v.Tipo ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@estado", (object?)v.Estado ?? "Pendiente");
+            cmd.Parameters.AddWithValue("@estado", (object?)v.Estado ?? "Pedido");
             cmd.Parameters.AddWithValue("@descuento", (object?)v.PorcentajeDescuento ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@repartidor", (object?)v.RepartidorId ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@cliente", (object?)v.ClienteCi ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@pagado", v.Pagado);
+            cmd.Parameters.AddWithValue("@entregado", v.Entregado);
+            cmd.Parameters.AddWithValue("@nit", (object?)v.Nit ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@delivery", v.Delivery);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -113,7 +124,8 @@ namespace ProyectoIntegradorNet10.Services
                 "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
-                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre " +
+                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
+                "v.pagado, v.entregado, v.nit, v.delivery " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "WHERE CAST(v.id AS TEXT) LIKE @term " +
@@ -318,6 +330,10 @@ namespace ProyectoIntegradorNet10.Services
                 ClienteCi = r.IsDBNull(7) ? null : r.GetString(7),
                 MontoFromDb = r.IsDBNull(8) ? null : r.GetDecimal(8),
                 ClienteNombre = r.IsDBNull(9) ? null : r.GetString(9),
+                Pagado = r.IsDBNull(10) ? false : r.GetBoolean(10),
+                Entregado = r.IsDBNull(11) ? false : r.GetBoolean(11),
+                Nit = r.IsDBNull(12) ? null : r.GetString(12),
+                Delivery = r.IsDBNull(13) ? false : r.GetBoolean(13),
             };
         }
 

@@ -162,6 +162,16 @@ namespace ProyectoIntegradorNet10.UserControls
                 }
             }
 
+            // Estado (delivery status) filter
+            if (cmbFiltroEstado?.SelectedItem is ComboBoxItem estadoItem && estadoItem.Content.ToString() != "Todos")
+            {
+                string? estado = estadoItem.Content.ToString();
+                if (!string.IsNullOrEmpty(estado))
+                {
+                    filtered = filtered.Where(v => string.Equals(v.Estado, estado, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
             _filteredVentas = filtered.ToList();
             dgVentas.ItemsSource = _filteredVentas;
             UpdateEmptyState();

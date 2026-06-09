@@ -9,10 +9,14 @@ namespace ProyectoIntegradorNet10.Models
         public DateTime Fecha { get; set; }
         public TimeSpan Hora { get; set; }
         public string? Tipo { get; set; }          // 'Contado' or 'Plan de pago'
-        public string? Estado { get; set; }         // 'Pendiente', 'Pagado', 'Anulado'
+        public string? Estado { get; set; }         // Delivery status: 'Pedido', 'En ruta', 'Incidencia', 'Completado'
         public decimal? PorcentajeDescuento { get; set; }
         public int? RepartidorId { get; set; }
         public string? ClienteCi { get; set; }
+        public bool Pagado { get; set; }            // true = fully paid
+        public bool Entregado { get; set; }         // true = delivered
+        public string? Nit { get; set; }             // NIT at time of sale
+        public bool Delivery { get; set; }           // true = needs delivery
 
         // Display helpers
         public string? ClienteNombre { get; set; }
@@ -44,6 +48,10 @@ namespace ProyectoIntegradorNet10.Models
         public string FechaDisplay => Fecha.ToString("dd/MM/yyyy");
         public string HoraDisplay => Hora.ToString(@"hh\:mm");
         public string TotalDisplay => Total.ToString("N2");
+        public string PagadoDisplay => Pagado ? "✅ Sí" : "❌ No";
+        public string EntregadoDisplay => Entregado ? "✅ Sí" : "❌ No";
+        public string DeliveryDisplay => Delivery ? "Sí" : "No";
+        public string EstadoDisplay => Estado ?? "Pedido";
     }
 
     public class VentaDetalleModel

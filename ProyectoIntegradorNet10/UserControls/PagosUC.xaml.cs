@@ -55,7 +55,7 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 var venta = EditVenta;
                 txtPagoVentaInfo.Text = $"Venta #{venta.Id} - {venta.ClienteNombre}";
-                txtPagoVentaTotal.Text = $"Tipo: {venta.Tipo} | Estado: {venta.Estado}";
+                txtPagoVentaTotal.Text = $"Tipo: {venta.Tipo} | Estado: {venta.Estado} | Pagado: {(venta.Pagado ? "Sí" : "No")} | Entregado: {(venta.Entregado ? "Sí" : "No")}";
 
                 _pagos = await VentasService.GetPagosByVenta(venta.Id);
                 dgPagos.ItemsSource = _pagos;
@@ -90,7 +90,9 @@ namespace ProyectoIntegradorNet10.UserControls
                 }
                 else
                 {
-                    btnGenerarFactura.Visibility = (venta.Estado == "Pagado")
+                    // Show "Generar Factura" only when pendiente = 0 (all payments cover the total)
+                    bool saldoCubierto = pendiente <= 0 && _pagos != null && _pagos.Count > 0;
+                    btnGenerarFactura.Visibility = saldoCubierto
                         ? Visibility.Visible
                         : Visibility.Collapsed;
                     panelFacturaInfo.Visibility = Visibility.Collapsed;
@@ -110,7 +112,7 @@ namespace ProyectoIntegradorNet10.UserControls
                 return;
             }
 
-            if (EditVenta.Estado == "Pagado")
+            if (EditVenta.Pagado)
             {
                 btnMarcarPagado.Visibility = Visibility.Collapsed;
                 return;
@@ -276,23 +278,25 @@ namespace ProyectoIntegradorNet10.UserControls
             if (pagos == null || pagos.Count == 0) return;
 
             bool allPagados = pagos.All(p => p.Estado == "Pagado");
-            bool anyVencido = pagos.Any(p => p.Estado == "Vencido");
 
             var venta = await VentasService.GetVentaById(ventaId);
             if (venta == null) return;
 
-            if (allPagados)
-                venta.Estado = "Pagado";
-            else if (anyVencido)
-                venta.Estado = "Vencido";
-            else
-                venta.Estado = "Pendiente";
+            venta.Pagado = allPagados;
+
+            // Auto-set "Completado" if all paid AND (delivered OR delivery not needed)
+            if (allPagados && (venta.Entregado || !venta.Delivery))
+            {
+                venta.Estado = "Completado";
+            }
 
             await VentasService.UpdateVenta(venta);
 
             if (EditVenta != null && EditVenta.Id == ventaId)
             {
-                EditVenta.Estado = venta.Estado;
+                EditVenta.Pagado = venta.Pagado;
+                if (venta.Estado == "Completado")
+                    EditVenta.Estado = "Completado";
             }
         }
 
@@ -331,7 +335,14 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
-                EditVenta.Estado = "Pagado";
+                EditVenta.Pagado = true;
+
+                // Auto-set "Completado" if delivered OR delivery not needed
+                if (EditVenta.Entregado || !EditVenta.Delivery)
+                {
+                    EditVenta.Estado = "Completado";
+                }
+
                 await VentasService.UpdateVenta(EditVenta);
                 MessageBox.Show("Venta marcada como Pagado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 

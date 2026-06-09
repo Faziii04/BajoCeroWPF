@@ -438,6 +438,8 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="110"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
@@ -473,6 +475,17 @@
                                 <ComboBoxItem Content="Contado"/>
                                 <ComboBoxItem Content="Plan de pago"/>
                             </ComboBox>
+
+                            <TextBlock Grid.Column="9" Text="Estado:" Foreground="{DynamicResource NavTextColor}"
+                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                            <ComboBox Grid.Column="10" x:Name="cmbFiltroEstado" Height="30" FontSize="12"
+                                      SelectionChanged="Filtro_Changed">
+                                <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                <ComboBoxItem Content="Pedido"/>
+                                <ComboBoxItem Content="En ruta"/>
+                                <ComboBoxItem Content="Incidencia"/>
+                                <ComboBoxItem Content="Completado"/>
+                            </ComboBox>
                         </Grid>
                     </Border>
 
@@ -490,6 +503,8 @@
                                     <DataGridTextColumn Header="Tipo" Binding="{Binding Tipo}" Width="100"/>
                                     <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay}" Width="90"/>
                                     <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="80"/>
+                                    <DataGridTextColumn Header="Pagado" Binding="{Binding PagadoDisplay}" Width="70"/>
+                                    <DataGridTextColumn Header="Entregado" Binding="{Binding EntregadoDisplay}" Width="85"/>
                                 </DataGrid.Columns>
                             </DataGrid>
 
