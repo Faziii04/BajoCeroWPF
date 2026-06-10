@@ -440,6 +440,12 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="90"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
@@ -485,6 +491,33 @@
                                 <ComboBoxItem Content="En ruta"/>
                                 <ComboBoxItem Content="Incidencia"/>
                                 <ComboBoxItem Content="Completado"/>
+                            </ComboBox>
+
+                            <TextBlock Grid.Column="12" Text="Delivery:" Foreground="{DynamicResource NavTextColor}"
+                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                            <ComboBox Grid.Column="13" x:Name="cmbFiltroDelivery" Height="30" FontSize="12"
+                                      SelectionChanged="Filtro_Changed">
+                                <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                <ComboBoxItem Content="Sí"/>
+                                <ComboBoxItem Content="No"/>
+                            </ComboBox>
+
+                            <TextBlock Grid.Column="14" Text="Pagado:" Foreground="{DynamicResource NavTextColor}"
+                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                            <ComboBox Grid.Column="15" x:Name="cmbFiltroPagado" Height="30" FontSize="12"
+                                      SelectionChanged="Filtro_Changed">
+                                <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                <ComboBoxItem Content="Sí"/>
+                                <ComboBoxItem Content="No"/>
+                            </ComboBox>
+
+                            <TextBlock Grid.Column="16" Text="Entregado:" Foreground="{DynamicResource NavTextColor}"
+                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                            <ComboBox Grid.Column="17" x:Name="cmbFiltroEntregado" Height="30" FontSize="12"
+                                      SelectionChanged="Filtro_Changed">
+                                <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                <ComboBoxItem Content="Sí"/>
+                                <ComboBoxItem Content="No"/>
                             </ComboBox>
                         </Grid>
                     </Border>

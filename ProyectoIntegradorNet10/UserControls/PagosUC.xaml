@@ -563,6 +563,16 @@
                                            Foreground="{DynamicResource AcentoBrush}"
                                            FontSize="12" TextWrapping="Wrap"/>
                             </Border>
+
+                            <Button x:Name="btnVerFactura" Style="{StaticResource ActionButton}"
+                                    Click="BtnVerFactura_Click"
+                                    Visibility="Collapsed" Height="34" Margin="0,8,0,0"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="👁" Margin="0,0,8,0" FontSize="14"/>
+                                    <TextBlock Text="Ver Factura Completa" FontSize="12" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Border>
 

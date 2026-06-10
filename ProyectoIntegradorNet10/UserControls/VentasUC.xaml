@@ -405,8 +405,26 @@
                     <!-- Cliente -->
                     <TextBlock Text="Cliente *" Style="{StaticResource FormLabel}"/>
                     <ComboBox x:Name="cmbCliente" Style="{StaticResource FormComboBox}"
-                              DisplayMemberPath="NombreCompleto" SelectedValuePath="Ci"
-                              IsEditable="True" StaysOpenOnEdit="True"/>
+                              SelectedValuePath="Ci"
+                              IsEditable="True" StaysOpenOnEdit="True"
+                              IsTextSearchEnabled="False">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Ci}"
+                                               FontSize="11" Foreground="{DynamicResource SectionLabelColor}"
+                                               Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding NombreCompleto}"
+                                               FontSize="13" Foreground="{DynamicResource NavTextColor}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <!-- Tipo -->
                     <TextBlock Text="Tipo de Venta" Style="{StaticResource FormLabel}"/>
@@ -434,7 +452,22 @@
 
                     <!-- NIT -->
                     <TextBlock Text="NIT" Style="{StaticResource FormLabel}"/>
-                    <TextBox x:Name="txtNit" Style="{StaticResource FormTextBox}" Text=""/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="txtNit" Style="{StaticResource FormTextBox}" Text=""/>
+                        <Button Grid.Column="1" x:Name="btnTraerNitCliente"
+                                Width="36" Height="36" Padding="0" Margin="6,0,0,10"
+                                Background="{DynamicResource SeparatorColor}"
+                                Foreground="{DynamicResource NavTextColor}"
+                                BorderThickness="0" FontSize="16" Cursor="Hand"
+                                ToolTip="Usar NIT del cliente"
+                                Click="BtnTraerNitCliente_Click">
+                            <TextBlock Text="📋" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </Grid>
 
                     <!-- Estado (delivery status) -->
                     <TextBlock Text="Estado de Entrega" Style="{StaticResource FormLabel}"/>
@@ -453,12 +486,31 @@
                     <!-- Pagado -->
                     <CheckBox x:Name="chkPagado" Content="Pagado"
                               Style="{StaticResource FormCheckBox}"
-                              IsChecked="False"/>
+                              IsChecked="False"
+                              Checked="OnPagadoEntregadoChanged"
+                              Unchecked="OnPagadoEntregadoChanged"/>
 
                     <!-- Entregado -->
                     <CheckBox x:Name="chkEntregado" Content="Entregado"
                               Style="{StaticResource FormCheckBox}"
-                              IsChecked="False"/>
+                              IsChecked="False"
+                              Checked="OnPagadoEntregadoChanged"
+                              Unchecked="OnPagadoEntregadoChanged"/>
+
+                    <!-- Marcar Completado (visible only when Pagado + Entregado are both checked) -->
+                    <Button x:Name="btnMarcarCompletado"
+                            Background="#27AE60"
+                            Foreground="White" BorderThickness="0"
+                            Padding="16,8" FontSize="13" FontWeight="Bold"
+                            Cursor="Hand" Height="38"
+                            HorizontalAlignment="Stretch"
+                            Visibility="Collapsed"
+                            Click="BtnMarcarCompletado_Click">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="✅" Margin="0,0,8,0" FontSize="16"/>
+                            <TextBlock Text="Marcar como Completado" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
 
                     <!-- ─── Selected Products List ─── -->
                     <TextBlock Text="Productos en la venta" FontSize="14" FontWeight="Bold"

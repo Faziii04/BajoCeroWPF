@@ -172,6 +172,27 @@ namespace ProyectoIntegradorNet10.UserControls
                 }
             }
 
+            // Delivery filter
+            if (cmbFiltroDelivery?.SelectedItem is ComboBoxItem deliveryItem && deliveryItem.Content.ToString() != "Todos")
+            {
+                bool deliveryVal = deliveryItem.Content.ToString() == "Sí";
+                filtered = filtered.Where(v => v.Delivery == deliveryVal);
+            }
+
+            // Pagado filter
+            if (cmbFiltroPagado?.SelectedItem is ComboBoxItem pagadoItem && pagadoItem.Content.ToString() != "Todos")
+            {
+                bool pagadoVal = pagadoItem.Content.ToString() == "Sí";
+                filtered = filtered.Where(v => v.Pagado == pagadoVal);
+            }
+
+            // Entregado filter
+            if (cmbFiltroEntregado?.SelectedItem is ComboBoxItem entregadoItem && entregadoItem.Content.ToString() != "Todos")
+            {
+                bool entregadoVal = entregadoItem.Content.ToString() == "Sí";
+                filtered = filtered.Where(v => v.Entregado == entregadoVal);
+            }
+
             _filteredVentas = filtered.ToList();
             dgVentas.ItemsSource = _filteredVentas;
             UpdateEmptyState();

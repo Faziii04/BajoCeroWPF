@@ -13,6 +13,7 @@ namespace ProyectoIntegradorNet10.UserControls
         private List<PagoModel> _pagos = new();
         private PagoModel? _selectedPago;
         private bool _isNewPago;
+        private FacturaModel? _existingFactura;
 
         /// <summary>
         /// The venta to manage pagos for.
@@ -84,23 +85,62 @@ namespace ProyectoIntegradorNet10.UserControls
                 var existingFactura = await FacturasService.GetByVentaId(venta.Id);
                 if (existingFactura != null)
                 {
+                    _existingFactura = existingFactura;
                     btnGenerarFactura.Visibility = Visibility.Collapsed;
                     txtFacturaInfo.Text = $"✅ Factura #{existingFactura.Id} emitida\nTotal: {existingFactura.TotalDisplay}";
                     panelFacturaInfo.Visibility = Visibility.Visible;
+                    btnVerFactura.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    // Show "Generar Factura" only when pendiente = 0 (all payments cover the total)
+                    _existingFactura = null;
+                    // Show "Generar Factura" only when:
+                    // - saldo cubierto (all payments cover the total)
+                    // - AND the venta has a NIT
+                    bool tieneNit = !string.IsNullOrWhiteSpace(venta.Nit);
                     bool saldoCubierto = pendiente <= 0 && _pagos != null && _pagos.Count > 0;
-                    btnGenerarFactura.Visibility = saldoCubierto
+                    btnGenerarFactura.Visibility = (saldoCubierto && tieneNit)
                         ? Visibility.Visible
                         : Visibility.Collapsed;
                     panelFacturaInfo.Visibility = Visibility.Collapsed;
+                    btnVerFactura.Visibility = Visibility.Collapsed;
                 }
+
+                // Disable pago editing when venta is already paid
+                SetPagoEditingEnabled(!venta.Pagado);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar pagos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Enables or disables all pago editing controls.
+        /// Factura buttons (Generar/Ver) and the DataGrid remain active.
+        /// </summary>
+        private void SetPagoEditingEnabled(bool enabled)
+        {
+            txtPagoMonto.IsEnabled = enabled;
+            cmbPagoMetodo.IsEnabled = enabled;
+            cmbPagoEstado.IsEnabled = enabled;
+            btnNuevoPago.IsEnabled = enabled;
+            btnGuardarPago.IsEnabled = enabled;
+            btnEliminarPago.IsEnabled = enabled;
+
+            if (!enabled)
+            {
+                txtPagoSubtitle.Text = "La venta ya está marcada como pagada — no se pueden modificar pagos.";
+                if (string.IsNullOrEmpty(txtPagoMonto.Text))
+                {
+                    txtPagoMonto.Text = "";
+                    cmbPagoMetodo.SelectedIndex = -1;
+                    cmbPagoEstado.SelectedIndex = -1;
+                }
+            }
+            else
+            {
+                txtPagoSubtitle.Text = "Seleccione un pago o cree uno nuevo";
             }
         }
 
@@ -233,7 +273,12 @@ namespace ProyectoIntegradorNet10.UserControls
                         Estado = estado,
                     };
 
-                    await VentasService.InsertPago(nuevoPago);
+                    int newPagoId = await VentasService.InsertPago(nuevoPago);
+
+                    // Add to local _pagos list so UpdateVentaEstadoFromPagos can use it
+                    nuevoPago.PagoId = newPagoId;
+                    _pagos.Add(nuevoPago);
+
                     await UpdateVentaEstadoFromPagos(EditVenta.Id);
                     MessageBox.Show("Pago creado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -274,30 +319,23 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private async System.Threading.Tasks.Task UpdateVentaEstadoFromPagos(int ventaId)
         {
-            var pagos = await VentasService.GetPagosByVenta(ventaId);
-            if (pagos == null || pagos.Count == 0) return;
+            // Use local _pagos list instead of re-fetching from DB
+            if (_pagos == null || _pagos.Count == 0) return;
 
-            bool allPagados = pagos.All(p => p.Estado == "Pagado");
+            bool allPagados = _pagos.All(p => p.Estado == "Pagado");
 
-            var venta = await VentasService.GetVentaById(ventaId);
-            if (venta == null) return;
+            // Use local EditVenta instead of re-fetching from DB
+            if (EditVenta == null || EditVenta.Id != ventaId) return;
 
-            venta.Pagado = allPagados;
+            EditVenta.Pagado = allPagados;
 
             // Auto-set "Completado" if all paid AND (delivered OR delivery not needed)
-            if (allPagados && (venta.Entregado || !venta.Delivery))
+            if (allPagados && (EditVenta.Entregado || !EditVenta.Delivery))
             {
-                venta.Estado = "Completado";
+                EditVenta.Estado = "Completado";
             }
 
-            await VentasService.UpdateVenta(venta);
-
-            if (EditVenta != null && EditVenta.Id == ventaId)
-            {
-                EditVenta.Pagado = venta.Pagado;
-                if (venta.Estado == "Completado")
-                    EditVenta.Estado = "Completado";
-            }
+            await VentasService.UpdateVenta(EditVenta);
         }
 
         private async void BtnEliminarPago_Click(object sender, RoutedEventArgs e)
@@ -410,6 +448,16 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             if (EditVenta == null || EditVenta.Id <= 0) return;
 
+            // Require NIT to generate a factura
+            if (string.IsNullOrWhiteSpace(EditVenta.Nit))
+            {
+                MessageBox.Show("La venta debe tener un NIT registrado para generar una factura.\n" +
+                    "Use el botón 📋 junto al campo NIT en la pestaña 'Detalles de Venta' " +
+                    "para traer el NIT del cliente, o ingréselo manualmente.",
+                    "NIT requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
                 var existing = await FacturasService.GetByVentaId(EditVenta.Id);
@@ -455,6 +503,17 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 MessageBox.Show($"Error al generar factura: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void BtnVerFactura_Click(object sender, RoutedEventArgs e)
+        {
+            if (_existingFactura == null) return;
+
+            var popup = new PopWindows.PWVerFactura(_existingFactura)
+            {
+                Owner = Window.GetWindow(this),
+            };
+            popup.ShowDialog();
         }
     }
 }

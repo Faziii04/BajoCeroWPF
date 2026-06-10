@@ -127,7 +127,13 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private void ApplyClienteFilter()
         {
-            var term = cmbCliente.Text.Trim().ToLower();
+            // Get text directly from the editable TextBox to avoid ComboBox auto-complete interference
+            string term = "";
+            if (cmbCliente.Template.FindName("PART_EditableTextBox", cmbCliente) is TextBox tb)
+                term = tb.Text.Trim().ToLower();
+            else
+                term = cmbCliente.Text.Trim().ToLower();
+
             if (string.IsNullOrWhiteSpace(term))
             {
                 _filteredClientes = new List<ClienteModel>(_clientes);
@@ -142,7 +148,6 @@ namespace ProyectoIntegradorNet10.UserControls
                     .ToList();
             }
             cmbCliente.ItemsSource = _filteredClientes;
-            cmbCliente.IsDropDownOpen = _filteredClientes.Count > 0;
         }
 
         // ──────────── POPULATE FORM (EDIT MODE) ────────────
@@ -204,6 +209,9 @@ namespace ProyectoIntegradorNet10.UserControls
             // Set entregado
             chkEntregado.IsChecked = venta.Entregado;
 
+            // Update "Marcar Completado" button visibility
+            UpdateMarcarCompletadoVisibility();
+
             // Load detalles
             _detalles = venta.Detalles.ToList();
             RefreshProductList();
@@ -214,7 +222,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 var scrollViewer = icProductos.Parent as ScrollViewer;
                 if (scrollViewer != null) scrollViewer.Visibility = Visibility.Collapsed;
                 txtBuscarProducto.Visibility = Visibility.Collapsed;
-                btnGuardar.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -546,6 +553,9 @@ namespace ProyectoIntegradorNet10.UserControls
 
             try
             {
+                // Save original button content so we can restore it after saving
+                var originalContent = btnGuardar.Content;
+
                 btnGuardar.IsEnabled = false;
                 btnGuardar.Content = new TextBlock
                 {
@@ -612,14 +622,28 @@ namespace ProyectoIntegradorNet10.UserControls
                         await GenerarPagosPlan(newId, venta.Total, venta.Meses.Value);
                     }
 
+                    // After creating a new venta, set it as EditVenta so the form
+                    // stays in edit mode for this venta
+                    venta.Id = newId;
+                    EditVenta = venta;
+                    EditVenta.Detalles = _detalles.ToList();
+                    PopulateForm(EditVenta);
+
                     MessageBox.Show("Venta creada correctamente.", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
+                // Propagate EditVenta to the parent PWVentas so the Pagos tab also sees it
+                if (Window.GetWindow(this) is PopWindows.PWVentas pwVentas)
+                {
+                    pwVentas.EditVenta = EditVenta;
+                }
+
                 OnDataChanged?.Invoke();
 
-                // Close parent window
-                Window.GetWindow(this)?.Close();
+                // Restore original button content (don't close window)
+                btnGuardar.IsEnabled = true;
+                btnGuardar.Content = originalContent;
             }
             catch (Exception ex)
             {
@@ -654,6 +678,105 @@ namespace ProyectoIntegradorNet10.UserControls
         private void BtnCancelar_Click(object sender, RoutedEventArgs e)
         {
             Window.GetWindow(this)?.Close();
+        }
+
+        // ──────────── MARCAR COMPLETADO ────────────
+
+        /// <summary>
+        /// Shows/hides the "Marcar Completado" button based on Pagado + Entregado state.
+        /// </summary>
+        private void UpdateMarcarCompletadoVisibility()
+        {
+            bool ambosChequeados = chkPagado.IsChecked == true && chkEntregado.IsChecked == true;
+            bool yaCompletado = string.Equals(
+                (cmbEstado.SelectedItem as ComboBoxItem)?.Content?.ToString(),
+                "Completado",
+                StringComparison.OrdinalIgnoreCase);
+
+            btnMarcarCompletado.Visibility = (ambosChequeados && !yaCompletado)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void OnPagadoEntregadoChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateMarcarCompletadoVisibility();
+        }
+
+        private async void BtnMarcarCompletado_Click(object sender, RoutedEventArgs e)
+        {
+            if (EditVenta == null || EditVenta.Id <= 0) return;
+
+            var result = MessageBox.Show(
+                $"¿Marcar venta #{EditVenta.Id} como Completado?",
+                "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                // Set estado to Completado in the combobox
+                foreach (ComboBoxItem item in cmbEstado.Items)
+                {
+                    if (string.Equals(item.Content?.ToString(), "Completado", StringComparison.OrdinalIgnoreCase))
+                    {
+                        cmbEstado.SelectedItem = item;
+                        break;
+                    }
+                }
+
+                // Save the venta
+                EditVenta.Estado = "Completado";
+                EditVenta.Pagado = chkPagado.IsChecked == true;
+                EditVenta.Entregado = chkEntregado.IsChecked == true;
+
+                await VentasService.UpdateVenta(EditVenta);
+
+                MessageBox.Show("Venta marcada como Completado.", "Éxito",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                UpdateMarcarCompletadoVisibility();
+                OnDataChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al actualizar venta: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ──────────── TRAER NIT DEL CLIENTE ────────────
+
+        private async void BtnTraerNitCliente_Click(object sender, RoutedEventArgs e)
+        {
+            if (EditVenta == null && cmbCliente.SelectedValue == null)
+            {
+                MessageBox.Show("Seleccione un cliente primero.", "Validación",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                string ci = EditVenta?.ClienteCi ?? cmbCliente.SelectedValue?.ToString() ?? "";
+                if (string.IsNullOrEmpty(ci)) return;
+
+                var cliente = await ClientesService.GetByCi(ci);
+                if (cliente != null && !string.IsNullOrEmpty(cliente.Nit))
+                {
+                    txtNit.Text = cliente.Nit;
+                }
+                else
+                {
+                    MessageBox.Show("El cliente no tiene un NIT registrado.", "Información",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al obtener NIT del cliente: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

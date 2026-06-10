@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ProyectoIntegradorNet10.Models;
+using ProyectoIntegradorNet10.PopWindows;
 using ProyectoIntegradorNet10.Services;
 
 namespace ProyectoIntegradorNet10.UserControls
@@ -12,9 +13,9 @@ namespace ProyectoIntegradorNet10.UserControls
     public partial class InventarioUC : UserControl
     {
         private List<InventarioModel> _inventario = new();
+        private List<InventarioModel> _filteredInventario = new();
         private List<ProductoModel> _productos = new();
         private List<DepositoModel> _depositos = new();
-        private InventarioModel? _selectedItem;
         private bool _isLoading;
 
         public InventarioUC()
@@ -27,7 +28,7 @@ namespace ProyectoIntegradorNet10.UserControls
             await LoadAll();
         }
 
-        private async Task LoadAll()
+        public async System.Threading.Tasks.Task LoadAll()
         {
             if (_isLoading) return;
             _isLoading = true;
@@ -38,16 +39,16 @@ namespace ProyectoIntegradorNet10.UserControls
                 var loadProductos = InventarioService.GetAllProductos();
                 var loadDepositos = InventarioService.GetAllDepositos();
 
-                await Task.WhenAll(loadInventario, loadProductos, loadDepositos);
+                await System.Threading.Tasks.Task.WhenAll(loadInventario, loadProductos, loadDepositos);
 
                 _inventario = loadInventario.Result;
                 _productos = loadProductos.Result;
                 _depositos = loadDepositos.Result;
 
-                dgInventario.ItemsSource = _inventario;
-                cmbProducto.ItemsSource = _productos;
-                cmbDeposito.ItemsSource = _depositos;
+                // Populate filter ComboBoxes
+                PopulateFilterCombos();
 
+                ApplyFilters();
                 UpdateEmptyState();
             }
             catch (Exception ex)
@@ -61,146 +62,40 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
+        private void PopulateFilterCombos()
+        {
+            // Depósito filter: "Todos" (Id = -1) + depósitos
+            var depItems = new List<DepositoModel> { new DepositoModel { Id = -1, Nombre = "Todos los depósitos" } };
+            depItems.AddRange(_depositos);
+            cmbFiltroDeposito.ItemsSource = depItems;
+            if (cmbFiltroDeposito.SelectedIndex == -1)
+                cmbFiltroDeposito.SelectedIndex = 0;
+        }
+
+        private void ApplyFilters()
+        {
+            var filtered = _inventario.AsEnumerable();
+
+            // Depósito filter
+            if (cmbFiltroDeposito?.SelectedItem is DepositoModel depFilter && depFilter.Id != -1)
+            {
+                filtered = filtered.Where(i => i.DepositoId == depFilter.Id);
+            }
+
+            _filteredInventario = filtered.ToList();
+            dgInventario.ItemsSource = _filteredInventario;
+            UpdateEmptyState();
+        }
+
+        private void Filtro_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
         private void UpdateEmptyState()
         {
-            txtEmptyState.Visibility = _inventario == null || _inventario.Count == 0
+            txtEmptyState.Visibility = _filteredInventario == null || _filteredInventario.Count == 0
                 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void ClearForm()
-        {
-            _selectedItem = null;
-            cmbProducto.SelectedIndex = -1;
-            cmbDeposito.SelectedIndex = -1;
-            txtCantidad.Text = "1";
-            panelStockInfo.Visibility = Visibility.Collapsed;
-            dgInventario.SelectedItem = null;
-        }
-
-        private async void CheckCurrentStock()
-        {
-            if (cmbProducto.SelectedValue is int prodId && cmbDeposito.SelectedValue is int depId)
-            {
-                try
-                {
-                    var item = await InventarioService.GetByProductoAndDeposito(prodId, depId);
-                    if (item != null)
-                    {
-                        panelStockInfo.Visibility = Visibility.Visible;
-                        txtStockActual.Text = $"Stock actual: {item.CantidadDisplay} unidades";
-                        _selectedItem = item;
-                    }
-                    else
-                    {
-                        panelStockInfo.Visibility = Visibility.Visible;
-                        txtStockActual.Text = "Stock actual: 0 unidades (nuevo registro)";
-                        _selectedItem = null;
-                    }
-                }
-                catch
-                {
-                    panelStockInfo.Visibility = Visibility.Collapsed;
-                }
-            }
-            else
-            {
-                panelStockInfo.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void dgInventario_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (dgInventario.SelectedItem is InventarioModel item)
-            {
-                _selectedItem = item;
-                cmbProducto.SelectedValue = item.ProductoId;
-                cmbDeposito.SelectedValue = item.DepositoId;
-                txtCantidad.Text = item.Cantidad?.ToString() ?? "0";
-                panelStockInfo.Visibility = Visibility.Visible;
-                txtStockActual.Text = $"Stock actual: {item.CantidadDisplay} unidades";
-            }
-        }
-
-        private async void BtnAgregarStock_Click(object sender, RoutedEventArgs e)
-        {
-            if (!ValidateInputs(out int prodId, out int depId, out decimal cantidad))
-                return;
-
-            try
-            {
-                await InventarioService.AddStock(prodId, depId, cantidad);
-                MessageBox.Show($"Se agregaron {cantidad} unidades al stock.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                await LoadAll();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al agregar stock: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async void BtnSetStock_Click(object sender, RoutedEventArgs e)
-        {
-            if (!ValidateInputs(out int prodId, out int depId, out decimal cantidad))
-                return;
-
-            try
-            {
-                await InventarioService.SetStock(prodId, depId, cantidad);
-                MessageBox.Show($"Stock fijado a {cantidad} unidades.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                await LoadAll();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al fijar stock: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async void BtnEliminar_Click(object sender, RoutedEventArgs e)
-        {
-            if (cmbProducto.SelectedValue is not int prodId || cmbDeposito.SelectedValue is not int depId)
-            {
-                MessageBox.Show("Seleccione un producto y depósito.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var result = MessageBox.Show(
-                "¿Está seguro de eliminar este registro de inventario?",
-                "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result != MessageBoxResult.Yes) return;
-
-            try
-            {
-                await InventarioService.Delete(prodId, depId);
-                MessageBox.Show("Registro eliminado correctamente.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                await LoadAll();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al eliminar registro: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnCancelar_Click(object sender, RoutedEventArgs e)
-        {
-            ClearForm();
-        }
-
-        private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)
-        {
-            txtBuscar.Text = string.Empty;
-            ClearForm();
-            await LoadAll();
         }
 
         private async void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
@@ -215,7 +110,7 @@ namespace ProyectoIntegradorNet10.UserControls
             try
             {
                 _inventario = await InventarioService.Search(term);
-                dgInventario.ItemsSource = _inventario;
+                ApplyFilters();
                 UpdateEmptyState();
             }
             catch (Exception ex)
@@ -225,38 +120,44 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        private bool ValidateInputs(out int prodId, out int depId, out decimal cantidad)
+        private void BtnGestionar_Click(object sender, RoutedEventArgs e)
         {
-            prodId = 0;
-            depId = 0;
-            cantidad = 0;
-
-            if (cmbProducto.SelectedValue is not int pId)
+            var popup = new PWInventario
             {
-                MessageBox.Show("Seleccione un producto.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
+                Owner = Window.GetWindow(this),
+            };
 
-            if (cmbDeposito.SelectedValue is not int dId)
+            popup.OnDataChanged += async () =>
             {
-                MessageBox.Show("Seleccione un depósito.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
+                await LoadAll();
+            };
 
-            if (!decimal.TryParse(txtCantidad.Text, out decimal cant) || cant <= 0)
+            popup.ShowDialog();
+        }
+
+        private void dgInventario_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (dgInventario.SelectedItem is InventarioModel item)
             {
-                MessageBox.Show("Ingrese una cantidad válida mayor a 0.", "Validación",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtCantidad.Focus();
-                return false;
-            }
+                var popup = new PWInventario(item)
+                {
+                    Owner = Window.GetWindow(this),
+                };
 
-            prodId = pId;
-            depId = dId;
-            cantidad = cant;
-            return true;
+                popup.OnDataChanged += async () =>
+                {
+                    await LoadAll();
+                };
+
+                popup.ShowDialog();
+            }
+        }
+
+        private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)
+        {
+            txtBuscar.Text = string.Empty;
+            cmbFiltroDeposito.SelectedIndex = 0;
+            await LoadAll();
         }
     }
 }
