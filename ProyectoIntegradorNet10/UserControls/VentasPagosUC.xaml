@@ -424,102 +424,104 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Filters bar -->
+                    <!-- Filters bar (responsive wrap) -->
                     <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,10" Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="170"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="110"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="90"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="90"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="90"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                        <WrapPanel Orientation="Horizontal">
+                            <!-- Cliente -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,6">
+                                <TextBlock Text="Cliente:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroCliente" Height="30" FontSize="12" MinWidth="150"
+                                          DisplayMemberPath="NombreCompleto"
+                                          IsEditable="True" StaysOpenOnEdit="True"
+                                          SelectionChanged="Filtro_Changed"
+                                          Loaded="CmbFiltroCliente_Loaded"/>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="0" Text="Cliente:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox Grid.Column="1" x:Name="cmbFiltroCliente" Height="30" FontSize="12"
-                                      DisplayMemberPath="NombreCompleto"
-                                      IsEditable="True" StaysOpenOnEdit="True"
-                                      SelectionChanged="Filtro_Changed"
-                                      Loaded="CmbFiltroCliente_Loaded"
-                                      Margin="0,0,12,0"/>
+                            <!-- Desde -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Desde:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <DatePicker x:Name="dpFechaDesde" SelectedDateChanged="Filtro_Changed"
+                                            Height="30" MinWidth="120"/>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="2" Text="Desde:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <DatePicker Grid.Column="3" x:Name="dpFechaDesde" SelectedDateChanged="Filtro_Changed"
-                                        Height="30" Margin="0,0,8,0"/>
+                            <!-- Hasta -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Hasta:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <DatePicker x:Name="dpFechaHasta" SelectedDateChanged="Filtro_Changed"
+                                            Height="30" MinWidth="120"/>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="4" Text="Hasta:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <DatePicker Grid.Column="5" x:Name="dpFechaHasta" SelectedDateChanged="Filtro_Changed"
-                                        Height="30" Margin="0,0,8,0"/>
-
-                            <Button Grid.Column="6" x:Name="btnHoy" Style="{StaticResource SecondaryButton}"
+                            <!-- Hoy -->
+                            <Button x:Name="btnHoy" Style="{StaticResource SecondaryButton}"
                                     Content="📅 Hoy" FontSize="11" Height="30"
-                                    Padding="10,0" Margin="0,0,12,0"
+                                    Padding="10,0" Margin="0,0,10,6"
                                     Click="BtnHoy_Click"/>
 
-                            <TextBlock Grid.Column="7" Text="Tipo:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox Grid.Column="8" x:Name="cmbFiltroTipo" Height="30" FontSize="12"
-                                      SelectionChanged="Filtro_Changed">
-                                <ComboBoxItem Content="Todos" IsSelected="True"/>
-                                <ComboBoxItem Content="Contado"/>
-                                <ComboBoxItem Content="Plan de pago"/>
-                            </ComboBox>
+                            <!-- Tipo -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Tipo:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroTipo" Height="30" FontSize="12" MinWidth="100"
+                                          SelectionChanged="Filtro_Changed">
+                                    <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Contado"/>
+                                    <ComboBoxItem Content="Plan de pago"/>
+                                </ComboBox>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="9" Text="Estado:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,8,0"/>
-                            <ComboBox Grid.Column="10" x:Name="cmbFiltroEstado" Height="30" FontSize="12"
-                                      SelectionChanged="Filtro_Changed">
-                                <ComboBoxItem Content="Todos" IsSelected="True"/>
-                                <ComboBoxItem Content="Pedido"/>
-                                <ComboBoxItem Content="En ruta"/>
-                                <ComboBoxItem Content="Incidencia"/>
-                                <ComboBoxItem Content="Completado"/>
-                            </ComboBox>
+                            <!-- Estado -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Estado:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroEstado" Height="30" FontSize="12" MinWidth="100"
+                                          SelectionChanged="Filtro_Changed">
+                                    <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Pedido"/>
+                                    <ComboBoxItem Content="En ruta"/>
+                                    <ComboBoxItem Content="Incidencia"/>
+                                    <ComboBoxItem Content="Completado"/>
+                                </ComboBox>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="12" Text="Delivery:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
-                            <ComboBox Grid.Column="13" x:Name="cmbFiltroDelivery" Height="30" FontSize="12"
-                                      SelectionChanged="Filtro_Changed">
-                                <ComboBoxItem Content="Todos" IsSelected="True"/>
-                                <ComboBoxItem Content="Sí"/>
-                                <ComboBoxItem Content="No"/>
-                            </ComboBox>
+                            <!-- Delivery -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Delivery:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroDelivery" Height="30" FontSize="12" MinWidth="80"
+                                          SelectionChanged="Filtro_Changed">
+                                    <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Sí"/>
+                                    <ComboBoxItem Content="No"/>
+                                </ComboBox>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="14" Text="Pagado:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
-                            <ComboBox Grid.Column="15" x:Name="cmbFiltroPagado" Height="30" FontSize="12"
-                                      SelectionChanged="Filtro_Changed">
-                                <ComboBoxItem Content="Todos" IsSelected="True"/>
-                                <ComboBoxItem Content="Sí"/>
-                                <ComboBoxItem Content="No"/>
-                            </ComboBox>
+                            <!-- Pagado -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Pagado:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroPagado" Height="30" FontSize="12" MinWidth="80"
+                                          SelectionChanged="Filtro_Changed">
+                                    <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Sí"/>
+                                    <ComboBoxItem Content="No"/>
+                                </ComboBox>
+                            </StackPanel>
 
-                            <TextBlock Grid.Column="16" Text="Entregado:" Foreground="{DynamicResource NavTextColor}"
-                                       FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,4,0"/>
-                            <ComboBox Grid.Column="17" x:Name="cmbFiltroEntregado" Height="30" FontSize="12"
-                                      SelectionChanged="Filtro_Changed">
-                                <ComboBoxItem Content="Todos" IsSelected="True"/>
-                                <ComboBoxItem Content="Sí"/>
-                                <ComboBoxItem Content="No"/>
-                            </ComboBox>
-                        </Grid>
+                            <!-- Entregado -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="Entregado:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ComboBox x:Name="cmbFiltroEntregado" Height="30" FontSize="12" MinWidth="80"
+                                          SelectionChanged="Filtro_Changed">
+                                    <ComboBoxItem Content="Todos" IsSelected="True"/>
+                                    <ComboBoxItem Content="Sí"/>
+                                    <ComboBoxItem Content="No"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </WrapPanel>
                     </Border>
 
                     <!-- Ventas DataGrid -->
