@@ -27,8 +27,10 @@ namespace ProyectoIntegradorNet10.UserControls
                 var roles = await RolesPermisosService.GetAllRoles();
                 dgRoles.ItemsSource = roles;
                 var source = roles as System.Collections.ICollection;
-                txtEmptyState.Visibility = (source == null || source.Count == 0)
-                    ? Visibility.Visible : Visibility.Collapsed;
+                int count = source?.Count ?? 0;
+                txtEmptyState.Visibility = (count == 0) ? Visibility.Visible : Visibility.Collapsed;
+                panelEmptyState.Visibility = (count == 0) ? Visibility.Visible : Visibility.Collapsed;
+                txtRolesCount.Text = count > 0 ? $"({count} rol{(count != 1 ? "es" : "")})" : "";
             }
             catch (Exception ex)
             {
@@ -75,8 +77,11 @@ namespace ProyectoIntegradorNet10.UserControls
                 var results = await RolesPermisosService.SearchRoles(term);
                 dgRoles.ItemsSource = results;
                 var source = results as System.Collections.ICollection;
-                txtEmptyState.Visibility = (source == null || source.Count == 0)
-                    ? Visibility.Visible : Visibility.Collapsed;
+                bool empty = source == null || source.Count == 0;
+                txtEmptyState.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+                panelEmptyState.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+                if (empty)
+                    txtEmptyState.Text = $"No se encontraron roles para \"{term}\".";
             }
             catch (Exception ex)
             {
@@ -85,18 +90,60 @@ namespace ProyectoIntegradorNet10.UserControls
             }
         }
 
-        // ── DataGrid ──
+        // ── DataGrid selection & double-click ──
 
         private void dgRoles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Can be used for preview if needed
+            // Preview area if needed
         }
 
         private void dgRoles_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (dgRoles.SelectedItem is Models.RolModel rol)
-            {
                 AbrirPWRoles(rol);
+        }
+
+        // ── Inline row actions ──
+
+        private void BtnEditarInline_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.Tag is int rolId)
+            {
+                var rol = (dgRoles.ItemsSource as System.Collections.IEnumerable)
+                    ?.Cast<Models.RolModel>()
+                    ?.FirstOrDefault(r => r.Id == rolId);
+                if (rol != null) AbrirPWRoles(rol);
+            }
+        }
+
+        private async void BtnEliminarInline_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.Tag is int rolId)
+            {
+                var rol = (dgRoles.ItemsSource as System.Collections.IEnumerable)
+                    ?.Cast<Models.RolModel>()
+                    ?.FirstOrDefault(r => r.Id == rolId);
+                if (rol == null) return;
+
+                var result = MessageBox.Show(
+                    $"¿Está seguro de eliminar el rol \"{rol.Nombre}\"?",
+                    "Confirmar eliminación",
+                    MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                try
+                {
+                    await RolesPermisosService.DeleteRol(rolId);
+                    MessageBox.Show("Rol eliminado correctamente.", "Éxito",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await LoadRoles();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al eliminar: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

@@ -152,6 +152,18 @@ namespace ProyectoIntegradorNet10.UserControls
                 filtered = filtered.Where(v => v.Fecha < hasta);
             }
 
+            // Fecha Entrega range filter
+            if (dpFechaEntregaDesde?.SelectedDate != null)
+            {
+                var desde = dpFechaEntregaDesde.SelectedDate.Value;
+                filtered = filtered.Where(v => v.FechaEntrega >= desde);
+            }
+            if (dpFechaEntregaHasta?.SelectedDate != null)
+            {
+                var hasta = dpFechaEntregaHasta.SelectedDate.Value.AddDays(1);
+                filtered = filtered.Where(v => v.FechaEntrega < hasta);
+            }
+
             // Tipo filter
             if (cmbFiltroTipo?.SelectedItem is ComboBoxItem tipoItem && tipoItem.Content.ToString() != "Todos")
             {
@@ -297,6 +309,14 @@ namespace ProyectoIntegradorNet10.UserControls
                 dpFechaDesde.SelectedDate = DateTime.Today;
             if (dpFechaHasta != null)
                 dpFechaHasta.SelectedDate = DateTime.Today;
+        }
+
+        private void BtnHoyEntrega_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpFechaEntregaDesde != null)
+                dpFechaEntregaDesde.SelectedDate = DateTime.Today;
+            if (dpFechaEntregaHasta != null)
+                dpFechaEntregaHasta.SelectedDate = DateTime.Today;
         }
     }
 }

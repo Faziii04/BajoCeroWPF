@@ -454,9 +454,31 @@
                                             Height="30" MinWidth="120"/>
                             </StackPanel>
 
+                            <!-- Fecha Entrega Desde -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,10,6">
+                                <TextBlock Text="Ent. Desde:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <DatePicker x:Name="dpFechaEntregaDesde" SelectedDateChanged="Filtro_Changed"
+                                            Height="30" MinWidth="110"/>
+                            </StackPanel>
+
+                            <!-- Fecha Entrega Hasta -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,2,6">
+                                <TextBlock Text="Ent. Hasta:" Foreground="{DynamicResource NavTextColor}"
+                                           FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <DatePicker x:Name="dpFechaEntregaHasta" SelectedDateChanged="Filtro_Changed"
+                                            Height="30" MinWidth="110"/>
+                            </StackPanel>
+
+                            <!-- Hoy (fecha entrega) -->
+                            <Button x:Name="btnHoyEntrega" Style="{StaticResource SecondaryButton}"
+                                    Content="📅 Ent. Hoy" FontSize="11" Height="30"
+                                    Padding="10,0" Margin="0,0,10,6"
+                                    Click="BtnHoyEntrega_Click"/>
+
                             <!-- Hoy -->
                             <Button x:Name="btnHoy" Style="{StaticResource SecondaryButton}"
-                                    Content="📅 Hoy" FontSize="11" Height="30"
+                                    Content="📅 Fecha Hoy" FontSize="11" Height="30"
                                     Padding="10,0" Margin="0,0,10,6"
                                     Click="BtnHoy_Click"/>
 
@@ -534,12 +556,13 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                                     <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre}" Width="*"/>
-                                    <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="90"/>
-                                    <DataGridTextColumn Header="Tipo" Binding="{Binding Tipo}" Width="100"/>
-                                    <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay}" Width="90"/>
-                                    <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="80"/>
-                                    <DataGridTextColumn Header="Pagado" Binding="{Binding PagadoDisplay}" Width="70"/>
-                                    <DataGridTextColumn Header="Entregado" Binding="{Binding EntregadoDisplay}" Width="85"/>
+                                    <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="85"/>
+                                    <DataGridTextColumn Header="Ent. Fecha" Binding="{Binding FechaEntregaDisplay}" Width="90"/>
+                                    <DataGridTextColumn Header="Tipo" Binding="{Binding Tipo}" Width="90"/>
+                                    <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay}" Width="85"/>
+                                    <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
+                                    <DataGridTextColumn Header="Pagado" Binding="{Binding PagadoDisplay}" Width="65"/>
+                                    <DataGridTextColumn Header="Entregado" Binding="{Binding EntregadoDisplay}" Width="75"/>
                                 </DataGrid.Columns>
                             </DataGrid>
 

@@ -15,6 +15,8 @@ namespace ProyectoIntegradorNet10.PopWindows
         {
             public int PermisoId { get; set; }
             public string PermisoNombre { get; set; } = string.Empty;
+            public string PermisoDescripcion { get; set; } = string.Empty;
+            public string PermisoIcono { get; set; } = "🔹";
             public bool IsSelected { get; set; }
         }
 
@@ -61,6 +63,92 @@ namespace ProyectoIntegradorNet10.PopWindows
             }
         }
 
+        private void UpdatePermisosCount()
+        {
+            if (txtPermisosCount == null || txtPermisosTotal == null) return;
+            int total = _allPermisos.Count;
+            int selected = _allPermisos.Count(p => p.IsSelected);
+            txtPermisosCount.Text = $"{selected} seleccionados";
+            txtPermisosTotal.Text = total.ToString();
+        }
+
+        private void TxtBuscarPermiso_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (lstPermisos == null || _allPermisos == null) return;
+            string term = txtBuscarPermiso.Text.Trim().ToLower();
+
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                lstPermisos.ItemsSource = _allPermisos;
+            }
+            else
+            {
+                lstPermisos.ItemsSource = _allPermisos
+                    .Where(p => p.PermisoNombre.ToLower().Contains(term))
+                    .ToList();
+            }
+        }
+
+        private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstPermisos.ItemsSource is System.Collections.IEnumerable items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is PermisoCheckItem pci)
+                        pci.IsSelected = true;
+                }
+                lstPermisos.Items.Refresh();
+                UpdatePermisosCount();
+            }
+        }
+
+        private void BtnDeselectAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (lstPermisos.ItemsSource is System.Collections.IEnumerable items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is PermisoCheckItem pci)
+                        pci.IsSelected = false;
+                }
+                lstPermisos.Items.Refresh();
+                UpdatePermisosCount();
+            }
+        }
+
+        private void Permiso_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdatePermisosCount();
+        }
+
+        private static string GetIconoForPermiso(string permiso)
+        {
+            string p = permiso.ToLower();
+            if (p.Contains("ver") || p.Contains("visualizar") || p.Contains("leer")) return "👁️";
+            if (p.Contains("crear") || p.Contains("agregar") || p.Contains("insertar")) return "➕";
+            if (p.Contains("editar") || p.Contains("modificar") || p.Contains("actualizar")) return "✏️";
+            if (p.Contains("eliminar") || p.Contains("borrar") || p.Contains("quitar")) return "🗑️";
+            if (p.Contains("reporte") || p.Contains("informe")) return "📊";
+            if (p.Contains("admin") || p.Contains("config")) return "⚙️";
+            if (p.Contains("pago") || p.Contains("factura") || p.Contains("venta")) return "💰";
+            if (p.Contains("cliente")) return "👤";
+            if (p.Contains("empleado") || p.Contains("usuario")) return "👥";
+            if (p.Contains("inventario") || p.Contains("stock") || p.Contains("producto")) return "📦";
+            if (p.Contains("vehiculo") || p.Contains("repartidor")) return "🚚";
+            return "🔹";
+        }
+
+        private void PermisoCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is PermisoCheckItem item)
+            {
+                item.IsSelected = !item.IsSelected;
+                UpdatePermisosCount();
+                lstPermisos?.Items.Refresh();
+            }
+        }
+
         private async Task LoadPermisos()
         {
             try
@@ -70,9 +158,12 @@ namespace ProyectoIntegradorNet10.PopWindows
                 {
                     PermisoId = p.Id,
                     PermisoNombre = p.Permiso,
+                    PermisoDescripcion = p.Descripcion ?? "",
+                    PermisoIcono = GetIconoForPermiso(p.Permiso),
                     IsSelected = false
                 }).ToList();
                 lstPermisos.ItemsSource = _allPermisos;
+                UpdatePermisosCount();
             }
             catch (Exception ex)
             {
@@ -95,6 +186,7 @@ namespace ProyectoIntegradorNet10.PopWindows
 
                 lstPermisos.ItemsSource = null;
                 lstPermisos.ItemsSource = _allPermisos;
+                UpdatePermisosCount();
             }
             catch (Exception ex)
             {

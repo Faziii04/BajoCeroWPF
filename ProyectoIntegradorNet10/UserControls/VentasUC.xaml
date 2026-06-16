@@ -406,8 +406,10 @@
                     <TextBlock Text="Cliente *" Style="{StaticResource FormLabel}"/>
                     <ComboBox x:Name="cmbCliente" Style="{StaticResource FormComboBox}"
                               SelectedValuePath="Ci"
+                              TextSearch.TextPath="NombreCompleto"
                               IsEditable="True" StaysOpenOnEdit="True"
-                              IsTextSearchEnabled="False">
+                              IsTextSearchEnabled="False"
+                              SelectionChanged="CmbCliente_SelectionChanged">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -466,6 +468,52 @@
                                 ToolTip="Usar NIT del cliente"
                                 Click="BtnTraerNitCliente_Click">
                             <TextBlock Text="📋" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                    </Grid>
+
+                    <!-- Fecha / Hora Entrega -->
+                    <TextBlock Text="Fecha de Entrega" Style="{StaticResource FormLabel}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="{DynamicResource InputBgBrush}"
+                                BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="0" Height="36">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Date picker -->
+                                <DatePicker x:Name="dpFechaEntrega" Grid.Column="0"
+                                            Height="34" FontSize="13" Margin="4,0,0,0"
+                                            Background="Transparent"
+                                            Foreground="{DynamicResource NavTextColor}"
+                                            BorderThickness="0"/>
+                                <!-- Separator line -->
+                                <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource SeparatorColor}"
+                                           Margin="4,6,4,6" Opacity="0.4"/>
+                                <!-- Time text box -->
+                                <TextBox x:Name="txtHoraEntrega" Grid.Column="2"
+                                         Background="Transparent" BorderThickness="0"
+                                         Foreground="{DynamicResource NavTextColor}"
+                                         CaretBrush="{DynamicResource NavTextColor}"
+                                         FontSize="13" Width="60"
+                                         VerticalAlignment="Center" Text=""
+                                         ToolTip="Formato HH:mm (ej: 14:30)"/>
+                            </Grid>
+                        </Border>
+                        <Button Grid.Column="1" x:Name="btnHoyEntrega" Style="{StaticResource ActionButton}"
+                                Height="36" FontSize="12" Padding="14,0" Margin="8,0,0,0"
+                                ToolTip="Establecer fecha y hora actual"
+                                Click="BtnHoyEntrega_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📅" Margin="0,0,6,0" FontSize="13"/>
+                                <TextBlock Text="Ahora"/>
+                            </StackPanel>
                         </Button>
                     </Grid>
 

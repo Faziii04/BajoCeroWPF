@@ -21,10 +21,42 @@ namespace ProyectoIntegradorNet10.Services
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
-                "v.pagado, v.entregado, v.nit, v.delivery " +
+                "v.pagado, v.entregado, v.nit, v.delivery, " +
+                "v.fecha_entrega, v.hora_entrega, v.fecha_entregado, v.hora_entregado " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "ORDER BY v.id DESC", conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(MapVenta(reader));
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Returns ventas filtered by delivery estado.
+        /// Only returns ventas with Delivery = true.
+        /// </summary>
+        public static async Task<List<VentaModel>> GetVentasByEstado(string estado)
+        {
+            var list = new List<VentaModel>();
+            using var conn = await DS.OpenConnectionAsync();
+            using var cmd = new NpgsqlCommand(
+                "SELECT v.id, v.fecha, v.hora, v.tipo, v.estado, v.porcentaje_descuento, " +
+                "v.repartidor_id, v.cliente_ci, " +
+                "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
+                "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
+                "v.pagado, v.entregado, v.nit, v.delivery, " +
+                "v.fecha_entrega, v.hora_entrega, v.fecha_entregado, v.hora_entregado, " +
+                "COALESCE(e.nombre || ' ' || e.apellido, '') AS repartidor_nombre " +
+                "FROM venta v " +
+                "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
+                "LEFT JOIN repartidor r ON r.id = v.repartidor_id " +
+                "LEFT JOIN empleado e ON e.ci = r.empleado_ci " +
+                "WHERE v.delivery = true AND v.estado = @estado " +
+                "ORDER BY v.id DESC", conn);
+            cmd.Parameters.AddWithValue("@estado", estado);
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -41,7 +73,8 @@ namespace ProyectoIntegradorNet10.Services
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
-                "v.pagado, v.entregado, v.nit, v.delivery " +
+                "v.pagado, v.entregado, v.nit, v.delivery, " +
+                "v.fecha_entrega, v.hora_entrega, v.fecha_entregado, v.hora_entregado " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "WHERE v.id = @id", conn);
@@ -56,8 +89,8 @@ namespace ProyectoIntegradorNet10.Services
         {
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(
-                "INSERT INTO venta (fecha, hora, tipo, estado, porcentaje_descuento, repartidor_id, cliente_ci, pagado, entregado, nit, delivery) " +
-                "VALUES (@fecha, @hora, @tipo, @estado, @descuento, @repartidor, @cliente, @pagado, @entregado, @nit, @delivery) RETURNING id", conn);
+                "INSERT INTO venta (fecha, hora, tipo, estado, porcentaje_descuento, repartidor_id, cliente_ci, pagado, entregado, nit, delivery, fecha_entrega, hora_entrega, fecha_entregado, hora_entregado) " +
+                "VALUES (@fecha, @hora, @tipo, @estado, @descuento, @repartidor, @cliente, @pagado, @entregado, @nit, @delivery, @fechaEntrega, @horaEntrega, @fechaEntregado, @horaEntregado) RETURNING id", conn);
             cmd.Parameters.AddWithValue("@fecha", v.Fecha);
             cmd.Parameters.AddWithValue("@hora", v.Hora);
             cmd.Parameters.AddWithValue("@tipo", (object?)v.Tipo ?? DBNull.Value);
@@ -69,6 +102,10 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@entregado", v.Entregado);
             cmd.Parameters.AddWithValue("@nit", (object?)v.Nit ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@delivery", v.Delivery);
+            cmd.Parameters.AddWithValue("@fechaEntrega", (object?)v.FechaEntrega ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@horaEntrega", (object?)v.HoraEntrega ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@fechaEntregado", (object?)v.FechaEntregado ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@horaEntregado", (object?)v.HoraEntregado ?? DBNull.Value);
             var result = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(result);
         }
@@ -79,7 +116,9 @@ namespace ProyectoIntegradorNet10.Services
             using var cmd = new NpgsqlCommand(
                 "UPDATE venta SET fecha = @fecha, hora = @hora, tipo = @tipo, estado = @estado, " +
                 "porcentaje_descuento = @descuento, repartidor_id = @repartidor, cliente_ci = @cliente, " +
-                "pagado = @pagado, entregado = @entregado, nit = @nit, delivery = @delivery " +
+                "pagado = @pagado, entregado = @entregado, nit = @nit, delivery = @delivery, " +
+                "fecha_entrega = @fechaEntrega, hora_entrega = @horaEntrega, " +
+                "fecha_entregado = @fechaEntregado, hora_entregado = @horaEntregado " +
                 "WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("@id", v.Id);
             cmd.Parameters.AddWithValue("@fecha", v.Fecha);
@@ -93,13 +132,16 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@entregado", v.Entregado);
             cmd.Parameters.AddWithValue("@nit", (object?)v.Nit ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@delivery", v.Delivery);
+            cmd.Parameters.AddWithValue("@fechaEntrega", (object?)v.FechaEntrega ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@horaEntrega", (object?)v.HoraEntrega ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@fechaEntregado", (object?)v.FechaEntregado ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@horaEntregado", (object?)v.HoraEntregado ?? DBNull.Value);
             await cmd.ExecuteNonQueryAsync();
         }
 
         public static async Task DeleteVenta(int id)
         {
             using var conn = await DS.OpenConnectionAsync();
-            // Delete related pagos first
             using var cmd1 = new NpgsqlCommand(
                 "DELETE FROM pago_venta WHERE venta_id = @id", conn);
             cmd1.Parameters.AddWithValue("@id", id);
@@ -125,7 +167,8 @@ namespace ProyectoIntegradorNet10.Services
                 "v.repartidor_id, v.cliente_ci, " +
                 "COALESCE((SELECT SUM(vd.cantidad * vd.precio_unitario) FROM venta_detalles vd WHERE vd.venta_id = v.id), 0) AS monto, " +
                 "COALESCE(c.nombre || ' ' || c.apellido, '') AS cliente_nombre, " +
-                "v.pagado, v.entregado, v.nit, v.delivery " +
+                "v.pagado, v.entregado, v.nit, v.delivery, " +
+                "v.fecha_entrega, v.hora_entrega, v.fecha_entregado, v.hora_entregado " +
                 "FROM venta v " +
                 "LEFT JOIN cliente c ON c.ci = v.cliente_ci " +
                 "WHERE CAST(v.id AS TEXT) LIKE @term " +
@@ -175,25 +218,6 @@ namespace ProyectoIntegradorNet10.Services
             await cmd.ExecuteNonQueryAsync();
         }
 
-        public static async Task DeleteDetalle(int ventaId, int productoId)
-        {
-            using var conn = await DS.OpenConnectionAsync();
-            using var cmd = new NpgsqlCommand(
-                "DELETE FROM venta_detalles WHERE venta_id = @ventaId AND producto_id = @productoId", conn);
-            cmd.Parameters.AddWithValue("@ventaId", ventaId);
-            cmd.Parameters.AddWithValue("@productoId", productoId);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public static async Task ClearDetalles(int ventaId)
-        {
-            using var conn = await DS.OpenConnectionAsync();
-            using var cmd = new NpgsqlCommand(
-                "DELETE FROM venta_detalles WHERE venta_id = @ventaId", conn);
-            cmd.Parameters.AddWithValue("@ventaId", ventaId);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
         // ──────────── PAGOS ────────────
 
         public static async Task<List<PagoModel>> GetPagosByVenta(int ventaId)
@@ -228,14 +252,11 @@ namespace ProyectoIntegradorNet10.Services
             cmd.Parameters.AddWithValue("@estado", (object?)p.Estado ?? "Pendiente");
             var result = await cmd.ExecuteScalarAsync();
             int pagoId = Convert.ToInt32(result);
-
-            // Link to venta
             using var cmd2 = new NpgsqlCommand(
                 "INSERT INTO pago_venta (pago_id, venta_id) VALUES (@pagoId, @ventaId)", conn);
             cmd2.Parameters.AddWithValue("@pagoId", pagoId);
             cmd2.Parameters.AddWithValue("@ventaId", p.VentaId);
             await cmd2.ExecuteNonQueryAsync();
-
             return pagoId;
         }
 
@@ -261,7 +282,6 @@ namespace ProyectoIntegradorNet10.Services
                 "DELETE FROM pago_venta WHERE pago_id = @pagoId", conn);
             cmd1.Parameters.AddWithValue("@pagoId", pagoId);
             await cmd1.ExecuteNonQueryAsync();
-
             using var cmd2 = new NpgsqlCommand(
                 "DELETE FROM pago WHERE pago_id = @pagoId", conn);
             cmd2.Parameters.AddWithValue("@pagoId", pagoId);
@@ -318,7 +338,7 @@ namespace ProyectoIntegradorNet10.Services
 
         private static VentaModel MapVenta(NpgsqlDataReader r)
         {
-            return new VentaModel
+            var model = new VentaModel
             {
                 Id = r.GetInt32(0),
                 Fecha = r.GetDateTime(1),
@@ -335,6 +355,18 @@ namespace ProyectoIntegradorNet10.Services
                 Nit = r.IsDBNull(12) ? null : r.GetString(12),
                 Delivery = r.IsDBNull(13) ? false : r.GetBoolean(13),
             };
+            // Map extended fields
+            if (r.FieldCount > 14)
+            {
+                if (!r.IsDBNull(14)) model.FechaEntrega = r.GetDateTime(14);
+                if (!r.IsDBNull(15)) model.HoraEntrega = r.GetTimeSpan(15);
+                if (!r.IsDBNull(16)) model.FechaEntregado = r.GetDateTime(16);
+                if (!r.IsDBNull(17)) model.HoraEntregado = r.GetTimeSpan(17);
+            }
+            // Map repartidor_nombre from GetVentasByEstado (extra column at index 18)
+            if (r.FieldCount > 18 && !r.IsDBNull(18))
+                model.RepartidorNombre = r.GetString(18);
+            return model;
         }
 
         private static VentaDetalleModel MapDetalle(NpgsqlDataReader r)

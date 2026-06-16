@@ -17,6 +17,10 @@ namespace ProyectoIntegradorNet10.Models
         public bool Entregado { get; set; }         // true = delivered
         public string? Nit { get; set; }             // NIT at time of sale
         public bool Delivery { get; set; }           // true = needs delivery
+        public DateTime? FechaEntrega { get; set; }
+        public TimeSpan? HoraEntrega { get; set; }
+        public DateTime? FechaEntregado { get; set; }
+        public TimeSpan? HoraEntregado { get; set; }
 
         // Display helpers
         public string? ClienteNombre { get; set; }
@@ -31,7 +35,6 @@ namespace ProyectoIntegradorNet10.Models
         {
             get
             {
-                // If we have detalles loaded, compute from them
                 if (Detalles.Count > 0)
                 {
                     decimal subtotal = 0;
@@ -41,7 +44,6 @@ namespace ProyectoIntegradorNet10.Models
                         subtotal -= subtotal * (PorcentajeDescuento.Value / 100m);
                     return subtotal;
                 }
-                // Otherwise use the persisted monto from DB
                 return MontoFromDb ?? 0;
             }
         }
@@ -52,6 +54,8 @@ namespace ProyectoIntegradorNet10.Models
         public string EntregadoDisplay => Entregado ? "✅ Sí" : "❌ No";
         public string DeliveryDisplay => Delivery ? "Sí" : "No";
         public string EstadoDisplay => Estado ?? "Pedido";
+        public string FechaEntregaDisplay => FechaEntrega?.ToString("dd/MM/yyyy") ?? "—";
+        public string HoraEntregaDisplay => HoraEntrega?.ToString(@"hh\:mm") ?? "—";
     }
 
     public class VentaDetalleModel
@@ -61,7 +65,6 @@ namespace ProyectoIntegradorNet10.Models
         public int? Cantidad { get; set; }
         public decimal? PrecioUnitario { get; set; }
 
-        // Display helpers
         public string? ProductoNombre { get; set; }
         public decimal Subtotal => (Cantidad ?? 0) * (PrecioUnitario ?? 0);
         public string SubtotalDisplay => Subtotal.ToString("N2");
@@ -73,8 +76,8 @@ namespace ProyectoIntegradorNet10.Models
         public DateTime Fecha { get; set; }
         public TimeSpan Hora { get; set; }
         public decimal Monto { get; set; }
-        public string? Metodo { get; set; }   // 'Efectivo', 'Transferencia', 'QR'
-        public string? Estado { get; set; }   // 'Pendiente', 'Pagado', 'Vencido'
+        public string? Metodo { get; set; }
+        public string? Estado { get; set; }
         public int VentaId { get; set; }
 
         public string FechaDisplay => Fecha.ToString("dd/MM/yyyy");

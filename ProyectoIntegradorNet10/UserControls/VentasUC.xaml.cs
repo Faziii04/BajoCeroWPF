@@ -89,7 +89,7 @@ namespace ProyectoIntegradorNet10.UserControls
 
                 _clientes = await VentasService.GetAllClientes();
                 _filteredClientes = new List<ClienteModel>(_clientes);
-                cmbCliente.ItemsSource = _filteredClientes;
+                cmbCliente.ItemsSource = _clientes;
             }
             catch (Exception ex)
             {
@@ -134,20 +134,36 @@ namespace ProyectoIntegradorNet10.UserControls
             else
                 term = cmbCliente.Text.Trim().ToLower();
 
-            if (string.IsNullOrWhiteSpace(term))
+            // Use ICollectionView filtering so we don't replace ItemsSource
+            // and lose the selection state
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(cmbCliente.ItemsSource);
+            if (view != null)
             {
-                _filteredClientes = new List<ClienteModel>(_clientes);
+                view.Filter = item =>
+                {
+                    if (string.IsNullOrWhiteSpace(term))
+                        return true;
+
+                    if (item is ClienteModel c)
+                    {
+                        return (c.Nombre?.ToLower().Contains(term) ?? false)
+                            || (c.Apellido?.ToLower().Contains(term) ?? false)
+                            || (c.Ci?.ToLower().Contains(term) ?? false)
+                            || c.NombreCompleto.ToLower().Contains(term);
+                    }
+                    return true;
+                };
             }
-            else
+        }
+
+        private void CmbCliente_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // When an item is selected in the dropdown, ensure the Text is synced
+            // (DisplayMemberPath handles this, but be explicit for robustness)
+            if (cmbCliente.SelectedItem is ClienteModel cliente)
             {
-                _filteredClientes = _clientes
-                    .Where(c => (c.Nombre?.ToLower().Contains(term) ?? false)
-                             || (c.Apellido?.ToLower().Contains(term) ?? false)
-                             || (c.Ci?.ToLower().Contains(term) ?? false)
-                             || c.NombreCompleto.ToLower().Contains(term))
-                    .ToList();
+                cmbCliente.Text = cliente.NombreCompleto;
             }
-            cmbCliente.ItemsSource = _filteredClientes;
         }
 
         // ──────────── POPULATE FORM (EDIT MODE) ────────────
@@ -188,6 +204,13 @@ namespace ProyectoIntegradorNet10.UserControls
 
             // Set NIT
             txtNit.Text = venta.Nit ?? "";
+
+            // Set Fecha Entrega / Hora Entrega
+            if (venta.FechaEntrega.HasValue)
+                dpFechaEntrega.SelectedDate = venta.FechaEntrega.Value;
+            else
+                dpFechaEntrega.SelectedDate = null;
+            txtHoraEntrega.Text = venta.HoraEntrega?.ToString(@"hh\:mm") ?? "";
 
             // Set estado (delivery status)
             string estado = venta.Estado ?? "Pedido";
@@ -572,6 +595,9 @@ namespace ProyectoIntegradorNet10.UserControls
                     EditVenta.Entregado = chkEntregado.IsChecked == true;
                     EditVenta.Nit = txtNit.Text.Trim();
                     EditVenta.Delivery = chkDelivery.IsChecked == true;
+                    EditVenta.FechaEntrega = dpFechaEntrega.SelectedDate;
+                    if (TimeSpan.TryParse(txtHoraEntrega.Text.Trim(), out var horaEntrega))
+                        EditVenta.HoraEntrega = horaEntrega;
 
                     if (decimal.TryParse(txtDescuento.Text, out decimal desc))
                         EditVenta.PorcentajeDescuento = desc;
@@ -597,6 +623,8 @@ namespace ProyectoIntegradorNet10.UserControls
                         Entregado = chkEntregado.IsChecked == true,
                         Nit = txtNit.Text.Trim(),
                         Delivery = chkDelivery.IsChecked == true,
+                        FechaEntrega = dpFechaEntrega.SelectedDate,
+                        HoraEntrega = TimeSpan.TryParse(txtHoraEntrega.Text.Trim(), out var he) ? he : null,
                     };
 
                     if (decimal.TryParse(txtDescuento.Text, out decimal desc))
@@ -743,6 +771,12 @@ namespace ProyectoIntegradorNet10.UserControls
                 MessageBox.Show($"Error al actualizar venta: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void BtnHoyEntrega_Click(object sender, RoutedEventArgs e)
+        {
+            dpFechaEntrega.SelectedDate = DateTime.Today;
+            txtHoraEntrega.Text = DateTime.Now.ToString(@"HH\:mm");
         }
 
         // ──────────── TRAER NIT DEL CLIENTE ────────────

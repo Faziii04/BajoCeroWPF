@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ProyectoIntegradorNet10.UserControls"
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="1000">
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Loaded="DistribucionUC_Loaded">
 
     <UserControl.Resources>
         <Style TargetType="DataGrid" x:Key="GridStyle">
@@ -19,7 +20,7 @@
             <Setter Property="SelectionUnit" Value="FullRow"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="RowHeight" Value="42"/>
+            <Setter Property="RowHeight" Value="52"/>
             <Setter Property="AlternatingRowBackground" Value="{DynamicResource GridRowAltBrush}"/>
             <Setter Property="AlternationCount" Value="2"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
@@ -32,11 +33,11 @@
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="{DynamicResource GridHeaderBrush}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="38"/>
+            <Setter Property="Height" Value="34"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
@@ -63,35 +64,8 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        </Style>
-
-        <Style TargetType="TextBox" x:Key="FormTextBox">
-            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,7"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="CaretBrush" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="TextBlock" x:Key="FormLabel">
-            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,0,0,3"/>
         </Style>
 
         <Style TargetType="Button" x:Key="ActionButton">
@@ -107,8 +81,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -117,36 +90,6 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="Button" x:Key="DangerButton">
-            <Setter Property="Background" Value="#C0392B"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#E74C3C"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#A93226"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -158,17 +101,15 @@
             <Setter Property="Background" Value="{DynamicResource SeparatorColor}"/>
             <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="30"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -182,6 +123,14 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="Background" Value="{DynamicResource InputBgBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontSize" Value="12"/>
         </Style>
 
         <Style TargetType="ScrollBar">
@@ -198,140 +147,142 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <!-- ════════ TOOLBAR ════════ -->
-            <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+            <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,10" Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Distribución" FontSize="20" FontWeight="Bold"
-                               Foreground="{DynamicResource NavTextColor}" VerticalAlignment="Center"/>
-
-                    <Border Grid.Column="1" Background="{DynamicResource FOscuro1}" CornerRadius="8"
-                            Margin="24,0,16,0" Padding="8,0" VerticalAlignment="Center" Height="34">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <TextBox Name="txtBuscar"
-                                         Background="Transparent" BorderThickness="0"
-                                         Foreground="{DynamicResource NavTextColor}"
-                                         FontSize="13" VerticalAlignment="Center"/>
-                                <TextBlock IsHitTestVisible="False" Margin="8,0"
-                                           Text="Buscar repartidor..." Foreground="#888" FontSize="13"
-                                           VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Text, ElementName=txtBuscar}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                            <TextBlock Grid.Column="1" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="4,0"/>
-                        </Grid>
-                    </Border>
-
-                    <Button Grid.Column="2" Style="{StaticResource ActionButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Nuevo"/>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="34" Height="34" CornerRadius="8"
+                                Background="{DynamicResource AcentoBrush}" Margin="0,0,10,0">
+                            <TextBlock Text="🚚" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Distribución" FontSize="18" FontWeight="Bold"
+                                       Foreground="{DynamicResource NavTextColor}"/>
+                            <TextBlock x:Name="txtVentasCount" Text=""
+                                       Foreground="{DynamicResource SectionLabelColor}" FontSize="11" Margin="0,1,0,0"/>
                         </StackPanel>
-                    </Button>
+                    </StackPanel>
 
-                    <Button Grid.Column="3" Style="{StaticResource ActionButton}">
+                    <!-- Date filters -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                        <TextBlock Text="Desde:" Foreground="{DynamicResource NavTextColor}" FontSize="11"
+                                   VerticalAlignment="Center" Margin="0,0,4,0" FontWeight="SemiBold"/>
+                        <DatePicker x:Name="dpFechaDesde" SelectedDateChanged="FiltroFecha_Changed" MinWidth="110"/>
+                        <TextBlock Text="Hasta:" Foreground="{DynamicResource NavTextColor}" FontSize="11"
+                                   VerticalAlignment="Center" Margin="10,0,4,0" FontWeight="SemiBold"/>
+                        <DatePicker x:Name="dpFechaHasta" SelectedDateChanged="FiltroFecha_Changed" MinWidth="110"/>
+                        <Button x:Name="btnHoy" Style="{StaticResource SecondaryButton}" Content="📅 Hoy"
+                                FontSize="11" Padding="10,0" Margin="6,0,0,0" Height="30"
+                                Click="BtnHoy_Click"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click"
+                            ToolTip="Recargar lista" Height="34">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"/>
-                            <TextBlock Text="Refrescar"/>
+                            <TextBlock Text="⟳" FontSize="13" Margin="0,0,6,0"/>
+                            <TextBlock Text="Refrescar" FontSize="12"/>
                         </StackPanel>
                     </Button>
                 </Grid>
             </Border>
 
-            <!-- ════════ MAIN CONTENT ════════ -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="4"/>
-                    <ColumnDefinition Width="1.2*"/>
-                </Grid.ColumnDefinitions>
+            <!-- ════════ FILTER CHIPS ════════ -->
+            <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="10" Padding="12,6" Margin="0,0,0,10">
+                <WrapPanel Orientation="Horizontal">
+                    <Border x:Name="chipPedido" CornerRadius="14" Padding="16,5" Cursor="Hand"
+                            Background="{DynamicResource AcentoBrush}" Margin="0,0,6,0"
+                            MouseLeftButtonDown="ChipEstado_Click" Tag="Pedido">
+                        <TextBlock Text="📦 Pedido" FontSize="12" FontWeight="SemiBold" Foreground="White"/>
+                    </Border>
+                    <Border x:Name="chipEnRuta" CornerRadius="14" Padding="16,5" Cursor="Hand"
+                            Background="{DynamicResource GridRowHoverBrush}" Margin="0,0,6,0"
+                            MouseLeftButtonDown="ChipEstado_Click" Tag="En ruta">
+                        <TextBlock Text="🚚 En ruta" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource NavTextColor}"/>
+                    </Border>
+                    <Border x:Name="chipIncidencia" CornerRadius="14" Padding="16,5" Cursor="Hand"
+                            Background="{DynamicResource GridRowHoverBrush}" Margin="0,0,6,0"
+                            MouseLeftButtonDown="ChipEstado_Click" Tag="Incidencia">
+                        <TextBlock Text="⚠️ Incidencia" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource NavTextColor}"/>
+                    </Border>
+                </WrapPanel>
+            </Border>
 
-                <!-- ─── LEFT: DataGrid ─── -->
-                <Border Grid.Column="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
-                    <Grid>
-                        <DataGrid x:Name="dgDistribucion" Style="{StaticResource GridStyle}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                                <DataGridTextColumn Header="Repartidor" Binding="{Binding Repartidor}" Width="*"/>
-                                <DataGridTextColumn Header="Vehículo" Binding="{Binding Vehiculo}" Width="120"/>
-                                <DataGridTextColumn Header="Ruta" Binding="{Binding Ruta}" Width="120"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="90"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
+            <!-- ════════ VENTAS GRID ════════ -->
+            <Border Grid.Row="2" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
+                <Grid>
+                    <DataGrid x:Name="dgVentas" Style="{StaticResource GridStyle}"
+                              SelectionChanged="dgVentas_SelectionChanged"
+                              MouseDoubleClick="dgVentas_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="55"/>
+                            <DataGridTemplateColumn Header="Cliente" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="👤" FontSize="12" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding ClienteNombre}" FontSize="13" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" Foreground="{DynamicResource NavTextColor}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Fecha" Binding="{Binding FechaDisplay}" Width="85"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding TotalDisplay, StringFormat=Bs {0}}" Width="85"/>
+                            <DataGridTemplateColumn Header="Estado" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10" Padding="8,2"
+                                                Background="{DynamicResource AcentoBrush}" HorizontalAlignment="Left" Opacity="0.85">
+                                            <TextBlock Text="{Binding Estado}" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Repartidor" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="🚚" FontSize="11" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding RepartidorNombre}" FontSize="12"
+                                                       Foreground="{DynamicResource NavTextColor}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Delivery" Width="65">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DeliveryDisplay}" FontSize="12" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                        <TextBlock Name="txtEmptyState" Text="No hay registros de distribución."
-                                   Foreground="#888" FontSize="14"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Visibility="Collapsed"/>
-                    </Grid>
-                </Border>
-
-                <!-- ─── Separator ─── -->
-                <Rectangle Grid.Column="1" Fill="{DynamicResource SeparatorColor}" Opacity="0.3" RadiusX="1"/>
-
-                <!-- ─── RIGHT: Detail Form ─── -->
-                <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-                    <Border Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16">
-                        <StackPanel>
-                            <TextBlock Text="Datos de Distribución" FontSize="16" FontWeight="Bold"
-                                       Foreground="{DynamicResource NavTextColor}" Margin="0,0,0,16"/>
-
-                            <TextBlock Text="Repartidor *" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtRepartidor" Style="{StaticResource FormTextBox}"/>
-
-                            <TextBlock Text="Vehículo" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtVehiculo" Style="{StaticResource FormTextBox}"/>
-
-                            <TextBlock Text="Ruta" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtRuta" Style="{StaticResource FormTextBox}"/>
-
-                            <TextBlock Text="Estado" Style="{StaticResource FormLabel}"/>
-                            <TextBox Name="txtEstado" Style="{StaticResource FormTextBox}"/>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                                <Button Style="{StaticResource ActionButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="💾" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Guardar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource DangerButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="🗑" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Eliminar"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButton}">
-                                    <TextBlock Text="Cancelar"/>
-                                </Button>
-                            </StackPanel>
+                    <Border x:Name="panelEmptyState" Background="Transparent" Visibility="Visible">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="📦" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <TextBlock Name="txtEmptyState" Text="No hay ventas en este estado."
+                                       Foreground="{DynamicResource SectionLabelColor}" FontSize="14"
+                                       HorizontalAlignment="Center" TextAlignment="Center"/>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
-            </Grid>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </UserControl>
