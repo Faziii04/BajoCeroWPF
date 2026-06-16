@@ -207,7 +207,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource FOscuro1}" Padding="24">
+    <Border Background="{DynamicResource FOscuro1}" Padding="16">
         <TabControl Style="{StaticResource ProductTabControl}">
             <!-- ════════════════════════════════════════════════ -->
             <!-- TAB 1: Productos                                  -->

@@ -547,7 +547,7 @@
                 </Grid>
             </Border>
             <Border CornerRadius="0" Grid.Column="1" Grid.Row="1" Background="Transparent">
-                <ContentControl x:Name="Contenido" Margin="16,8,16,16" Opacity="0"/>
+                <ContentControl x:Name="Contenido" Margin="8,4,8,8" Opacity="0"/>
             </Border>
         </Grid>
     </Border>

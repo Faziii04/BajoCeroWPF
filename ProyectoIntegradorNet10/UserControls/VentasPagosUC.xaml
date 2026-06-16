@@ -376,7 +376,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource FOscuro1}" Padding="20">
+    <Border Background="{DynamicResource FOscuro1}" Padding="12">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
