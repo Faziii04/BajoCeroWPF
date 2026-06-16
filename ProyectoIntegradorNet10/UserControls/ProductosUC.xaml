@@ -10,7 +10,9 @@
              Loaded="ProductosUC_Loaded">
 
     <UserControl.Resources>
-        <!-- ─── Card template ─── -->
+        <DropShadowEffect x:Key="TabShadow" ShadowDepth="0" Opacity="0.12" BlurRadius="10"/>
+
+        <!-- ─── Product card DataTemplate ─── -->
         <DataTemplate DataType="{x:Type models:ProductoModel}">
             <Border Width="210" Margin="0,0,16,16"
                     Background="{DynamicResource POscuro2}"
@@ -18,9 +20,20 @@
                     BorderBrush="{DynamicResource SeparatorColor}"
                     BorderThickness="1"
                     Cursor="Hand"
-                    MouseLeftButtonDown="Card_MouseLeftButtonDown">
+                    MouseLeftButtonDown="Card_MouseLeftButtonDown"
+                    Effect="{DynamicResource CardShadow}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Effect" Value="{DynamicResource CardHoverShadow}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource AcentoBrush}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <StackPanel>
-                    <!-- Image section - square 1:1 -->
+                    <!-- Image section (1:1 square) -->
                     <Border Width="210" Height="210"
                             Background="{DynamicResource FOscuro1}"
                             CornerRadius="12,12,0,0"
@@ -29,7 +42,23 @@
                             <Image Source="{Binding Url}"
                                    Stretch="UniformToFill"
                                    Width="210" Height="210"/>
-                            <TextBlock Text="📦" FontSize="40"
+                            <Border Background="{DynamicResource FOscuro1}" Opacity="0.5"
+                                    Width="210" Height="210"
+                                    Visibility="Collapsed">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Url}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Url}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <TextBlock Text="📦" FontSize="32"
                                        Foreground="{DynamicResource NavTextColor}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
@@ -51,110 +80,103 @@
                     </Border>
 
                     <!-- Info section -->
-                    <StackPanel Margin="12,10,12,12">
-                        <!-- Name -->
+                    <StackPanel Margin="12,8,12,12">
                         <TextBlock Text="{Binding Nombre}"
                                    FontSize="14" FontWeight="SemiBold"
                                    Foreground="{DynamicResource NavTextColor}"
                                    Margin="0,0,0,4"
                                    TextTrimming="CharacterEllipsis"/>
 
-                        <!-- Price -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="💰 " FontSize="11"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding PrecioDisplay, StringFormat='Bs {0}'}"
-                                       FontSize="13" FontWeight="Bold"
+                            <TextBlock Text="Bs" FontSize="11" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SectionLabelColor}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding PrecioDisplay}"
+                                       FontSize="14" FontWeight="Bold"
                                        Foreground="{DynamicResource NavTextColor}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Stock -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="📦 " FontSize="11"
-                                       VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding StockDisplay, StringFormat='Stock: {0}'}"
-                                       FontSize="12"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SectionLabelColor}"
+                                       VerticalAlignment="Center"/>
+                            <Ellipse Width="6" Height="6" Margin="8,0,4,0"
+                                     VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Inactivo">
+                                                <Setter Property="Fill" Value="{DynamicResource DangerBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="{Binding Estado}" FontSize="10"
                                        Foreground="{DynamicResource SectionLabelColor}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
-
-                        <!-- Status badge -->
-                        <Border CornerRadius="4"
-                                Padding="6,2,6,2"
-                                HorizontalAlignment="Left"
-                                Margin="0,2,0,0">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#27AE60"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Estado}" Value="Inactivo">
-                                            <Setter Property="Background" Value="#C0392B"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <TextBlock Text="{Binding Estado}"
-                                       FontSize="10" FontWeight="SemiBold"
-                                       Foreground="White"/>
-                        </Border>
                     </StackPanel>
                 </StackPanel>
             </Border>
         </DataTemplate>
 
-        <Style TargetType="ScrollBar">
-            <Setter Property="Width" Value="8"/>
-            <Setter Property="Background" Value="Transparent"/>
-        </Style>
-        <Style TargetType="Thumb">
-            <Setter Property="Background" Value="{DynamicResource SeparatorColor}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-
-        <!-- ─── TabControl styles ─── -->
+        <!-- ─── TabControl: Dashboard-style panel ─── -->
         <Style TargetType="TabControl" x:Key="ProductTabControl">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabControl">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <!-- Tab headers -->
-                            <Border Grid.Row="0" Background="{DynamicResource POscuro2}"
-                                    CornerRadius="12,12,0,0" Padding="20,0,20,0">
-                                <TabPanel x:Name="HeaderPanel"
-                                          IsItemsHost="True"
-                                          KeyboardNavigation.TabIndex="1"
-                                          Margin="0,0,0,0"/>
-                            </Border>
-                            <!-- Tab content -->
-                            <Border Grid.Row="1"
-                                    Background="{DynamicResource FOscuro1}"
-                                    CornerRadius="0,0,12,12"
-                                    Padding="20"
-                                    BorderBrush="{DynamicResource SeparatorColor}"
-                                    BorderThickness="0,0,0,0">
-                                <ContentPresenter x:Name="PART_SelectedContentHost"
-                                                  ContentSource="SelectedContent"/>
-                            </Border>
-                        </Grid>
+                        <Border Background="{DynamicResource POscuro2}"
+                                CornerRadius="14"
+                                Effect="{DynamicResource CardShadow}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Tab headers as inline pills -->
+                                <Border Grid.Row="0" Background="Transparent"
+                                        Padding="16,12,16,0">
+                                    <TabPanel x:Name="HeaderPanel"
+                                              IsItemsHost="True"
+                                              KeyboardNavigation.TabIndex="1"/>
+                                </Border>
+
+                                <!-- Separator -->
+                                <Border Grid.Row="0" Height="1"
+                                        Background="{DynamicResource SeparatorColor}"
+                                        Opacity="0.3"
+                                        Margin="16,0,16,0"
+                                        VerticalAlignment="Bottom"/>
+
+                                <!-- Content -->
+                                <Border Grid.Row="1"
+                                        Background="Transparent"
+                                        CornerRadius="0,0,14,14"
+                                        Padding="20">
+                                    <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                      ContentSource="SelectedContent"/>
+                                </Border>
+                            </Grid>
+                        </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <!-- ─── TabItem: pill-style tabs ─── -->
         <Style TargetType="TabItem" x:Key="ProductTabItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{DynamicResource SectionLabelColor}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="18,10"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -163,8 +185,8 @@
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="0"
                                 Padding="{TemplateBinding Padding}"
-                                Margin="0,0,2,0"
-                                CornerRadius="8,8,0,0">
+                                Margin="0,0,8,0"
+                                CornerRadius="8">
                             <ContentPresenter ContentSource="Header"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
@@ -172,8 +194,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource FOscuro1}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource NavTextColor}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AcentoBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
@@ -185,12 +207,12 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource FOscuro1}" Padding="20">
+    <Border Background="{DynamicResource FOscuro1}" Padding="24">
         <TabControl Style="{StaticResource ProductTabControl}">
             <!-- ════════════════════════════════════════════════ -->
             <!-- TAB 1: Productos                                  -->
             <!-- ════════════════════════════════════════════════════ -->
-            <TabItem Header="Productos" Style="{StaticResource ProductTabItem}">
+            <TabItem Header="📦  Productos" Style="{StaticResource ProductTabItem}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -199,8 +221,10 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ─── TOOLBAR ─── -->
-                    <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                    <!-- ─── TOOLBAR (ReportesUC-style) ─── -->
+                    <Border Grid.Row="0" Background="{DynamicResource FOscuro1}" 
+                            CornerRadius="12" Padding="16,12" Margin="0,0,0,16"
+                            Effect="{DynamicResource CardShadow}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -209,10 +233,25 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Productos" FontSize="20" FontWeight="Bold"
-                                       Foreground="{DynamicResource NavTextColor}" VerticalAlignment="Center"/>
+                            <!-- Icon + Title -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="38" Height="38" CornerRadius="10"
+                                        Background="{DynamicResource GridHeaderBrush}"
+                                        VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="📦" FontSize="18" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Productos" FontSize="18" FontWeight="Bold"
+                                               Foreground="{DynamicResource NavTextColor}"/>
+                                    <TextBlock x:Name="txtProductCount" 
+                                               Foreground="{DynamicResource SectionLabelColor}" FontSize="11"
+                                               Text="Cargando..."/>
+                                </StackPanel>
+                            </StackPanel>
 
-                            <Border Grid.Column="1" Background="{DynamicResource FOscuro1}" CornerRadius="8"
+                            <!-- Search -->
+                            <Border Grid.Column="1" Background="{DynamicResource POscuro2}" CornerRadius="8"
                                     Margin="24,0,16,0" Padding="8,0" VerticalAlignment="Center" Height="34">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -226,7 +265,8 @@
                                                  FontSize="13" VerticalAlignment="Center"
                                                  TextChanged="txtBuscar_TextChanged"/>
                                         <TextBlock IsHitTestVisible="False" Margin="8,0"
-                                                   Text="Buscar producto..." Foreground="{DynamicResource SectionLabelColor}" FontSize="13"
+                                                   Text="Buscar producto..." 
+                                                   Foreground="{DynamicResource SectionLabelColor}" FontSize="13"
                                                    VerticalAlignment="Center">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
@@ -240,102 +280,95 @@
                                             </TextBlock.Style>
                                         </TextBlock>
                                     </Grid>
-                                    <TextBlock Grid.Column="1" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="4,0"/>
+                                    <Path Grid.Column="1" Width="16" Height="16" Margin="4,0" 
+                                          Stretch="Uniform" Stroke="{DynamicResource NavTextColor}" 
+                                          StrokeThickness="1.5" Fill="Transparent"
+                                          Data="M11,11 L16,16 M7,12 C4,12 2,10 2,7 C2,4 4,2 7,2 C10,2 12,4 12,7 C12,10 10,12 7,12 Z"/>
                                 </Grid>
                             </Border>
 
-                            <Button Grid.Column="2" Click="BtnNuevo_Click" Height="36" Cursor="Hand" Margin="0,0,8,0">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" CornerRadius="8" Padding="16,8"
-                                                Background="{DynamicResource AcentoBrush}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0"
-                                                           Foreground="White"/>
-                                                <TextBlock Text="Nuevo" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="White"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
+                            <Button Grid.Column="2" Style="{StaticResource ActionButton}" Click="BtnNuevo_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="＋" FontSize="14" Margin="0,0,6,0" Foreground="White"/>
+                                    <TextBlock Text="Nuevo" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                                </StackPanel>
                             </Button>
 
-                            <Button Grid.Column="3" Click="BtnRefrescar_Click" Height="36" Cursor="Hand">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Bd" CornerRadius="8" Padding="16,8"
-                                                Background="{DynamicResource AcentoBrush}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0"
-                                                           Foreground="White"/>
-                                                <TextBlock Text="Refrescar" FontSize="13" FontWeight="SemiBold"
-                                                           Foreground="White"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowHoverBrush}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GridRowSelectedBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
+                            <Button Grid.Column="3" Style="{StaticResource ActionButton}" Click="BtnRefrescar_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⟳" FontSize="14" Margin="0,0,6,0" Foreground="White"/>
+                                    <TextBlock Text="Refrescar" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                                </StackPanel>
                             </Button>
                         </Grid>
                     </Border>
 
-                    <!-- ─── FAMILY SEARCH ─── -->
-                    <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="8"
-                            Padding="10,0" Margin="0,0,0,6" Height="32">
+                    <!-- ─── FAMILY FILTER (search + pills) ─── -->
+                    <Border Grid.Row="1" Background="{DynamicResource FOscuro1}" 
+                            CornerRadius="10" Padding="12,6" Margin="0,0,0,10">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtBuscarFamilia"
-                                     Background="Transparent" BorderThickness="0"
-                                     Foreground="{DynamicResource NavTextColor}"
-                                     FontSize="12" VerticalAlignment="Center"
-                                     TextChanged="TxtBuscarFamilia_TextChanged"/>
-                            <TextBlock Grid.Column="1" Text="🔍" FontSize="12"
-                                       VerticalAlignment="Center" Margin="4,0"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Family search -->
+                            <Border Grid.Row="0" Background="{DynamicResource POscuro2}" CornerRadius="8"
+                                    Padding="10,0" Height="30" Margin="0,0,0,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="txtBuscarFamilia"
+                                             Background="Transparent" BorderThickness="0"
+                                             Foreground="{DynamicResource NavTextColor}"
+                                             FontSize="11" VerticalAlignment="Center"
+                                             TextChanged="TxtBuscarFamilia_TextChanged"/>
+                                    <Path Grid.Column="1" Width="14" Height="14" Margin="4,0" 
+                                          Stretch="Uniform" Stroke="{DynamicResource NavTextColor}" 
+                                          StrokeThickness="1.5" Fill="Transparent"
+                                          Data="M11,11 L16,16 M7,12 C4,12 2,10 2,7 C2,4 4,2 7,2 C10,2 12,4 12,7 C12,10 10,12 7,12 Z"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Family chips -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Auto">
+                                <WrapPanel x:Name="pnlFiltroFamilias" Orientation="Horizontal">
+                                    <Border x:Name="chipTodas" CornerRadius="14" Padding="14,5" Cursor="Hand"
+                                            Background="{DynamicResource AcentoBrush}" Margin="0,0,6,0"
+                                            MouseLeftButtonDown="ChipFamilia_Click" Tag="-1">
+                                        <TextBlock Text="Todas" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+                                    </Border>
+                                </WrapPanel>
+                            </ScrollViewer>
                         </Grid>
                     </Border>
-
-                    <!-- ─── FAMILY FILTER BAR ─── -->
-                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Hidden"
-                                  HorizontalScrollBarVisibility="Auto" Margin="0,0,0,8">
-                        <WrapPanel x:Name="pnlFiltroFamilias" Orientation="Horizontal">
-                            <Border x:Name="chipTodas" CornerRadius="14" Padding="14,5" Cursor="Hand"
-                                    Background="{DynamicResource AcentoBrush}" Margin="0,0,6,4"
-                                    MouseLeftButtonDown="ChipFamilia_Click" Tag="-1">
-                                <TextBlock Text="Todas" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="White"/>
-                            </Border>
-                        </WrapPanel>
-                    </ScrollViewer>
 
                     <!-- ─── CARD GRID ─── -->
                     <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
                         <Grid>
                             <!-- Empty state -->
-                            <TextBlock x:Name="txtEmptyState" Text="No hay productos registrados."
-                                       Foreground="{DynamicResource SectionLabelColor}" FontSize="14"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="Collapsed" Margin="0,40,0,0"/>
+                            <Border x:Name="panelEmptyState" Visibility="Collapsed"
+                                    Background="Transparent" Margin="0,40,0,0">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Width="64" Height="64" CornerRadius="16"
+                                            Background="{DynamicResource GridRowHoverBrush}"
+                                            HorizontalAlignment="Center" Margin="0,0,0,12">
+                                        <TextBlock Text="📦" FontSize="28"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock x:Name="txtEmptyState" Text="No hay productos registrados."
+                                               Foreground="{DynamicResource NavTextColor}" FontSize="15" FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Agregue un producto para comenzar"
+                                               Foreground="{DynamicResource SectionLabelColor}" FontSize="12"
+                                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
 
-                            <!-- Product cards -->
                             <ItemsControl x:Name="icProductos">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -351,7 +384,7 @@
             <!-- ════════════════════════════════════════════════════ -->
             <!-- TAB 2: Familias                                     -->
             <!-- ════════════════════════════════════════════════════ -->
-            <TabItem Header="Familias" Style="{StaticResource ProductTabItem}">
+            <TabItem Header="📁  Familias" Style="{StaticResource ProductTabItem}">
                 <local:FamiliaUC />
             </TabItem>
         </TabControl>

@@ -259,7 +259,7 @@
                                     </TextBlock.Style>
                                 </TextBlock>
                             </Grid>
-                            <TextBlock Grid.Column="1" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="4,0"/>
+                            <Path Grid.Column="1" Width="16" Height="16" Margin="4,0" Stretch="Uniform" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5" Fill="Transparent" Data="M11,11 L16,16 M7,12 C4,12 2,10 2,7 C2,4 4,2 7,2 C10,2 12,4 12,7 C12,10 10,12 7,12 Z"/>
                         </Grid>
                     </Border>
 

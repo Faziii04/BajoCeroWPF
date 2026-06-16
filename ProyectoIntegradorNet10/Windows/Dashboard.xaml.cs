@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using ProyectoIntegradorNet10.Services;
 using ProyectoIntegradorNet10.UserControls;
 namespace ProyectoIntegradorNet10.Windows
@@ -31,10 +32,79 @@ namespace ProyectoIntegradorNet10.Windows
         /// </summary>
         private Button? _activeNavButton;
 
+        /// <summary>
+        /// Maps nav buttons to their display names for the top bar title.
+        /// </summary>
+        private readonly Dictionary<string, string> _navTitles = new()
+        {
+            { "navProductos",       "Productos" },
+            { "navProduccion",      "Producción" },
+            { "navInsumos",         "Insumos" },
+            { "navProveedores",     "Proveedores" },
+            { "navOrdenesCompra",   "Órdenes de Compra" },
+            { "navInventario",      "Inventario" },
+            { "navDistribucion",    "Distribución" },
+            { "navClientes",        "Clientes" },
+            { "navPrestamos",       "Préstamos" },
+            { "navEmpleados",       "Empleados" },
+            { "navVentasPagos",     "Ventas y Pagos" },
+            { "navFacturacion",     "Facturación" },
+            { "navReportes",        "Reportes" },
+            { "navRolesPermisos",   "Roles y Permisos" },
+            { "navVehiculos",       "Vehículos" },
+            { "navDepositos",       "Depósitos" },
+        };
+
         public Dashboard()
         {
             InitializeComponent();
             AplicarModo();
+            UpdateClock();
+        }
+
+        /// <summary>
+        /// Updates the time display every 30 seconds.
+        /// </summary>
+        private void UpdateClock()
+        {
+            var now = DateTime.Now;
+            string dayName = now.ToString("dddd", new System.Globalization.CultureInfo("es-BO"));
+            txtHora.Text = $"{dayName}, {now:dd/MM/yyyy} · {now:HH:mm}";
+
+            // Re-schedule
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(30)
+            };
+            timer.Tick += (s, e) => { UpdateClock(); timer.Stop(); };
+            timer.Start();
+        }
+
+        /// <summary>
+        /// Navigates to a UserControl with a fade-in transition and updates the title.
+        /// </summary>
+        private async void NavigateTo(UserControl content, string title)
+        {
+            // Fade out current content
+            if (Contenido.Content != null)
+            {
+                var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(100));
+                fadeOut.Completed += (s, e) =>
+                {
+                    Contenido.Content = content;
+                    var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150));
+                    Contenido.BeginAnimation(OpacityProperty, fadeIn);
+                };
+                Contenido.BeginAnimation(OpacityProperty, fadeOut);
+            }
+            else
+            {
+                Contenido.Content = content;
+                var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(150));
+                Contenido.BeginAnimation(OpacityProperty, fadeIn);
+            }
+
+            txtTituloPagina.Text = title;
         }
 
         /// <summary>
@@ -42,7 +112,6 @@ namespace ProyectoIntegradorNet10.Windows
         /// </summary>
         public void AplicarPermisos()
         {
-            // Map each nav button name → its permission name
             var navMap = new Dictionary<string, string>
             {
                 { "navProductos",       "VerProductos" },
@@ -65,7 +134,6 @@ namespace ProyectoIntegradorNet10.Windows
 
             foreach (var kvp in navMap)
             {
-                // Find the button by name in the visual tree
                 var btn = this.FindName(kvp.Key) as UIElement;
                 if (btn != null)
                 {
@@ -82,11 +150,15 @@ namespace ProyectoIntegradorNet10.Windows
             {
                 imgFondoNoche.Visibility = Visibility.Visible;
                 imgFondoDia.Visibility = Visibility.Collapsed;
+                txtModoIcon.Text = "☀";
+                txtModoTexto.Text = "Modo claro";
             }
             else
             {
                 imgFondoDia.Visibility = Visibility.Visible;
                 imgFondoNoche.Visibility = Visibility.Collapsed;
+                txtModoIcon.Text = "🌙";
+                txtModoTexto.Text = "Modo oscuro";
             }
 
             if (!string.IsNullOrEmpty(UsuarioNombre))
@@ -95,11 +167,8 @@ namespace ProyectoIntegradorNet10.Windows
                 txtInicialUsuario.Text = UsuarioNombre[0].ToString().ToUpper();
             }
             txtRolUsuario.Text = UsuarioRol;
-
-            // Show email
             txtEmailUsuario.Text = UsuarioEmail;
 
-            // Show photo if URL is provided, otherwise hide the image
             if (!string.IsNullOrEmpty(UsuarioUrl))
             {
                 imgUsuario.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(UsuarioUrl));
@@ -114,7 +183,8 @@ namespace ProyectoIntegradorNet10.Windows
         }
 
         /// <summary>
-        /// Highlights the given button as the active nav tab and clears the previous one.
+        /// Highlights the given button as the active nav tab.
+        /// Sets the left accent bar width and toggles the active visual state.
         /// </summary>
         private void SetActiveNav(Button button)
         {
@@ -122,15 +192,42 @@ namespace ProyectoIntegradorNet10.Windows
             if (_activeNavButton != null && _activeNavButton != button)
             {
                 _activeNavButton.ClearValue(BackgroundProperty);
-                _activeNavButton.ClearValue(BorderBrushProperty);
-                _activeNavButton.ClearValue(BorderThicknessProperty);
+                _activeNavButton.ClearValue(FontWeightProperty);
+                _activeNavButton.FontWeight = FontWeights.SemiBold;
+
+                // Reset ActiveBar width on previous button
+                ResetActiveBar(_activeNavButton);
             }
 
-            // Set new active button using theme-aware resources
+            // Set new active button
             _activeNavButton = button;
             _activeNavButton.Background = (Brush)FindResource("GridRowSelectedBrush");
-            _activeNavButton.BorderBrush = (Brush)FindResource("NavTextColor");
-            _activeNavButton.BorderThickness = new Thickness(3, 0, 0, 0);
+            _activeNavButton.FontWeight = FontWeights.Bold;
+
+            // Set ActiveBar width on the new active button
+            SetActiveBarWidth(button, 3);
+        }
+
+        /// <summary>
+        /// Sets the ActiveBar width inside the nav button template.
+        /// </summary>
+        private void SetActiveBarWidth(Button button, double width)
+        {
+            if (button.Template.FindName("ActiveBar", button) is FrameworkElement bar)
+            {
+                bar.Width = width;
+            }
+        }
+
+        /// <summary>
+        /// Resets the ActiveBar width inside a nav button template.
+        /// </summary>
+        private void ResetActiveBar(Button button)
+        {
+            if (button.Template.FindName("ActiveBar", button) is FrameworkElement bar)
+            {
+                bar.Width = 0;
+            }
         }
 
         private void btnModo_Click(object sender, RoutedEventArgs e)
@@ -138,7 +235,7 @@ namespace ProyectoIntegradorNet10.Windows
             GlobalVars.SwitchTheme();
             AplicarModo();
 
-            // Re-apply active nav style so theme-aware brushes update immediately
+            // Re-apply active nav so theme-aware brushes update
             if (_activeNavButton != null)
                 SetActiveNav(_activeNavButton);
         }
@@ -147,97 +244,97 @@ namespace ProyectoIntegradorNet10.Windows
 
         private void NavProductos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new ProductosUC();
+            NavigateTo(new ProductosUC(), _navTitles["navProductos"]);
             SetActiveNav(navProductos);
         }
 
         private void NavProduccion_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new ProduccionUC();
+            NavigateTo(new ProduccionUC(), _navTitles["navProduccion"]);
             SetActiveNav(navProduccion);
         }
 
         private void NavInsumos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new InsumosUC();
+            NavigateTo(new InsumosUC(), _navTitles["navInsumos"]);
             SetActiveNav(navInsumos);
         }
 
         private void NavProveedores_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new ProveedoresUC();
+            NavigateTo(new ProveedoresUC(), _navTitles["navProveedores"]);
             SetActiveNav(navProveedores);
         }
 
         private void NavOrdenesCompra_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new OrdenesCompraUC();
+            NavigateTo(new OrdenesCompraUC(), _navTitles["navOrdenesCompra"]);
             SetActiveNav(navOrdenesCompra);
         }
 
         private void NavInventario_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new InventarioUC();
+            NavigateTo(new InventarioUC(), _navTitles["navInventario"]);
             SetActiveNav(navInventario);
         }
 
         private void NavDistribucion_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new DistribucionUC();
+            NavigateTo(new DistribucionUC(), _navTitles["navDistribucion"]);
             SetActiveNav(navDistribucion);
         }
 
         private void NavClientes_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new ClientesUC();
+            NavigateTo(new ClientesUC(), _navTitles["navClientes"]);
             SetActiveNav(navClientes);
         }
 
         private void NavPrestamos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new PrestamosUC();
+            NavigateTo(new PrestamosUC(), _navTitles["navPrestamos"]);
             SetActiveNav(navPrestamos);
         }
 
         private void NavEmpleados_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new EmpleadosUC();
+            NavigateTo(new EmpleadosUC(), _navTitles["navEmpleados"]);
             SetActiveNav(navEmpleados);
         }
 
         private void NavVentasPagos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new VentasPagosUC();
+            NavigateTo(new VentasPagosUC(), _navTitles["navVentasPagos"]);
             SetActiveNav(navVentasPagos);
         }
 
         private void NavFacturacion_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new FacturacionUC();
+            NavigateTo(new FacturacionUC(), _navTitles["navFacturacion"]);
             SetActiveNav(navFacturacion);
         }
 
         private void NavReportes_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new ReportesUC();
+            NavigateTo(new ReportesUC(), _navTitles["navReportes"]);
             SetActiveNav(navReportes);
         }
 
         private void NavRolesPermisos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new RolesPermisosUC();
+            NavigateTo(new RolesPermisosUC(), _navTitles["navRolesPermisos"]);
             SetActiveNav(navRolesPermisos);
         }
 
         private void NavVehiculos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new VehiculosUC();
+            NavigateTo(new VehiculosUC(), _navTitles["navVehiculos"]);
             SetActiveNav(navVehiculos);
         }
 
         private void NavDepositos_Click(object sender, RoutedEventArgs e)
         {
-            Contenido.Content = new DepositosUC();
+            NavigateTo(new DepositosUC(), _navTitles["navDepositos"]);
             SetActiveNav(navDepositos);
         }
 
@@ -260,7 +357,7 @@ namespace ProyectoIntegradorNet10.Windows
             Close();
         }
 
-        // --- Logout: go back to login ---
+        // --- Logout ---
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
@@ -269,7 +366,7 @@ namespace ProyectoIntegradorNet10.Windows
             this.Close();
         }
 
-        // --- Window dragging (since WindowStyle="None") ---
+        // --- Window dragging ---
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {

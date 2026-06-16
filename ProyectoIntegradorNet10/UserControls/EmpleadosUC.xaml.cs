@@ -86,25 +86,11 @@ namespace ProyectoIntegradorNet10.UserControls
             OpenEmployeePopup();
         }
 
-        private void BtnEditar_Click(object sender, RoutedEventArgs e)
+        // Single-click row → open popup
+        private void dgEmpleados_Seleccionado(object sender, SelectionChangedEventArgs e)
         {
             if (dgEmpleados.SelectedItem is EmpleadoModel emp)
-            {
                 OpenEmployeePopup(emp);
-            }
-            else
-            {
-                MessageBox.Show("Seleccione un empleado para editar.", "Información",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void dgEmpleados_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (dgEmpleados.SelectedItem is EmpleadoModel emp)
-            {
-                OpenEmployeePopup(emp);
-            }
         }
 
         private async void BtnRefrescar_Click(object sender, RoutedEventArgs e)

@@ -174,8 +174,10 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private void UpdateEmptyState()
         {
-            txtEmptyState.Visibility = _productos == null || _productos.Count == 0
-                ? Visibility.Visible : Visibility.Collapsed;
+            int count = _productos?.Count ?? 0;
+            bool empty = count == 0;
+            panelEmptyState.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+            txtProductCount.Text = empty ? "Sin productos" : $"{count} producto{(count != 1 ? "s" : "")}";
         }
 
         private void OpenProductPopup(ProductoModel? producto = null)
@@ -253,15 +255,5 @@ namespace ProyectoIntegradorNet10.UserControls
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-    }
-
-    /// <summary>
-    /// Lightweight view-model for family filter chip items.
-    /// </summary>
-    public class FamiliaChipItem
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = "";
-        public bool IsActive { get; set; }
     }
 }

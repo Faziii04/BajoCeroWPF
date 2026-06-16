@@ -1,4 +1,4 @@
-﻿<Window x:Class="ProyectoIntegradorNet10.PopWindows.PWClientes"
+<Window x:Class="ProyectoIntegradorNet10.PopWindows.PWClientes"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -328,7 +328,7 @@
                                                     Click="BtnBuscarDireccion_Click"
                                                     Height="30" Width="70" Padding="0" Margin="0">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="🔍" FontSize="12" Margin="0,0,4,0"/>
+                                                    <Path Grid.Column="1" Width="16" Height="16" Margin="4,0" Stretch="Uniform" Stroke="{DynamicResource NavTextColor}" StrokeThickness="1.5" Fill="Transparent" Data="M11,11 L16,16 M7,12 C4,12 2,10 2,7 C2,4 4,2 7,2 C10,2 12,4 12,7 C12,10 10,12 7,12 Z"/>
                                                     <TextBlock Text="Buscar" FontSize="11"/>
                                                 </StackPanel>
                                             </Button>

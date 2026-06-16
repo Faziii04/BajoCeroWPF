@@ -51,8 +51,10 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private void UpdateEmptyState()
         {
-            txtEmptyFamilias.Visibility = _familias == null || _familias.Count == 0
-                ? Visibility.Visible : Visibility.Collapsed;
+            int count = _familias?.Count ?? 0;
+            bool empty = count == 0;
+            panelEmptyFamilias.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+            txtFamiliaCount.Text = empty ? "Sin familias" : $"{count} familia{(count != 1 ? "s" : "")}";
         }
 
         private void OpenFamiliaPopup(FamiliaModel? familia = null)

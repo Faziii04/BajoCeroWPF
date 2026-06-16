@@ -32,7 +32,6 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 _ventas = await VentasService.GetVentasByEstado(_activeEstado);
 
-                // Apply date filter client-side
                 DateTime? desde = dpFechaDesde?.SelectedDate;
                 DateTime? hasta = dpFechaHasta?.SelectedDate;
 
@@ -46,7 +45,6 @@ namespace ProyectoIntegradorNet10.UserControls
 
                 dgVentas.ItemsSource = result;
                 int count = result.Count;
-                int totalCount = _ventas.Count;
                 txtEmptyState.Text = $"No hay ventas en estado \"{_activeEstado}\".";
                 txtVentasCount.Text = count > 0
                     ? $"{count} venta{(count != 1 ? "s" : "")} en {_activeEstado}"
@@ -111,14 +109,9 @@ namespace ProyectoIntegradorNet10.UserControls
             await LoadVentas();
         }
 
-        // ──────────── DATA GRID ────────────
+        // ──────────── SINGLE-CLICK → OPEN POPUP ────────────
 
-        private void dgVentas_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Preview only — all actions are in PWDistribucion
-        }
-
-        private void dgVentas_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void dgVentas_Seleccionado(object sender, SelectionChangedEventArgs e)
         {
             if (dgVentas.SelectedItem is VentaModel venta)
                 OpenPopup(venta);
