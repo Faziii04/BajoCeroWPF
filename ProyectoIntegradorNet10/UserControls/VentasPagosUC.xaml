@@ -550,8 +550,7 @@
                     <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                         <Grid>
                             <DataGrid x:Name="dgVentas" Style="{StaticResource GridStyle}"
-                                      SelectionChanged="dgVentas_SelectionChanged"
-                                      MouseDoubleClick="dgVentas_MouseDoubleClick"
+                                      SelectionChanged="DgVentas_SelectionChanged"
                                       IsReadOnly="True">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>

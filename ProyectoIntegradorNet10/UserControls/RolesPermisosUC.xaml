@@ -224,8 +224,7 @@
                     <Grid>
                         <DataGrid x:Name="dgRoles" Style="{StaticResource GridStyle}"
                                   IsReadOnly="True"
-                                  SelectionChanged="dgRoles_SelectionChanged"
-                                  MouseDoubleClick="dgRoles_MouseDoubleClick">
+                                  SelectionChanged="DgRoles_SelectionChanged">
                             <DataGrid.Columns>
                                 <!-- Rol (icon + name) -->
                                 <DataGridTemplateColumn Header="Rol" Width="2*">

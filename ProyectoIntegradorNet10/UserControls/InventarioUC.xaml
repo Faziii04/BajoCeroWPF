@@ -311,7 +311,7 @@
             <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                 <Grid>
                     <DataGrid x:Name="dgInventario" Style="{StaticResource GridStyle}"
-                              MouseDoubleClick="dgInventario_MouseDoubleClick">
+                              SelectionChanged="DgInventario_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Producto" Binding="{Binding ProductoNombre}" Width="*"/>
                             <DataGridTextColumn Header="Depósito" Binding="{Binding DepositoNombre}" Width="160"/>

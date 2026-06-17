@@ -180,7 +180,7 @@
             <Border Grid.Row="1" Background="{DynamicResource POscuro2}" CornerRadius="12" Padding="0">
                 <Grid>
                     <DataGrid x:Name="dgClientes" Style="{StaticResource GridStyle}"
-                              MouseDoubleClick="dgClientes_MouseDoubleClick">
+                              SelectionChanged="DgClientes_SelectionChanged">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="CI" Binding="{Binding Ci}" Width="100"/>
                             <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>

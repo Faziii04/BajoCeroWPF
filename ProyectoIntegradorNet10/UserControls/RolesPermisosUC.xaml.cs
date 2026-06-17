@@ -92,15 +92,13 @@ namespace ProyectoIntegradorNet10.UserControls
 
         // ── DataGrid selection & double-click ──
 
-        private void dgRoles_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Preview area if needed
-        }
-
-        private void dgRoles_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void DgRoles_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgRoles.SelectedItem is Models.RolModel rol)
+            {
+                dgRoles.SelectedItem = null;
                 AbrirPWRoles(rol);
+            }
         }
 
         // ── Inline row actions ──

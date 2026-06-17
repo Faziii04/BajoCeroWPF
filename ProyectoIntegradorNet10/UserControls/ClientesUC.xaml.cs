@@ -56,10 +56,11 @@ namespace ProyectoIntegradorNet10.UserControls
             popup.ShowDialog();
         }
 
-        private void dgClientes_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void DgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgClientes.SelectedItem is ClienteModel cliente)
             {
+                dgClientes.SelectedItem = null;
                 var popup = new PWClientes
                 {
                     Owner = Window.GetWindow(this),

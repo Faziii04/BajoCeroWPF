@@ -135,10 +135,11 @@ namespace ProyectoIntegradorNet10.UserControls
             popup.ShowDialog();
         }
 
-        private void dgInventario_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void DgInventario_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgInventario.SelectedItem is InventarioModel item)
             {
+                dgInventario.SelectedItem = null;
                 var popup = new PWInventario(item)
                 {
                     Owner = Window.GetWindow(this),

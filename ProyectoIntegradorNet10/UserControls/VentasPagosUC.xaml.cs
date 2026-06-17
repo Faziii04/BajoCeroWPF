@@ -227,30 +227,16 @@ namespace ProyectoIntegradorNet10.UserControls
 
         // ──────────── VENTAS TAB: SELECTION & DOUBLE-CLICK ────────────
 
-        private async void dgVentas_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void DgVentas_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgVentas.SelectedItem is VentaModel venta)
             {
+                dgVentas.SelectedItem = null;
                 try
                 {
                     venta.Detalles = await VentasService.GetDetallesByVenta(venta.Id);
                     _selectedVenta = venta;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error al cargar detalles: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
 
-        private async void dgVentas_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (dgVentas.SelectedItem is VentaModel venta)
-            {
-                try
-                {
-                    // Load full venta with detalles
-                    venta.Detalles = await VentasService.GetDetallesByVenta(venta.Id);
                     var fullVenta = await VentasService.GetVentaById(venta.Id);
                     if (fullVenta != null)
                     {
@@ -263,11 +249,7 @@ namespace ProyectoIntegradorNet10.UserControls
                             EditVenta = fullVenta
                         };
 
-                        popup.OnDataChanged += async () =>
-                        {
-                            await LoadData();
-                        };
-
+                        popup.OnDataChanged += async () => { await LoadData(); };
                         popup.ShowDialog();
                     }
                 }
