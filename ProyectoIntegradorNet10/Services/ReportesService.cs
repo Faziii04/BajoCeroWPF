@@ -10,7 +10,43 @@ namespace ProyectoIntegradorNet10.Services
         private static NpgsqlDataSource DS => DatabaseConnection.DataSource;
 
         // ──────────────────────────────────────────────
-        //  Reporte: Productos más vendidos
+        //  Reporte: Ingresos diarios (bar chart)
+        // ──────────────────────────────────────────────
+        public static async Task<List<ReporteIngresoDiario>> GetIngresos(DateTime? desde = null, DateTime? hasta = null)
+        {
+            var list = new List<ReporteIngresoDiario>();
+            using var conn = await DS.OpenConnectionAsync();
+
+            var sql = @"
+                SELECT v.fecha,
+                       COALESCE(SUM(vd.cantidad * vd.precio_unitario), 0) AS total,
+                       COUNT(DISTINCT v.id) AS ventas_count
+                FROM venta v
+                JOIN venta_detalles vd ON vd.venta_id = v.id
+                WHERE (v.fecha >= @desde OR @desde IS NULL)
+                  AND (v.fecha <= @hasta OR @hasta IS NULL)
+                GROUP BY v.fecha
+                ORDER BY v.fecha";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@desde", (object?)desde ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@hasta", (object?)hasta ?? DBNull.Value);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new ReporteIngresoDiario
+                {
+                    Fecha = reader.GetDateTime(0),
+                    Total = reader.GetDecimal(1),
+                    VentasCount = reader.GetInt32(2),
+                });
+            }
+            return list;
+        }
+
+        // ──────────────────────────────────────────────
+        //  Reporte: Productos más vendidos (FIXED)
         // ──────────────────────────────────────────────
         public static async Task<List<ReporteProductosVendidos>> GetProductosMasVendidos(DateTime? desde = null, DateTime? hasta = null)
         {
@@ -18,15 +54,18 @@ namespace ProyectoIntegradorNet10.Services
             using var conn = await DS.OpenConnectionAsync();
 
             var sql = @"
-                SELECT p.id, p.nombre, p.categoria,
+                SELECT p.id, p.nombre,
+                       COALESCE(pf.nombre, 'Sin familia') AS familia,
                        COALESCE(SUM(vd.cantidad), 0) AS total_vendido,
                        COALESCE(SUM(vd.cantidad * vd.precio_unitario), 0) AS total_ingresos
                 FROM producto p
+                LEFT JOIN miembros m ON m.producto_id = p.id
+                LEFT JOIN producto_familia pf ON pf.id = m.familia_id
                 LEFT JOIN venta_detalles vd ON vd.producto_id = p.id
                 LEFT JOIN venta v ON v.id = vd.venta_id
                     AND (v.fecha >= @desde OR @desde IS NULL)
                     AND (v.fecha <= @hasta OR @hasta IS NULL)
-                GROUP BY p.id, p.nombre, p.categoria
+                GROUP BY p.id, p.nombre, pf.nombre
                 ORDER BY total_vendido DESC
                 LIMIT 50";
 
@@ -41,7 +80,7 @@ namespace ProyectoIntegradorNet10.Services
                 {
                     Id = reader.GetInt32(0),
                     Nombre = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    Categoria = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    Familia = reader.IsDBNull(2) ? "Sin familia" : reader.GetString(2),
                     TotalVendido = reader.GetDecimal(3),
                     TotalIngresos = reader.GetDecimal(4),
                 });
@@ -50,19 +89,22 @@ namespace ProyectoIntegradorNet10.Services
         }
 
         // ──────────────────────────────────────────────
-        //  Reporte: Inventario actual (producto_deposito)
+        //  Reporte: Inventario actual (FIXED)
         // ──────────────────────────────────────────────
         public static async Task<List<ReporteInventario>> GetInventarioActual()
         {
             var list = new List<ReporteInventario>();
             using var conn = await DS.OpenConnectionAsync();
             using var cmd = new NpgsqlCommand(@"
-                SELECT p.id, p.nombre, p.categoria, p.estado,
+                SELECT p.id, p.nombre, p.estado,
+                       COALESCE(pf.nombre, 'Sin familia') AS familia,
                        COALESCE(SUM(pd.cantidad), 0) AS stock_total,
                        COUNT(DISTINCT pd.deposito_id) AS depositos_count
                 FROM producto p
+                LEFT JOIN miembros m ON m.producto_id = p.id
+                LEFT JOIN producto_familia pf ON pf.id = m.familia_id
                 LEFT JOIN producto_deposito pd ON pd.producto_id = p.id
-                GROUP BY p.id, p.nombre, p.categoria, p.estado
+                GROUP BY p.id, p.nombre, p.estado, pf.nombre
                 ORDER BY p.nombre", conn);
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -72,8 +114,8 @@ namespace ProyectoIntegradorNet10.Services
                 {
                     Id = reader.GetInt32(0),
                     Nombre = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    Categoria = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    Estado = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    Estado = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    Familia = reader.IsDBNull(3) ? "Sin familia" : reader.GetString(3),
                     StockTotal = reader.GetDecimal(4),
                     DepositosCount = reader.GetInt32(5),
                 });
@@ -234,38 +276,6 @@ namespace ProyectoIntegradorNet10.Services
         }
 
         // ──────────────────────────────────────────────
-        //  Reporte: Roles y permisos
-        // ──────────────────────────────────────────────
-        public static async Task<List<ReporteRoles>> GetRolesPermisos()
-        {
-            var list = new List<ReporteRoles>();
-            using var conn = await DS.OpenConnectionAsync();
-            using var cmd = new NpgsqlCommand(@"
-                SELECT r.id, r.nombre, r.descripcion,
-                       COUNT(DISTINCT er.empleado_ci) AS empleados_count,
-                       COUNT(DISTINCT rp.permiso_id) AS permisos_count
-                FROM rol r
-                LEFT JOIN empleado_rol er ON er.rol_id = r.id AND er.estado = 'Activo'
-                LEFT JOIN rol_permisos rp ON rp.rol_id = r.id AND rp.estado = 'Activo'
-                GROUP BY r.id, r.nombre, r.descripcion
-                ORDER BY r.nombre", conn);
-
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                list.Add(new ReporteRoles
-                {
-                    Id = reader.GetInt32(0),
-                    Nombre = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                    Descripcion = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    EmpleadosCount = reader.GetInt32(3),
-                    PermisosCount = reader.GetInt32(4),
-                });
-            }
-            return list;
-        }
-
-        // ──────────────────────────────────────────────
         //  Reporte: Vehículos
         // ──────────────────────────────────────────────
         public static async Task<List<ReporteVehiculos>> GetVehiculos()
@@ -329,17 +339,109 @@ namespace ProyectoIntegradorNet10.Services
             }
             return list;
         }
+
+        // ──────────────────────────────────────────────
+        //  Reporte: Producción (NEW)
+        // ──────────────────────────────────────────────
+        public static async Task<List<ReporteProduccion>> GetProduccion(DateTime? desde = null, DateTime? hasta = null)
+        {
+            var list = new List<ReporteProduccion>();
+            using var conn = await DS.OpenConnectionAsync();
+
+            var sql = @"
+                SELECT p.id, p.fecha_inicio, p.fecha_fin, p.estado, p.costo_total,
+                       COUNT(DISTINCT ip.insumo_id) AS insumos_count,
+                       COUNT(DISTINCT pp.producto_id) AS productos_count
+                FROM produccion p
+                LEFT JOIN insumo_produccion ip ON ip.produccion_id = p.id
+                LEFT JOIN produccion_producto pp ON pp.produccion_id = p.id
+                WHERE (p.fecha_inicio::date >= @desde OR @desde IS NULL)
+                  AND (p.fecha_inicio::date <= @hasta OR @hasta IS NULL)
+                GROUP BY p.id, p.fecha_inicio, p.fecha_fin, p.estado, p.costo_total
+                ORDER BY p.fecha_inicio DESC
+                LIMIT 100";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@desde", (object?)desde ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@hasta", (object?)hasta ?? DBNull.Value);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new ReporteProduccion
+                {
+                    Id = reader.GetInt32(0),
+                    FechaInicio = reader.GetDateTime(1),
+                    FechaFin = reader.IsDBNull(2) ? null : reader.GetDateTime(2),
+                    Estado = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    CostoTotal = reader.IsDBNull(4) ? null : reader.GetDecimal(4),
+                    InsumosCount = reader.GetInt32(5),
+                    ProductosCount = reader.GetInt32(6),
+                });
+            }
+            return list;
+        }
+
+        // ──────────────────────────────────────────────
+        //  Reporte: Órdenes de Compra (NEW)
+        // ──────────────────────────────────────────────
+        public static async Task<List<ReporteOrdenCompra>> GetOrdenesCompra(DateTime? desde = null, DateTime? hasta = null)
+        {
+            var list = new List<ReporteOrdenCompra>();
+            using var conn = await DS.OpenConnectionAsync();
+
+            var sql = @"
+                SELECT oc.id, oc.fecha_pedido, oc.estado, oc.monto,
+                       pr.nombre AS proveedor,
+                       COUNT(DISTINCT do.insumo_id) AS items_count
+                FROM orden_compra oc
+                LEFT JOIN proveedor pr ON pr.id = oc.proveedor
+                LEFT JOIN detalles_orden do ON do.orden_id = oc.id
+                WHERE (oc.fecha_pedido >= @desde OR @desde IS NULL)
+                  AND (oc.fecha_pedido <= @hasta OR @hasta IS NULL)
+                GROUP BY oc.id, oc.fecha_pedido, oc.estado, oc.monto, pr.nombre
+                ORDER BY oc.fecha_pedido DESC
+                LIMIT 100";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@desde", (object?)desde ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@hasta", (object?)hasta ?? DBNull.Value);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                list.Add(new ReporteOrdenCompra
+                {
+                    Id = reader.GetInt32(0),
+                    FechaPedido = reader.GetDateTime(1),
+                    Estado = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    Monto = reader.IsDBNull(3) ? 0 : reader.GetDecimal(3),
+                    Proveedor = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    ItemsCount = reader.GetInt32(5),
+                });
+            }
+            return list;
+        }
     }
 
     // ──────────────────────────────────────────────
     //  DTOs for each report type
     // ──────────────────────────────────────────────
 
+    public class ReporteIngresoDiario
+    {
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+        public int VentasCount { get; set; }
+        public string FechaDisplay => Fecha.ToString("dd/MM/yyyy");
+        public string TotalDisplay => Total.ToString("N2");
+    }
+
     public class ReporteProductosVendidos
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
-        public string Categoria { get; set; } = "";
+        public string Familia { get; set; } = "";
         public decimal TotalVendido { get; set; }
         public decimal TotalIngresos { get; set; }
         public string TotalVendidoDisplay => TotalVendido.ToString("N0");
@@ -350,8 +452,8 @@ namespace ProyectoIntegradorNet10.Services
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = "";
-        public string Categoria { get; set; } = "";
         public string Estado { get; set; } = "";
+        public string Familia { get; set; } = "";
         public decimal StockTotal { get; set; }
         public int DepositosCount { get; set; }
         public string StockDisplay => StockTotal.ToString("N0");
@@ -413,15 +515,6 @@ namespace ProyectoIntegradorNet10.Services
         public string SubtotalDisplay => Subtotal.ToString("N2");
     }
 
-    public class ReporteRoles
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = "";
-        public string Descripcion { get; set; } = "";
-        public int EmpleadosCount { get; set; }
-        public int PermisosCount { get; set; }
-    }
-
     public class ReporteVehiculos
     {
         public string Placa { get; set; } = "";
@@ -454,5 +547,31 @@ namespace ProyectoIntegradorNet10.Services
         public int ProductosCount { get; set; }
         public decimal StockTotal { get; set; }
         public string StockDisplay => StockTotal.ToString("N0");
+    }
+
+    public class ReporteProduccion
+    {
+        public int Id { get; set; }
+        public DateTime FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; }
+        public string Estado { get; set; } = "";
+        public decimal? CostoTotal { get; set; }
+        public int InsumosCount { get; set; }
+        public int ProductosCount { get; set; }
+        public string FechaDisplay => FechaInicio.ToString("dd/MM/yyyy");
+        public string FechaFinDisplay => FechaFin?.ToString("dd/MM/yyyy") ?? "—";
+        public string CostoDisplay => CostoTotal?.ToString("N2") ?? "—";
+    }
+
+    public class ReporteOrdenCompra
+    {
+        public int Id { get; set; }
+        public DateTime FechaPedido { get; set; }
+        public string Estado { get; set; } = "";
+        public decimal Monto { get; set; }
+        public string Proveedor { get; set; } = "";
+        public int ItemsCount { get; set; }
+        public string FechaDisplay => FechaPedido.ToString("dd/MM/yyyy");
+        public string MontoDisplay => Monto.ToString("N2");
     }
 }

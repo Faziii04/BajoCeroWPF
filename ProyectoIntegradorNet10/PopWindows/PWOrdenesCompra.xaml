@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProyectoIntegradorNet10.PopWindows"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         Title="PWOrdenesCompra" Height="720" Width="740"
         WindowStartupLocation="CenterOwner"
@@ -74,7 +75,8 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Fecha Pedido *" Foreground="{DynamicResource NavTextColor}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,3"/>
-                                    <DatePicker x:Name="dpFechaPedido"/>
+                                    <DatePicker x:Name="dpFechaPedido"
+                                                DisplayDateStart="{x:Static sys:DateTime.Today}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Hora Pedido *" Foreground="{DynamicResource NavTextColor}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,3"/>
@@ -90,7 +92,8 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Fecha Llegada" Foreground="{DynamicResource NavTextColor}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,3"/>
-                                    <DatePicker x:Name="dpFechaLlegada"/>
+                                    <DatePicker x:Name="dpFechaLlegada"
+                                                DisplayDateStart="{x:Static sys:DateTime.Today}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Hora Llegada" Foreground="{DynamicResource NavTextColor}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,3"/>

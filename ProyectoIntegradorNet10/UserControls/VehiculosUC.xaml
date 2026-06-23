@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:ProyectoIntegradorNet10.UserControls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="1000"
              Loaded="VehiculosUC_Loaded">
@@ -633,7 +634,8 @@
                                             Padding="10,7"
                                             FontSize="13"
                                             Margin="0,0,0,10"
-                                            SelectedDateFormat="Short"/>
+                                            SelectedDateFormat="Short"
+                                            DisplayDateStart="{x:Static sys:DateTime.Today}"/>
 
                                 <!-- Action buttons -->
                                 <StackPanel Orientation="Horizontal" Margin="0,16,0,0" HorizontalAlignment="Right">

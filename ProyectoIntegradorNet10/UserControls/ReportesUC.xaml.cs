@@ -15,29 +15,22 @@ namespace ProyectoIntegradorNet10.UserControls
 {
     public partial class ReportesUC : UserControl
     {
-        /// <summary>
-        /// Tracks the currently selected report type button for visual highlighting.
-        /// </summary>
         private Button? _activeReportButton;
-
-        /// <summary>
-        /// Stores the last loaded data for CSV export.
-        /// </summary>
         private IEnumerable? _lastLoadedData;
-
-        /// <summary>
-        /// Whether a load is currently in progress (debounce).
-        /// </summary>
         private bool _isLoading;
 
         public ReportesUC()
         {
             InitializeComponent();
-
-            // Set default date range: last 30 days
             dpDesde.SelectedDate = DateTime.Today.AddDays(-30);
             dpHasta.SelectedDate = DateTime.Today;
         }
+
+        /// <summary>Reports that use date range filters.</summary>
+        private static readonly HashSet<string> DateSensitiveReports = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Ingresos", "Productos", "Ventas", "Facturacion", "Produccion", "Ordenes",
+        };
 
         // ──────────────────────────────────────────────
         //  Report type selection
@@ -45,27 +38,21 @@ namespace ProyectoIntegradorNet10.UserControls
 
         private async void BtnReporte_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn || _isLoading)
-                return;
+            if (sender is not Button btn || _isLoading) return;
 
-            // Highlight the selected button
             SetActiveReportButton(btn);
 
             var tag = btn.Tag?.ToString() ?? "";
-
-            // Update header
             var (icon, title) = GetReportMeta(tag);
             txtReportIcon.Text = icon;
             txtReportTitle.Text = title;
             txtReportSubtitle.Text = "Cargando datos...";
 
-            // Load data
             await LoadReport(tag);
         }
 
         private void SetActiveReportButton(Button button)
         {
-            // Reset previous
             if (_activeReportButton != null && _activeReportButton != button)
             {
                 _activeReportButton.ClearValue(BackgroundProperty);
@@ -73,8 +60,6 @@ namespace ProyectoIntegradorNet10.UserControls
                 _activeReportButton.ClearValue(BorderThicknessProperty);
                 _activeReportButton.Foreground = (Brush)FindResource("NavTextColor");
             }
-
-            // Set new active — use GridRowSelectedBrush for contrast in both themes
             _activeReportButton = button;
             _activeReportButton.Background = (Brush)FindResource("GridRowSelectedBrush");
             _activeReportButton.Foreground = Brushes.White;
@@ -86,15 +71,17 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return tag switch
             {
+                "Ingresos"    => ("📊", "Ingresos"),
                 "Productos"   => ("📦", "Productos más vendidos"),
                 "Inventario"  => ("📋", "Inventario actual"),
                 "Clientes"    => ("👥", "Clientes frecuentes"),
                 "Empleados"   => ("👤", "Empleados por área"),
                 "Ventas"      => ("💰", "Ventas por período"),
                 "Facturacion" => ("🧾", "Facturación"),
-                "Roles"       => ("🔐", "Roles y permisos"),
                 "Vehiculos"   => ("🚛", "Vehículos"),
                 "Depositos"   => ("🏭", "Depósitos"),
+                "Produccion"  => ("🏗️", "Producción"),
+                "Ordenes"     => ("📑", "Órdenes de Compra"),
                 _             => ("📊", "Reporte"),
             };
         }
@@ -109,6 +96,12 @@ namespace ProyectoIntegradorNet10.UserControls
             badgeLoading.Visibility = Visibility.Visible;
             emptyState.Visibility = Visibility.Collapsed;
             kpiBar.Visibility = Visibility.Collapsed;
+            chartBar.Visibility = Visibility.Collapsed;
+            chartCanvas.Children.Clear();
+
+            // Show/hide date filter bar based on report type
+            dateFilterBar.Visibility = DateSensitiveReports.Contains(tag)
+                ? Visibility.Visible : Visibility.Collapsed;
 
             try
             {
@@ -117,50 +110,85 @@ namespace ProyectoIntegradorNet10.UserControls
 
                 switch (tag)
                 {
+                    case "Ingresos":
+                    {
+                        var data = await ReportesService.GetIngresos(desde, hasta);
+                        BuildRevenueChart(data);
+                        BindDataGrid(data, GetIngresosColumns());
+                        UpdateKpiIngresos(data);
+                        chartBar.Visibility = Visibility.Visible;
+                        break;
+                    }
                     case "Productos":
-                        var prodData = await ReportesService.GetProductosMasVendidos(desde, hasta);
-                        BindDataGrid(prodData, GetProductosColumns());
+                    {
+                        var data = await ReportesService.GetProductosMasVendidos(desde, hasta);
+                        BindDataGrid(data, GetProductosColumns());
+                        UpdateKpiProductos(data);
                         break;
-
+                    }
                     case "Inventario":
-                        var invData = await ReportesService.GetInventarioActual();
-                        BindDataGrid(invData, GetInventarioColumns());
+                    {
+                        var data = await ReportesService.GetInventarioActual();
+                        BindDataGrid(data, GetInventarioColumns());
+                        UpdateKpiInventario(data);
                         break;
-
+                    }
                     case "Clientes":
-                        var cliData = await ReportesService.GetClientesFrecuentes();
-                        BindDataGrid(cliData, GetClientesColumns());
+                    {
+                        var data = await ReportesService.GetClientesFrecuentes();
+                        BindDataGrid(data, GetClientesColumns());
+                        UpdateKpiClientes(data);
                         break;
-
+                    }
                     case "Empleados":
-                        var empData = await ReportesService.GetEmpleadosPorArea();
-                        BindDataGrid(empData, GetEmpleadosColumns());
+                    {
+                        var data = await ReportesService.GetEmpleadosPorArea();
+                        BindDataGrid(data, GetEmpleadosColumns());
+                        UpdateKpiEmpleados(data);
                         break;
-
+                    }
                     case "Ventas":
-                        var venData = await ReportesService.GetVentasPorPeriodo(desde, hasta);
-                        BindDataGrid(venData, GetVentasColumns());
+                    {
+                        var data = await ReportesService.GetVentasPorPeriodo(desde, hasta);
+                        BindDataGrid(data, GetVentasColumns());
+                        UpdateKpiVentas(data);
                         break;
-
+                    }
                     case "Facturacion":
-                        var facData = await ReportesService.GetFacturacion(desde, hasta);
-                        BindDataGrid(facData, GetFacturacionColumns());
+                    {
+                        var data = await ReportesService.GetFacturacion(desde, hasta);
+                        BindDataGrid(data, GetFacturacionColumns());
+                        UpdateKpiFacturacion(data);
                         break;
-
-                    case "Roles":
-                        var rolData = await ReportesService.GetRolesPermisos();
-                        BindDataGrid(rolData, GetRolesColumns());
-                        break;
-
+                    }
                     case "Vehiculos":
-                        var vehData = await ReportesService.GetVehiculos();
-                        BindDataGrid(vehData, GetVehiculosColumns());
+                    {
+                        var data = await ReportesService.GetVehiculos();
+                        BindDataGrid(data, GetVehiculosColumns());
+                        UpdateKpiVehiculos(data);
                         break;
-
+                    }
                     case "Depositos":
-                        var depData = await ReportesService.GetDepositos();
-                        BindDataGrid(depData, GetDepositosColumns());
+                    {
+                        var data = await ReportesService.GetDepositos();
+                        BindDataGrid(data, GetDepositosColumns());
+                        UpdateKpiDepositos(data);
                         break;
+                    }
+                    case "Produccion":
+                    {
+                        var data = await ReportesService.GetProduccion(desde, hasta);
+                        BindDataGrid(data, GetProduccionColumns());
+                        UpdateKpiProduccion(data);
+                        break;
+                    }
+                    case "Ordenes":
+                    {
+                        var data = await ReportesService.GetOrdenesCompra(desde, hasta);
+                        BindDataGrid(data, GetOrdenesColumns());
+                        UpdateKpiOrdenes(data);
+                        break;
+                    }
                 }
             }
             catch (Exception ex)
@@ -169,6 +197,7 @@ namespace ProyectoIntegradorNet10.UserControls
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 emptyState.Visibility = Visibility.Visible;
                 kpiBar.Visibility = Visibility.Collapsed;
+                chartBar.Visibility = Visibility.Collapsed;
             }
             finally
             {
@@ -176,6 +205,86 @@ namespace ProyectoIntegradorNet10.UserControls
                 badgeLoading.Visibility = Visibility.Collapsed;
             }
         }
+
+        // ──────────────────────────────────────────────
+        //  Chart builder (WPF Canvas bars)
+        // ──────────────────────────────────────────────
+
+        private void BuildRevenueChart(List<ReporteIngresoDiario> data)
+        {
+            chartCanvas.Children.Clear();
+            if (data.Count == 0) return;
+
+            chartTitle.Text = "Ingresos por día";
+            chartBar.Visibility = Visibility.Visible;
+
+            // Wait for layout so we can measure ActualWidth/Height
+            chartBar.UpdateLayout();
+            chartCanvas.UpdateLayout();
+
+            // Defer drawing until canvas has size
+            Dispatcher.BeginInvoke(new Action(() => DrawBars(data)));
+        }
+
+        private void DrawBars(List<ReporteIngresoDiario> data)
+        {
+            chartCanvas.Children.Clear();
+            double w = chartCanvas.ActualWidth;
+            double h = chartCanvas.ActualHeight;
+            if (w <= 0 || h <= 0 || data.Count == 0) return;
+
+            var maxVal = (double)data.Max(d => d.Total);
+            if (maxVal <= 0) maxVal = 1;
+            double barW = Math.Max(8, (w / data.Count) * 0.7);
+            double gap = w / data.Count;
+            double padding = (gap - barW) / 2;
+
+            var accentBrush = (Brush)FindResource("AcentoBrush");
+            var labelBrush = (Brush)FindResource("SectionLabelColor");
+            var textBrush = (Brush)FindResource("NavTextColor");
+
+            double labelH = 20;
+            double chartH = h - labelH;
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                double barH = (double)data[i].Total / maxVal * chartH;
+                double x = padding + i * gap;
+                double y = chartH - barH;
+
+                var rect = new System.Windows.Shapes.Rectangle
+                {
+                    Width = barW,
+                    Height = Math.Max(1, barH),
+                    Fill = accentBrush,
+                    RadiusX = 2,
+                    RadiusY = 2,
+                };
+                Canvas.SetLeft(rect, x);
+                Canvas.SetTop(rect, y);
+                chartCanvas.Children.Add(rect);
+
+                // Date label
+                if (data.Count <= 31 || i % Math.Max(1, data.Count / 15) == 0)
+                {
+                    var lbl = new TextBlock
+                    {
+                        Text = data[i].Fecha.ToString("dd/MM"),
+                        FontSize = 9,
+                        Foreground = labelBrush,
+                        TextAlignment = TextAlignment.Center,
+                        Width = gap,
+                    };
+                    Canvas.SetLeft(lbl, x - padding);
+                    Canvas.SetTop(lbl, chartH + 2);
+                    chartCanvas.Children.Add(lbl);
+                }
+            }
+        }
+
+        // ──────────────────────────────────────────────
+        //  DataGrid binding
+        // ──────────────────────────────────────────────
 
         private void BindDataGrid(IEnumerable data, List<DataGridColumn> columns)
         {
@@ -187,26 +296,124 @@ namespace ProyectoIntegradorNet10.UserControls
 
             dgReportes.ItemsSource = data;
 
-            // Update count — use non-generic ICollection to handle any List<T>
             var count = (data as ICollection)?.Count ?? 0;
             txtReportSubtitle.Text = $"{count} registro{(count == 1 ? "" : "s")} encontrado{(count == 1 ? "" : "s")}";
-            kpiCount.Text = $"{count} registro{(count == 1 ? "" : "s")}";
+            txtReportCount.Text = $"{count} registro{(count == 1 ? "" : "s")}";
             kpiBar.Visibility = Visibility.Visible;
         }
 
         // ──────────────────────────────────────────────
-        //  Column definitions per report type
+        //  KPI updates per report type
         // ──────────────────────────────────────────────
+
+        private void SetKpi(string label1, string value1, string label2, string value2, string label3, string value3)
+        {
+            kpiLabel1.Text = label1; kpiValue1.Text = value1;
+            kpiLabel2.Text = label2; kpiValue2.Text = value2;
+            kpiLabel3.Text = label3; kpiValue3.Text = value3;
+        }
+
+        private void UpdateKpiIngresos(List<ReporteIngresoDiario> data)
+        {
+            var total = data.Sum(d => d.Total);
+            var avg = data.Count > 0 ? total / data.Count : 0;
+            var max = data.Count > 0 ? data.Max(d => d.Total) : 0;
+            SetKpi("Total ingresos", $"Bs {total:N0}", "Promedio diario", $"Bs {avg:N0}", "Mejor día", $"Bs {max:N0}");
+        }
+
+        private void UpdateKpiProductos(List<ReporteProductosVendidos> data)
+        {
+            var total = data.Sum(d => d.TotalIngresos);
+            var units = data.Sum(d => d.TotalVendido);
+            SetKpi("Ingresos totales", $"Bs {total:N0}", "Unidades vendidas", $"{units:N0}", "Productos", $"{data.Count}");
+        }
+
+        private void UpdateKpiInventario(List<ReporteInventario> data)
+        {
+            var stock = data.Sum(d => d.StockTotal);
+            var avg = data.Count > 0 ? stock / data.Count : 0;
+            SetKpi("Stock total", $"{stock:N0}", "Promedio", $"{avg:N0}", "Productos", $"{data.Count}");
+        }
+
+        private void UpdateKpiClientes(List<ReporteClientes> data)
+        {
+            var total = data.Sum(d => d.TotalGastado);
+            var avg = data.Count > 0 ? total / data.Count : 0;
+            SetKpi("Total gastado", $"Bs {total:N0}", "Promedio", $"Bs {avg:N0}", "Clientes", $"{data.Count}");
+        }
+
+        private void UpdateKpiVentas(List<ReporteVentas> data)
+        {
+            var total = data.Sum(d => d.Monto);
+            var avg = data.Count > 0 ? total / data.Count : 0;
+            SetKpi("Total ventas", $"Bs {total:N0}", "Promedio", $"Bs {avg:N0}", "Ventas", $"{data.Count}");
+        }
+
+        private void UpdateKpiFacturacion(List<ReporteFacturacion> data)
+        {
+            var total = data.Sum(d => d.Total);
+            var avg = data.Count > 0 ? total / data.Count : 0;
+            SetKpi("Total facturado", $"Bs {total:N0}", "Promedio", $"Bs {avg:N0}", "Facturas", $"{data.Count}");
+        }
+
+        private void UpdateKpiVehiculos(List<ReporteVehiculos> data)
+        {
+            var vigentes = data.Count(v => v.SoatEstado == "Vigente");
+            var vencidos = data.Count(v => v.SoatEstado == "Vencido");
+            SetKpi("Total vehículos", $"{data.Count}", "SOAT vigente", $"{vigentes}", "SOAT vencido", $"{vencidos}");
+        }
+
+        private void UpdateKpiDepositos(List<ReporteDepositos> data)
+        {
+            var stock = data.Sum(d => d.StockTotal);
+            var avg = data.Count > 0 ? stock / data.Count : 0;
+            SetKpi("Stock total", $"{stock:N0}", "Promedio", $"{avg:N0}", "Depósitos", $"{data.Count}");
+        }
+
+        private void UpdateKpiEmpleados(List<ReporteEmpleados> data)
+        {
+            var areas = data.Select(e => e.Area).Where(a => !string.IsNullOrEmpty(a)).Distinct().Count();
+            SetKpi("Total empleados", $"{data.Count}", "Áreas", $"{areas}", "Roles activos", "—");
+        }
+
+        private void UpdateKpiProduccion(List<ReporteProduccion> data)
+        {
+            var costo = data.Sum(d => d.CostoTotal ?? 0);
+            var completadas = data.Count(d => d.Estado == "Completado");
+            var pct = data.Count > 0 ? (completadas * 100 / data.Count) : 0;
+            SetKpi("Costo total", $"Bs {costo:N0}", "Completadas", $"{completadas}/{data.Count} ({pct}%)", "Producciones", $"{data.Count}");
+        }
+
+        private void UpdateKpiOrdenes(List<ReporteOrdenCompra> data)
+        {
+            var monto = data.Sum(d => d.Monto);
+            var recibidas = data.Count(d => d.Estado == "Recibido");
+            SetKpi("Monto total", $"Bs {monto:N0}", "Recibidas", $"{recibidas}/{data.Count}", "Órdenes", $"{data.Count}");
+        }
+
+        // ──────────────────────────────────────────────
+        //  Column definitions
+        // ──────────────────────────────────────────────
+
+        private static List<DataGridColumn> GetIngresosColumns()
+        {
+            return new List<DataGridColumn>
+            {
+                TCol("Fecha", "FechaDisplay", 110),
+                TCol("Ventas", "VentasCount", 80),
+                TCol("Total Bs", "TotalDisplay", 130),
+            };
+        }
 
         private static List<DataGridColumn> GetProductosColumns()
         {
             return new List<DataGridColumn>
             {
-                TextCol("ID", "Id", 60),
-                TextCol("Producto", "Nombre", 180),
-                TextCol("Categoría", "Categoria", 120),
-                TextCol("Total vendido", "TotalVendidoDisplay", 120),
-                TextCol("Ingresos totales", "TotalIngresosDisplay", 140),
+                TCol("ID", "Id", 60),
+                TCol("Producto", "Nombre", 180),
+                TCol("Familia", "Familia", 120),
+                TCol("Vendido", "TotalVendidoDisplay", 100),
+                TCol("Ingresos", "TotalIngresosDisplay", 130),
             };
         }
 
@@ -214,12 +421,12 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("ID", "Id", 60),
-                TextCol("Producto", "Nombre", 180),
-                TextCol("Categoría", "Categoria", 120),
-                TextCol("Stock total", "StockDisplay", 110),
-                TextCol("Depósitos", "DepositosCount", 100),
-                TextCol("Estado", "Estado", 100),
+                TCol("ID", "Id", 60),
+                TCol("Producto", "Nombre", 180),
+                TCol("Familia", "Familia", 120),
+                TCol("Stock", "StockDisplay", 100),
+                TCol("Depósitos", "DepositosCount", 90),
+                TCol("Estado", "Estado", 100),
             };
         }
 
@@ -227,11 +434,11 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("CI", "Ci", 100),
-                TextCol("Nombre completo", "NombreCompleto", 200),
-                TextCol("Teléfono", "Telefono", 120),
-                TextCol("Compras", "TotalCompras", 90),
-                TextCol("Total gastado", "TotalGastadoDisplay", 130),
+                TCol("CI", "Ci", 100),
+                TCol("Nombre", "NombreCompleto", 200),
+                TCol("Teléfono", "Telefono", 120),
+                TCol("Compras", "TotalCompras", 90),
+                TCol("Total", "TotalGastadoDisplay", 130),
             };
         }
 
@@ -239,13 +446,13 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("CI", "Ci", 100),
-                TextCol("Nombre completo", "NombreCompleto", 180),
-                TextCol("Área", "Area", 120),
-                TextCol("Turno", "Turno", 100),
-                TextCol("Rol", "RolNombre", 130),
-                TextCol("Teléfono", "Telefono", 110),
-                TextCol("Correo", "Correo", 180),
+                TCol("CI", "Ci", 100),
+                TCol("Nombre", "NombreCompleto", 180),
+                TCol("Área", "Area", 120),
+                TCol("Turno", "Turno", 100),
+                TCol("Rol", "RolNombre", 130),
+                TCol("Teléfono", "Telefono", 110),
+                TCol("Correo", "Correo", 180),
             };
         }
 
@@ -253,13 +460,13 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("ID", "Id", 60),
-                TextCol("Fecha", "FechaDisplay", 100),
-                TextCol("Hora", "HoraDisplay", 70),
-                TextCol("Cliente", "Cliente", 180),
-                TextCol("Tipo", "Tipo", 90),
-                TextCol("Estado", "Estado", 90),
-                TextCol("Monto", "MontoDisplay", 110),
+                TCol("ID", "Id", 60),
+                TCol("Fecha", "FechaDisplay", 100),
+                TCol("Hora", "HoraDisplay", 70),
+                TCol("Cliente", "Cliente", 180),
+                TCol("Tipo", "Tipo", 90),
+                TCol("Estado", "Estado", 90),
+                TCol("Monto", "MontoDisplay", 110),
             };
         }
 
@@ -267,25 +474,13 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("ID", "Id", 60),
-                TextCol("Fecha", "FechaDisplay", 140),
-                TextCol("Cliente", "NombreCompleto", 180),
-                TextCol("NIT", "Nit", 110),
-                TextCol("Subtotal", "SubtotalDisplay", 100),
-                TextCol("Descuento", "Descuento", 90),
-                TextCol("Total", "TotalDisplay", 110),
-            };
-        }
-
-        private static List<DataGridColumn> GetRolesColumns()
-        {
-            return new List<DataGridColumn>
-            {
-                TextCol("ID", "Id", 60),
-                TextCol("Rol", "Nombre", 160),
-                TextCol("Descripción", "Descripcion", 250),
-                TextCol("Empleados", "EmpleadosCount", 100),
-                TextCol("Permisos", "PermisosCount", 100),
+                TCol("ID", "Id", 60),
+                TCol("Fecha", "FechaDisplay", 140),
+                TCol("Cliente", "NombreCompleto", 180),
+                TCol("NIT", "Nit", 110),
+                TCol("Subtotal", "SubtotalDisplay", 100),
+                TCol("Dto", "Descuento", 80),
+                TCol("Total", "TotalDisplay", 110),
             };
         }
 
@@ -293,14 +488,14 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("Placa", "Placa", 100),
-                TextCol("Marca", "Marca", 120),
-                TextCol("Modelo", "Modelo", 120),
-                TextCol("Tipo", "Tipo", 100),
-                TextCol("Kilometraje", "Kilometraje", 100),
-                TextCol("SOAT vence", "SoatDisplay", 110),
-                TextCol("Estado SOAT", "SoatEstado", 100),
-                TextCol("Repartidor", "Repartidor", 160),
+                TCol("Placa", "Placa", 100),
+                TCol("Marca", "Marca", 120),
+                TCol("Modelo", "Modelo", 120),
+                TCol("Tipo", "Tipo", 100),
+                TCol("KM", "Kilometraje", 90),
+                TCol("SOAT", "SoatDisplay", 110),
+                TCol("Estado", "SoatEstado", 100),
+                TCol("Repartidor", "Repartidor", 160),
             };
         }
 
@@ -308,20 +503,43 @@ namespace ProyectoIntegradorNet10.UserControls
         {
             return new List<DataGridColumn>
             {
-                TextCol("ID", "Id", 60),
-                TextCol("Nombre", "Nombre", 160),
-                TextCol("Dirección", "Direccion", 200),
-                TextCol("Ubicación", "Ubicacion", 120),
-                TextCol("Productos", "ProductosCount", 100),
-                TextCol("Stock total", "StockDisplay", 110),
+                TCol("ID", "Id", 60),
+                TCol("Nombre", "Nombre", 160),
+                TCol("Dirección", "Direccion", 200),
+                TCol("Ubicación", "Ubicacion", 120),
+                TCol("Productos", "ProductosCount", 90),
+                TCol("Stock", "StockDisplay", 100),
             };
         }
 
-        // ──────────────────────────────────────────────
-        //  Helpers
-        // ──────────────────────────────────────────────
+        private static List<DataGridColumn> GetProduccionColumns()
+        {
+            return new List<DataGridColumn>
+            {
+                TCol("ID", "Id", 60),
+                TCol("Fecha Inicio", "FechaDisplay", 110),
+                TCol("Fecha Fin", "FechaFinDisplay", 110),
+                TCol("Estado", "Estado", 100),
+                TCol("Costo", "CostoDisplay", 110),
+                TCol("Insumos", "InsumosCount", 80),
+                TCol("Productos", "ProductosCount", 90),
+            };
+        }
 
-        private static DataGridTextColumn TextCol(string header, string binding, double width)
+        private static List<DataGridColumn> GetOrdenesColumns()
+        {
+            return new List<DataGridColumn>
+            {
+                TCol("ID", "Id", 60),
+                TCol("Fecha", "FechaDisplay", 100),
+                TCol("Estado", "Estado", 100),
+                TCol("Proveedor", "Proveedor", 180),
+                TCol("Monto", "MontoDisplay", 110),
+                TCol("Items", "ItemsCount", 70),
+            };
+        }
+
+        private static DataGridTextColumn TCol(string header, string binding, double width)
         {
             return new DataGridTextColumn
             {
@@ -335,37 +553,18 @@ namespace ProyectoIntegradorNet10.UserControls
         //  Event handlers
         // ──────────────────────────────────────────────
 
-        private void DgReportes_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Optional: handle row selection for detail view
-        }
-
-        private void DpDesde_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Auto-reload if a report is already selected
-            if (_activeReportButton != null && !_isLoading)
-            {
-                _ = LoadReport(_activeReportButton.Tag?.ToString() ?? "");
-            }
-        }
-
-        private void DpHasta_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        private void DpFilter_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_activeReportButton != null && !_isLoading)
-            {
                 _ = LoadReport(_activeReportButton.Tag?.ToString() ?? "");
-            }
         }
 
         private void BtnLimpiarFiltros_Click(object sender, RoutedEventArgs e)
         {
             dpDesde.SelectedDate = null;
             dpHasta.SelectedDate = null;
-
             if (_activeReportButton != null && !_isLoading)
-            {
                 _ = LoadReport(_activeReportButton.Tag?.ToString() ?? "");
-            }
         }
 
         private void BtnExportar_Click(object sender, RoutedEventArgs e)
@@ -381,17 +580,16 @@ namespace ProyectoIntegradorNet10.UserControls
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Filter = "Excel files (*.xlsx)|*.xlsx|CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+                    Filter = "Excel files (*.xlsx)|*.xlsx|CSV files (*.csv)|*.csv",
                     FileName = $"Reporte_{txtReportTitle.Text.Replace(" ", "_")}_{DateTime.Today:yyyyMMdd}",
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
-                    var path = dialog.FileName;
-                    if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                        ExportCsv(path);
+                    if (dialog.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                        ExportCsv(dialog.FileName);
                     else
-                        ExportExcel(path);
+                        ExportExcel(dialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -404,34 +602,22 @@ namespace ProyectoIntegradorNet10.UserControls
         private void ExportCsv(string path)
         {
             var lines = new List<string>();
-
-            // Header
-            var headers = dgReportes.Columns
-                .Select(c => EscapeCsv(c.Header?.ToString() ?? ""))
-                .ToList();
+            var headers = dgReportes.Columns.Select(c => EscapeCsv(c.Header?.ToString() ?? "")).ToList();
             lines.Add(string.Join(",", headers));
 
-            // Data rows
             foreach (var item in dgReportes.Items)
             {
-                var values = dgReportes.Columns
-                    .Select(col =>
-                    {
-                        if (col is DataGridTextColumn textCol && textCol.Binding is Binding binding)
-                        {
-                            var value = item?.GetType()?.GetProperty(binding.Path?.Path ?? "")?.GetValue(item);
-                            return EscapeCsv(value?.ToString() ?? "");
-                        }
-                        return "";
-                    })
-                    .ToList();
+                var values = dgReportes.Columns.Select(col =>
+                {
+                    if (col is DataGridTextColumn tc && tc.Binding is Binding b)
+                        return EscapeCsv(item?.GetType()?.GetProperty(b.Path?.Path ?? "")?.GetValue(item)?.ToString() ?? "");
+                    return "";
+                }).ToList();
                 lines.Add(string.Join(",", values));
             }
 
             File.WriteAllText(path, string.Join(Environment.NewLine, lines));
-
-            MessageBox.Show($"Reporte exportado exitosamente a:\n{path}",
-                "Exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Exportado a:\n{path}", "Exportar", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ExportExcel(string path)
@@ -439,7 +625,6 @@ namespace ProyectoIntegradorNet10.UserControls
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Reporte");
 
-            // Header row with styling
             for (int c = 0; c < dgReportes.Columns.Count; c++)
             {
                 var cell = ws.Cell(1, c + 1);
@@ -448,35 +633,25 @@ namespace ProyectoIntegradorNet10.UserControls
                 cell.Style.Font.FontColor = XLColor.White;
                 cell.Style.Fill.BackgroundColor = XLColor.FromArgb(0x2DAAE1);
                 cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                cell.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-                cell.Style.Border.BottomBorderColor = XLColor.FromArgb(0x1A4A7A);
             }
 
-            // Data rows
             int row = 2;
             foreach (var item in dgReportes.Items)
             {
                 for (int c = 0; c < dgReportes.Columns.Count; c++)
                 {
-                    if (dgReportes.Columns[c] is DataGridTextColumn textCol && textCol.Binding is Binding binding)
+                    if (dgReportes.Columns[c] is DataGridTextColumn tc && tc.Binding is Binding b)
                     {
-                        var value = item?.GetType()?.GetProperty(binding.Path?.Path ?? "")?.GetValue(item);
-                        var cell = ws.Cell(row, c + 1);
-                        cell.Value = value?.ToString() ?? "";
-                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        var val = item?.GetType()?.GetProperty(b.Path?.Path ?? "")?.GetValue(item);
+                        ws.Cell(row, c + 1).Value = val?.ToString() ?? "";
                     }
                 }
                 row++;
             }
 
-            // Auto-fit columns
             ws.Columns().AdjustToContents();
-
-            // Save
             workbook.SaveAs(path);
-
-            MessageBox.Show($"Reporte exportado exitosamente a:\n{path}",
-                "Exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Exportado a:\n{path}", "Exportar", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private static string EscapeCsv(string value)

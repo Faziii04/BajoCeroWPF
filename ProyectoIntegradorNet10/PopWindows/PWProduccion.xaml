@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ProyectoIntegradorNet10.PopWindows"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         Title="PWProduccion" Height="650" Width="700"
         WindowStartupLocation="CenterOwner"
@@ -88,7 +89,8 @@
                                                 Background="{DynamicResource InputBgBrush}"
                                                 Foreground="{DynamicResource NavTextColor}"
                                                 BorderBrush="{DynamicResource InputBorderBrush}"
-                                                BorderThickness="1" Margin="0,0,0,10"/>
+                                                BorderThickness="1" Margin="0,0,0,10"
+                                                DisplayDateStart="{x:Static sys:DateTime.Today}"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
